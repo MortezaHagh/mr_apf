@@ -17,6 +17,7 @@ class Map(object):
 class Robot(object):
     def __init__(self, map, xs, ys, xt, yt, heading, id, nodes_count):
 
+        self.id = id
         self.xs = xs
         self.ys = ys
         self.xt = xt

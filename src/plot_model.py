@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def plot_model(model):
     fig, ax = plt.subplots(1, 1)
     ax.set_title('MRPP')
@@ -28,7 +29,7 @@ def plot_model(model):
     danger_r = 0.25
     thetas = np.linspace(0, np.pi*2, 20)
     ax.plot(model.obst.x, model.obst.y, 'o',  markersize=5,
-                markeredgecolor='k', markerfacecolor='k')
+            markeredgecolor='k', markerfacecolor='k')
     for i in range(model.obst.count):
         xor = [model.obst.x[i]+obs_r*np.cos(t) for t in thetas]
         yor = [model.obst.y[i]+obs_r*np.sin(t) for t in thetas]
@@ -36,7 +37,6 @@ def plot_model(model):
         ydng = [model.obst.y[i]+danger_r*np.sin(t) for t in thetas]
         ax.plot(xor, yor, '--k')
         ax.plot(xdng, ydng, 'r')
-
 
     # Walls
     ax.plot([model.map.x_min-0.5, model.map.x_min-0.5],
