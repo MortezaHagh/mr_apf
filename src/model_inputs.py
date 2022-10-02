@@ -42,8 +42,8 @@ class ModelInputs():
         self.heading = [0, 0, 0, 0]
         self.xs = [14, 11, 5, 1]
         self.ys = [11, 13, 7, 1]
-        self.xt = [14, 20, 1, 20]
-        self.yt = [17, 13, 12, 20]
+        self.xt = [14, 20, 1, 12]
+        self.yt = [17, 13, 12, 7]
 
     def map2(self):
 

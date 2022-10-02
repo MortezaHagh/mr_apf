@@ -53,6 +53,6 @@ def plot_model(model):
 
 if __name__ == '__main__':
     from create_model import CreateModel
-    model = CreateModel()
+    model = CreateModel(map_id=4)
     plot_model(model)
     plt.show()

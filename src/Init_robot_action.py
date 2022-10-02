@@ -3,15 +3,22 @@
 import rospy
 import actionlib
 import numpy as np
-from apf.msg import InitRobotAction, InitRobotResult
+from apf.srv import MyPose, MyPoseRequest
+from apf.msg import InitRobotAction, InitRobotResult, InitRobotFeedback
+
 
 class InitRobotAcion(object):
-    def __init__(self, model, i, name, settings, velocities):
-        
+    def __init__(self, model, ind, name, settings, velocities):
+
+        # ros
+        self.rate = rospy.Rate(15)
+
+        #
+        self.feedback = InitRobotFeedback()
         self.path_x = []
         self.path_y = []
-        
-        self.i = i
+
+        self.ind = ind
         self.model = model
         self.action_name = name
 
@@ -19,12 +26,21 @@ class InitRobotAcion(object):
         self.zeta = settings["zeta"]
         self.d_rt = settings["d_rt"]
         self.obs_r = settings["obs_r"]
+        self.robot_r = settings["robot_r"]
+        self.pose_srv_name = settings["pose_srv_name"]
 
         self.v = velocities["v"]
 
+        #
         self.map()
+        self.get_robot()
 
-        self.ac_ = actionlib.SimpleActionServer(self.action_name, InitRobotAction, self.exec_cb)
+        # pose service lient
+        rospy.wait_for_service(self.pose_srv_name)
+        self.pose_client = rospy.ServiceProxy(self.pose_srv_name, MyPose)
+
+        self.ac_ = actionlib.SimpleActionServer(
+            self.action_name, InitRobotAction, self.exec_cb)
         self.ac_.start()
 
     def exec_cb(self, goal):
@@ -51,8 +67,16 @@ class InitRobotAcion(object):
             self.r_x += vt * np.cos(theta)
             self.r_y += vt * np.sin(theta)
             self.r_theta = self.modify_angle(theta)
+
+            # result
             self.path_x.append(self.r_x)
             self.path_y.append(self.r_y)
+
+            # # feedback
+            # self.feedback.path = [self.r_x, self.r_y]
+            # self.ac_.publish_feedback(self.feedback)
+
+            self.rate.sleep()
 
     # -----------------------  forces  ----------------------------#
 
@@ -68,6 +92,29 @@ class InitRobotAcion(object):
         phi = np.arctan2(f_theta, f_r)
         phi = round(phi, 2)
         return [f_r, f_theta, phi]
+
+    def f_robots(self):
+        req = MyPoseRequest()
+        req.ind = self.ind
+        resp = self.pose_client(req.ind)
+        self.robot_f = [0, 0]
+        for i in range(resp.count):
+            dx = resp.x[i]-self.r_x
+            dy = resp.y[i]-self.r_y
+            dy = -dy
+            dx = -dx
+            d_ro = np.sqrt(dx**2+dy**2)
+            if d_ro >= self.robot_r:
+                f = 0
+                theta = 0
+            else:
+                f = ((self.zeta/0.01)*((1/d_ro)-(1/self.obs_r))**2)*(1/d_ro)**2
+                theta = np.arctan2(dy, dx)
+                angle_diff = theta - self.r_theta
+                angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+                templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
+                self.robot_f[0] += round(templ[0], 2)
+                self.robot_f[1] += round(templ[1], 2)
 
     def f_target(self):
         dx = self.t_x - self.r_x
@@ -105,19 +152,19 @@ class InitRobotAcion(object):
     # -------------------------  get_robot, modify_angle  ------------------------------#
 
     def get_robot(self):
-        self.r_x = self.model.robots[self.i].xs
-        self.r_y = self.model.robots[self.i].ys
-        self.r_theta = self.model.robots[self.i].heading
+        self.r_x = self.model.robots[self.ind].xs
+        self.r_y = self.model.robots[self.ind].ys
+        self.r_theta = self.model.robots[self.ind].heading
 
     def modify_angle(self, theta):
         theta_mod = (theta + np.pi) % (2*np.pi) - np.pi
         return theta_mod
-    
+
     def map(self):
 
         # robot target
-        self.t_x = self.model.robots[self.i].xt
-        self.t_y = self.model.robots[self.i].yt
+        self.t_x = self.model.robots[self.ind].xt
+        self.t_y = self.model.robots[self.ind].yt
 
         # obstacles
         self.obs_n = self.model.obst.count
