@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 
 import rospy
 import actionlib
@@ -19,11 +19,10 @@ class APF(object):
         obs_r = 1.2
         robot_r = 1.2
         danger_r = 0.25
-        d_rt = 1000
-        pose_srv_name = "/pose_service"
+        goal_distance = 1000
         self.velocities = {"v": 0.5}
-        self.settings = {"robot_r": robot_r, "obs_r": obs_r, "dt": dt, "zeta": zeta,
-                         "d_rt": d_rt, "pose_srv_name": pose_srv_name}
+        pose_srv_name = "/pose_service"
+        self.settings = {"robot_r": robot_r, "obs_r": obs_r, "dt": dt, "zeta": zeta, "goal_distance": goal_distance, "pose_srv_name": pose_srv_name}
 
         # ros
         self.rate = rospy.Rate(20)
@@ -48,17 +47,17 @@ class APF(object):
         self.manage_actions()
 
         # status check
-        status = [c.get_state() > 1 for c in self.clients]
+        status = [c.get_state() > 1 for c in self.ac_clients]
         while (0 in status) and (not rospy.is_shutdown()):
             self.manage_poses()
-            status = [c.get_state() > 1 for c in self.clients]
+            status = [c.get_state() > 1 for c in self.ac_clients]
             print(status)
             self.rate.sleep()
 
         # results
         self.results = []
-        for c in self.clients:
-            self.results.append(c.get_result())
+        for ac_client in self.ac_clients:
+            self.results.append(ac_client.get_result())
 
         # plot
         self.plotting()
@@ -72,27 +71,25 @@ class APF(object):
         self.action_servers = []
         for i in range(self.model.robot_count):
             action_name = "/r" + str(self.model.robots[i].id)+common_ac_name
-            ac_server = InitRobotAcion(
-                self.model, i, action_name, self.settings, self.velocities)
+            ac_server = InitRobotAcion(self.model, i, action_name, self.settings, self.velocities)
             self.action_names.append(action_name)
             self.action_servers.append(ac_server)
 
         # calling action servers
-        self.clients = []
+        self.ac_clients = []
         for i in range(self.model.robot_count):
-            client = actionlib.SimpleActionClient(
-                self.action_names[i], InitRobotAction)
+            client = actionlib.SimpleActionClient(self.action_names[i], InitRobotAction)
             client.wait_for_server()
             goal = InitRobotGoal()
             client.send_goal(goal)
-            self.clients.append(client)
+            self.ac_clients.append(client)
 
     # -----------------------  manage_poses  --------------------------------#
 
     def manage_poses(self):
         robot_poses = []
-        for myac in self.action_servers:
-            pose = [myac.r_x, myac.r_y]
+        for ac_server in self.action_servers:
+            pose = [ac_server.r_x, ac_server.r_y]
             robot_poses.append(pose)
         self.pose_srv.update_poses(robot_poses)
 

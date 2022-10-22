@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 
 import rospy
 import actionlib
@@ -15,6 +15,7 @@ class InitRobotAcion(object):
 
         #
         self.feedback = InitRobotFeedback()
+        self.res = InitRobotResult()
         self.path_x = []
         self.path_y = []
 
@@ -24,24 +25,27 @@ class InitRobotAcion(object):
 
         self.dt = settings["dt"]
         self.zeta = settings["zeta"]
-        self.d_rt = settings["d_rt"]
         self.obs_r = settings["obs_r"]
         self.robot_r = settings["robot_r"]
         self.pose_srv_name = settings["pose_srv_name"]
+        self.goal_distance = settings["goal_distance"]
 
         self.v = velocities["v"]
 
-        #
+        # map: target and obstacles coordinates
         self.map()
+
+        # get robots start coords 
         self.get_robot()
 
-        # pose service lient
+        # pose service client
         rospy.wait_for_service(self.pose_srv_name)
         self.pose_client = rospy.ServiceProxy(self.pose_srv_name, MyPose)
 
-        self.ac_ = actionlib.SimpleActionServer(
-            self.action_name, InitRobotAction, self.exec_cb)
+        self.ac_ = actionlib.SimpleActionServer(self.action_name, InitRobotAction, self.exec_cb)
         self.ac_.start()
+
+    # --------------------------  exec_cb  ---------------------------#
 
     def exec_cb(self, goal):
 
@@ -49,17 +53,16 @@ class InitRobotAcion(object):
         self.move()
 
         # result
-        res = InitRobotResult()
-        res.result = True
-        res.path_x = self.path_x
-        res.path_y = self.path_y
-        self.ac_.set_succeeded(res)
+        self.res.result = True
+        self.res.path_x = self.path_x
+        self.res.path_y = self.path_y
+        self.ac_.set_succeeded(self.res)
 
     # --------------------------  move  ---------------------------#
 
     def move(self):
         self.get_robot()
-        while self.d_rt > 0.25:
+        while self.goal_distance > 0.25:
             [f_r, f_theta, phi] = self.forces()
 
             vt = self.v*self.dt
@@ -117,31 +120,29 @@ class InitRobotAcion(object):
                 self.robot_f[1] += round(templ[1], 2)
 
     def f_target(self):
-        dx = self.t_x - self.r_x
-        dy = self.t_y - self.r_y
-        d_rt = np.sqrt(dx**2+dy**2)
-        f = self.zeta * d_rt
+        dx = self.goal_x - self.r_x
+        dy = self.goal_y - self.r_y
+        goal_distance = np.sqrt(dx**2+dy**2)
+        f = self.zeta * goal_distance
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-        self.d_rt = d_rt
+        self.goal_distance = goal_distance
         fx = round(f*np.cos(angle_diff), 2)
         fy = round(f*np.sin(angle_diff), 2)
         self.target_f = [fx, fy]
 
     def f_obstacle(self):
         self.obs_f = [0, 0]
-        for i in range(self.obs_n):
-            dy = self.obs_y[i]-self.r_y
-            dx = self.obs_x[i]-self.r_x
-            dy = -dy
-            dx = -dx
+        for i in range(self.obs_count):
+            dy = -(self.obs_y[i]-self.r_y)
+            dx = -(self.obs_x[i]-self.r_x)
             d_ro = np.sqrt(dx**2+dy**2)
             if d_ro >= self.obs_r:
                 f = 0
                 theta = 0
             else:
-                f = ((self.zeta/0.01)*((1/d_ro)-(1/self.obs_r))**2)*(1/d_ro)**2
+                f = ((self.zeta*100)*((1/d_ro)-(1/self.obs_r))**2)*(1/d_ro)**2  # mh 100
                 theta = np.arctan2(dy, dx)
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -163,10 +164,10 @@ class InitRobotAcion(object):
     def map(self):
 
         # robot target
-        self.t_x = self.model.robots[self.ind].xt
-        self.t_y = self.model.robots[self.ind].yt
+        self.goal_x = self.model.robots[self.ind].xt
+        self.goal_y = self.model.robots[self.ind].yt
 
         # obstacles
-        self.obs_n = self.model.obst.count
+        self.obs_count = self.model.obst.count
         self.obs_x = self.model.obst.x
         self.obs_y = self.model.obst.y
