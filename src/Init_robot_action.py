@@ -11,7 +11,8 @@ class InitRobotAcion(object):
     def __init__(self, model, ind, name, settings, velocities):
 
         # ros
-        self.rate = rospy.Rate(15)
+        self.rate = rospy.Rate(100)
+        rospy.on_shutdown(self.shutdown_hook)
 
         #
         self.feedback = InitRobotFeedback()
@@ -25,8 +26,8 @@ class InitRobotAcion(object):
 
         self.dt = settings["dt"]
         self.zeta = settings["zeta"]
-        self.obs_r = settings["obs_r"]
         self.robot_r = settings["robot_r"]
+        self.obs_effect_r = settings["obs_effect_r"]
         self.pose_srv_name = settings["pose_srv_name"]
         self.goal_distance = settings["goal_distance"]
 
@@ -57,12 +58,13 @@ class InitRobotAcion(object):
         self.res.path_x = self.path_x
         self.res.path_y = self.path_y
         self.ac_.set_succeeded(self.res)
+        return
 
     # --------------------------  move  ---------------------------#
 
     def move(self):
         self.get_robot()
-        while self.goal_distance > 0.25:
+        while self.goal_distance > 0.25 and not rospy.is_shutdown():
             [f_r, f_theta, phi] = self.forces()
 
             vt = self.v*self.dt
@@ -111,7 +113,7 @@ class InitRobotAcion(object):
                 f = 0
                 theta = 0
             else:
-                f = ((self.zeta/0.01)*((1/d_ro)-(1/self.obs_r))**2)*(1/d_ro)**2
+                f = ((self.zeta/0.01)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**2
                 theta = np.arctan2(dy, dx)
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -138,11 +140,11 @@ class InitRobotAcion(object):
             dy = -(self.obs_y[i]-self.r_y)
             dx = -(self.obs_x[i]-self.r_x)
             d_ro = np.sqrt(dx**2+dy**2)
-            if d_ro >= self.obs_r:
+            if d_ro >= self.obs_effect_r:
                 f = 0
                 theta = 0
             else:
-                f = ((self.zeta*100)*((1/d_ro)-(1/self.obs_r))**2)*(1/d_ro)**2  # mh 100
+                f = ((self.zeta*100)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**2  # mh 100
                 theta = np.arctan2(dy, dx)
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -171,3 +173,6 @@ class InitRobotAcion(object):
         self.obs_count = self.model.obst.count
         self.obs_x = self.model.obst.x
         self.obs_y = self.model.obst.y
+
+    def shutdown_hook(self):
+        print("shutting down from robot action")

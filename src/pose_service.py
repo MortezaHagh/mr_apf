@@ -6,6 +6,9 @@ from apf.srv import MyPose, MyPoseResponse
 
 class PoseService(object):
     def __init__(self, poses, count, pose_srv_name):
+        
+        rospy.on_shutdown(self.shutdown_hook)
+        
         self.count = count
         self.rind = [i for i in range(count)]
         self.x = [p[0] for p in poses]
@@ -26,3 +29,6 @@ class PoseService(object):
     def update_poses(self, poses):
         self.x = [p[0] for p in poses]
         self.y = [p[1] for p in poses]
+
+    def shutdown_hook(self):
+        print("shutting down from pose service")

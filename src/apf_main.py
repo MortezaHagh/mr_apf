@@ -16,16 +16,16 @@ class APF(object):
         # setting
         zeta = 1
         dt = 0.2
-        obs_r = 1.2
-        robot_r = 1.2
-        danger_r = 0.25
+        obs_effect_r = 1.0
+        robot_r = 1.0
+        danger_r = 0.25             # real obst radius
         goal_distance = 1000
         self.velocities = {"v": 0.5}
         pose_srv_name = "/pose_service"
-        self.settings = {"robot_r": robot_r, "obs_r": obs_r, "dt": dt, "zeta": zeta, "goal_distance": goal_distance, "pose_srv_name": pose_srv_name}
+        self.settings = {"robot_r": robot_r, "obs_effect_r": obs_effect_r, "dt": dt, "zeta": zeta, "goal_distance": goal_distance, "pose_srv_name": pose_srv_name, "danger_r":danger_r}
 
         # ros
-        self.rate = rospy.Rate(20)
+        self.rate = rospy.Rate(100)
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
@@ -62,6 +62,8 @@ class APF(object):
         # plot
         self.plotting()
 
+        rospy.signal_shutdown("ended")
+
     # ----------------------- actions ----------------------------------#
 
     def manage_actions(self):
@@ -96,7 +98,7 @@ class APF(object):
     # -----------------------  plotting  --------------------------------#
 
     def plotting(self):
-        fig, ax = plot_model(self.model)
+        fig, ax = plot_model(self.model, self.settings)
 
         # paths
         colors = plt.cm.get_cmap('rainbow', self.model.robot_count)
@@ -105,6 +107,7 @@ class APF(object):
         plt.show()
 
     def shutdown_hook(self):
+        print("-----------------------------------")
         print(" --- shutting down from main ---")
 
 # ------------------------------------------------------------------- #
@@ -113,7 +116,6 @@ class APF(object):
 if __name__ == "__main__":
     rospy.init_node("main_node")
     apf = APF()
-    print(".........")
 
 
 # # velocity

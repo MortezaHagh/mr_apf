@@ -2,10 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_model(model):
+def plot_model(model, settings):
+    # setting
+    obs_r = settings["obs_effect_r"]
+    robot_r = settings["robot_r"]
+    danger_r = settings["danger_r"]
+
     fig, ax = plt.subplots(1, 1)
     ax.set_title('MRPP')
-#     ax.axis("off")
+    #     ax.axis("off")
     ax.axis('equal')
     ax.grid('on')
     ax.axis([model.map.x_min-1, model.map.x_max+1,
@@ -19,10 +24,8 @@ def plot_model(model):
         ax.plot(robot.xt, robot.yt, marker='p', markersize=10,
                 markeredgecolor=colors(i), markerfacecolor=colors(i))
         # text
-        ax.text(robot.xs, robot.ys, str(i+1),
-                {'fontsize': 10, 'fontweight': 'normal', 'horizontalalignment': 'center', 'fontname': 'serif'})
-        ax.text(robot.xt, robot.yt, str(i+1),
-                {'fontsize': 10, 'fontweight': 'normal', 'horizontalalignment': 'center', 'fontname': 'serif'})
+        ax.text(robot.xs, robot.ys, str(i+1), {'fontsize': 10, 'fontweight': 'normal', 'horizontalalignment': 'center', 'fontname': 'serif'})
+        ax.text(robot.xt, robot.yt, str(i+1), {'fontsize': 10, 'fontweight': 'normal', 'horizontalalignment': 'center', 'fontname': 'serif'})
 
     # # Obstacles
     obs_r = 1
@@ -31,22 +34,18 @@ def plot_model(model):
     ax.plot(model.obst.x, model.obst.y, 'o',  markersize=5,
             markeredgecolor='k', markerfacecolor='k')
     for i in range(model.obst.count):
-        xor = [model.obst.x[i]+obs_r*np.cos(t) for t in thetas]
-        yor = [model.obst.y[i]+obs_r*np.sin(t) for t in thetas]
-        xdng = [model.obst.x[i]+danger_r*np.cos(t) for t in thetas]
-        ydng = [model.obst.y[i]+danger_r*np.sin(t) for t in thetas]
-        ax.plot(xor, yor, '--k')
-        ax.plot(xdng, ydng, 'r')
+            xor = [model.obst.x[i]+obs_r*np.cos(t) for t in thetas]
+            yor = [model.obst.y[i]+obs_r*np.sin(t) for t in thetas]
+            xdng = [model.obst.x[i]+danger_r*np.cos(t) for t in thetas]
+            ydng = [model.obst.y[i]+danger_r*np.sin(t) for t in thetas]
+            ax.plot(xor, yor, '--k')
+            ax.plot(xdng, ydng, 'r')
 
     # Walls
-    ax.plot([model.map.x_min-0.5, model.map.x_min-0.5],
-            [model.map.y_min-0.5, model.map.y_max+0.5], color='k', linewidth=4)
-    ax.plot([model.map.x_min-0.5, model.map.x_max+0.5],
-            [model.map.y_max+0.5, model.map.y_max+0.5], color='k', linewidth=4)
-    ax.plot([model.map.x_max+0.5, model.map.x_max+0.5],
-            [model.map.y_max+0.5, model.map.y_min-0.5], color='k', linewidth=4)
-    ax.plot([model.map.x_max+0.5, model.map.x_min-0.5],
-            [model.map.y_min-0.5, model.map.y_min-0.5], color='k', linewidth=4)
+    ax.plot([model.map.x_min-0.5, model.map.x_min-0.5], [model.map.y_min-0.5, model.map.y_max+0.5], color='k', linewidth=4)
+    ax.plot([model.map.x_min-0.5, model.map.x_max+0.5], [model.map.y_max+0.5, model.map.y_max+0.5], color='k', linewidth=4)
+    ax.plot([model.map.x_max+0.5, model.map.x_max+0.5], [model.map.y_max+0.5, model.map.y_min-0.5], color='k', linewidth=4)
+    ax.plot([model.map.x_max+0.5, model.map.x_min-0.5], [model.map.y_min-0.5, model.map.y_min-0.5], color='k', linewidth=4)
 
     return fig, ax
 
