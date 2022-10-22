@@ -6,7 +6,7 @@ from matplotlib.pylab import plt
 from plot_model import plot_model
 from create_model import CreateModel
 from pose_service import PoseService
-from Init_robot_action import InitRobotAcion
+from robot_action_static import InitRobotAcion
 from apf.msg import InitRobotAction, InitRobotGoal
 
 
