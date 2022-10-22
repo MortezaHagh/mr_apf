@@ -16,8 +16,8 @@ class APF(object):
         # setting
         zeta = 1
         dt = 0.2
-        obs_effect_r = 1.0
-        robot_r = 1.0
+        obs_effect_r = 1.0          # obstacles effective radius
+        robot_r = 1.0               # robots effective radius
         danger_r = 0.25             # real obst radius
         goal_distance = 1000
         self.velocities = {"v": 0.5}

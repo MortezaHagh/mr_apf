@@ -8,7 +8,7 @@ class PoseService(object):
     def __init__(self, poses, count, pose_srv_name):
         
         rospy.on_shutdown(self.shutdown_hook)
-        
+
         self.count = count
         self.rind = [i for i in range(count)]
         self.x = [p[0] for p in poses]
@@ -23,7 +23,7 @@ class PoseService(object):
         inds = [j for j in self.rind if j != req_i]
         resp.x = [self.x[i] for i in inds]
         resp.y = [self.y[i] for i in inds]
-        resp.count = self.count #mh
+        resp.count = self.count-1 #mh
         return resp
 
     def update_poses(self, poses):

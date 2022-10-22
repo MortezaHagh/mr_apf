@@ -94,6 +94,10 @@ class InitRobotAcion(object):
         f_r += self.obs_f[0]
         f_theta += self.obs_f[1]
 
+        self.f_robots()
+        f_r += self.robot_f[0]
+        f_theta += self.robot_f[1]
+
         phi = np.arctan2(f_theta, f_r)
         phi = round(phi, 2)
         return [f_r, f_theta, phi]
