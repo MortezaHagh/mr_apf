@@ -14,14 +14,14 @@ class APF(object):
     def __init__(self):
 
         # setting
-        dt = 0.2
+        dt = 0.1
         zeta = 1
         robot_r = 1.0               # robots effective radius
         danger_r = 0.25             # real obst radius
         obs_effect_r = 1.0          # obstacles effective radius
         goal_distance = 1000
         pose_srv_name = "/pose_service"
-        self.velocities = {"v": 0.5, "v_min": 0.05, "v_max": 0.2, "w_min":0, "w_max":0.5}
+        self.velocities = {"v": 0.5, "v_min": 0.01, "v_max": 0.2, "w_min":0, "w_max":1.0}
         self.settings = {"robot_r": robot_r, "obs_effect_r": obs_effect_r, "dt": dt, "zeta": zeta, "goal_distance": goal_distance, "pose_srv_name": pose_srv_name, "danger_r":danger_r}
 
         # ros
@@ -106,16 +106,16 @@ class APF(object):
             ax.plot(res.path_x, res.path_y, color=colors(i))
         
         fig1, ax1 = plt.subplots(1, 1)
-        ax1.plot(self.action_servers[0].force_r)
-        ax1.plot(self.action_servers[0].force_t)
+        ax1.plot(self.action_servers[0].v_lin)
+        ax1.plot(self.action_servers[0].v_ang)
         
         plt.show()
 
     def shutdown_hook(self):
-        fig1, ax1 = plt.subplots(1, 1)
-        ax1.plot(self.action_servers[0].force_r)
-        ax1.plot(self.action_servers[0].force_t)
-        plt.show()
+        # fig1, ax1 = plt.subplots(1, 1)
+        # ax1.plot(self.action_servers[0].force_r)
+        # ax1.plot(self.action_servers[0].force_t)
+        # plt.show()
         print("-----------------------------------")
         print(" --- shutting down from main ---")
 

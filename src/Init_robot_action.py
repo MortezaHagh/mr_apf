@@ -116,12 +116,15 @@ class InitRobotAcion(object):
     def cal_vel(self, f_r, f_theta, theta):
 
         if abs(theta)>self.theta_thresh:
-            v = 0
+            v = 0 + self.v_min/10
             w = self.w_max * np.sign(theta)
         else:
-            v = self.v_max * (1- (abs(theta)/self.theta_thresh)) + self.v_min
-            w = theta * self.w_coeff
+            v = self.v_max * (1- (abs(theta)/self.theta_thresh))**2 + self.v_min/10
+            w = theta * self.w_coeff * 1.5
         v = min(v, self.v_max)
+        v = max(v, 0)
+        wa = min(abs(w), self.w_max)
+        w = wa * np.sign(w)
 
         self.v = v
         self.w = w
