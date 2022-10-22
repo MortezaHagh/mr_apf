@@ -14,24 +14,42 @@ class InitRobotAcion(object):
         self.rate = rospy.Rate(100)
         rospy.on_shutdown(self.shutdown_hook)
 
-        #
-        self.feedback = InitRobotFeedback()
-        self.res = InitRobotResult()
+        # preallocation
+        self.v_lin = []
+        self.v_ang = []
         self.path_x = []
         self.path_y = []
+        self.force_r = []
+        self.force_t = []
+        self.res = InitRobotResult()
+        self.feedback = InitRobotFeedback()
 
         self.ind = ind
         self.model = model
         self.action_name = name
+        
+        # velocity limits
+        self.v = 0
+        self.w = 0
+        self.vv = velocities["v"]
+        self.v_min = velocities["v_min"]
+        self.v_max = velocities["v_max"]
+        self.w_min = velocities["w_min"]
+        self.w_max = velocities["w_max"]
 
+        # settings
+        self.theta_thresh = np.pi/4
+        self.f_r_min = 0
+        self.f_r_max = 5
+        self.w_coeff = 1
+        self.f_theta_min = 1
+        self.f_theta_max = 5
         self.dt = settings["dt"]
         self.zeta = settings["zeta"]
         self.robot_r = settings["robot_r"]
         self.obs_effect_r = settings["obs_effect_r"]
         self.pose_srv_name = settings["pose_srv_name"]
         self.goal_distance = settings["goal_distance"]
-
-        self.v = velocities["v"]
 
         # map: target and obstacles coordinates
         self.map()
@@ -43,6 +61,7 @@ class InitRobotAcion(object):
         rospy.wait_for_service(self.pose_srv_name)
         self.pose_client = rospy.ServiceProxy(self.pose_srv_name, MyPose)
 
+        # action
         self.ac_ = actionlib.SimpleActionServer(self.action_name, InitRobotAction, self.exec_cb)
         self.ac_.start()
 
@@ -51,7 +70,7 @@ class InitRobotAcion(object):
     def exec_cb(self, goal):
 
         # move
-        self.move()
+        self.go_to_goal()
 
         # result
         self.res.result = True
@@ -60,15 +79,24 @@ class InitRobotAcion(object):
         self.ac_.set_succeeded(self.res)
         return
 
-    # --------------------------  move  ---------------------------#
+    # --------------------------  go_to_goal  ---------------------------#
 
-    def move(self):
+    def go_to_goal(self):
         self.get_robot()
         while self.goal_distance > 0.25 and not rospy.is_shutdown():
+            # calculate forces
             [f_r, f_theta, phi] = self.forces()
+            self.force_r.append(f_r)
+            self.force_t.append(f_theta)
 
+            # calculate velocities
+            self.cal_vel(f_r, f_theta, phi)
+            self.v_lin.append(self.v)
+            self.v_ang.append(self.w)
+
+            # update poses
             vt = self.v*self.dt
-            theta = self.r_theta + phi
+            theta = self.r_theta + (self.w*self.dt)
             self.r_x += vt * np.cos(theta)
             self.r_y += vt * np.sin(theta)
             self.r_theta = self.modify_angle(theta)
@@ -83,8 +111,22 @@ class InitRobotAcion(object):
 
             self.rate.sleep()
 
-    # -----------------------  forces  ----------------------------#
+    # -----------------------  cal_vel  ----------------------------#
 
+    def cal_vel(self, f_r, f_theta, theta):
+
+        if abs(theta)>self.theta_thresh:
+            v = 0
+            w = self.w_max * np.sign(theta)
+        else:
+            v = self.v_max * (1- (abs(theta)/self.theta_thresh)) + self.v_min
+            w = theta * self.w_coeff
+        v = min(v, self.v_max)
+
+        self.v = v
+        self.w = w
+
+    # -----------------------  forces  ----------------------------#
     def forces(self):
         self.f_target()
         f_r = self.target_f[0]
@@ -94,9 +136,9 @@ class InitRobotAcion(object):
         f_r += self.obs_f[0]
         f_theta += self.obs_f[1]
 
-        self.f_robots()
-        f_r += self.robot_f[0]
-        f_theta += self.robot_f[1]
+        # self.f_robots()
+        # f_r += self.robot_f[0]
+        # f_theta += self.robot_f[1]
 
         phi = np.arctan2(f_theta, f_r)
         phi = round(phi, 2)
