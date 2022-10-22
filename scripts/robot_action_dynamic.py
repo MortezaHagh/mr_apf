@@ -3,15 +3,18 @@
 import rospy
 import actionlib
 import numpy as np
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Twist
 from apf.srv import MyPose, MyPoseRequest
+from tf.transformations import euler_from_quaternion
 from apf.msg import InitRobotAction, InitRobotResult, InitRobotFeedback
 
 
 class InitRobotAcion(object):
-    def __init__(self, model, ind, name, settings, velocities):
+    def __init__(self, model, ind, name, settings, velocities, init_params):
 
         # ros
-        self.rate = rospy.Rate(100)
+        self.rate = rospy.Rate(20)
         rospy.on_shutdown(self.shutdown_hook)
 
         # preallocation
@@ -36,14 +39,23 @@ class InitRobotAcion(object):
         self.w_min = velocities["w_min"]
         self.w_max = velocities["w_max"]
 
+        # parameters
+        self.v = 0
+        self.w = 0
+        self.v_min = init_params.linear_min_speed
+        self.v_max = init_params.linear_max_speed
+        self.w_min = init_params.angular_min_speed
+        self.w_max = init_params.angular_max_speed
+        self.topic_type = Odometry
+
         # settings
+        self.dis_tresh = 0.2
         self.theta_thresh = np.pi/2
         self.f_r_min = 0
         self.f_r_max = 5
         self.w_coeff = 1
         self.f_theta_min = 1
         self.f_theta_max = 5
-        self.dt = settings["dt"]
         self.zeta = settings["zeta"]
         self.robot_r = settings["robot_r"]
         self.obs_effect_r = settings["obs_effect_r"]
@@ -53,8 +65,14 @@ class InitRobotAcion(object):
         # map: target and obstacles coordinates
         self.map()
 
-        # get robots start coords 
-        self.get_robot()
+        # /cmd_vel puplisher
+        self.cmd_vel = rospy.Publisher(init_params.cmd_topic, Twist, queue_size=5)
+
+        # listener
+        self.topic = init_params.lis_topic
+        self.check_topic()
+        rospy.Subscriber(self.topic, self.topic_type, self.get_odom)
+        rospy.wait_for_message(self.topic, self.topic_type, timeout=3.0)
 
         # pose service client
         rospy.wait_for_service(self.pose_srv_name)
@@ -81,8 +99,7 @@ class InitRobotAcion(object):
     # --------------------------  go_to_goal  ---------------------------#
 
     def go_to_goal(self):
-        self.get_robot()
-        while self.goal_distance > 0.25 and not rospy.is_shutdown():
+        while self.goal_distance > self.dis_tresh and not rospy.is_shutdown():
             # calculate forces
             [f_r, f_theta, phi] = self.forces()
             self.force_r.append(f_r)
@@ -93,13 +110,12 @@ class InitRobotAcion(object):
             self.v_lin.append(self.v)
             self.v_ang.append(self.w)
 
-            # update poses
-            vt = self.v*self.dt
-            theta = self.r_theta + (self.w*self.dt)
-            self.r_x += vt * np.cos(theta)
-            self.r_y += vt * np.sin(theta)
-            self.r_theta = self.modify_angle(theta)
-
+            # publish cmd
+            move_cmd = Twist()
+            move_cmd.linear.x = self.v
+            move_cmd.angular.z = self.w
+            self.cmd_vel.publish(move_cmd)
+            
             # result
             self.path_x.append(self.r_x)
             self.path_y.append(self.r_y)
@@ -109,6 +125,9 @@ class InitRobotAcion(object):
             # self.ac_.publish_feedback(self.feedback)
 
             self.rate.sleep()
+        
+        self.stop()
+
 
     # -----------------------  cal_vel  ----------------------------#
 
@@ -173,7 +192,7 @@ class InitRobotAcion(object):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2+dy**2)
-        # f = self.zeta * goal_distance * 100
+        # f = self.zeta * goal_distance
         f = 1.5
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
@@ -203,16 +222,29 @@ class InitRobotAcion(object):
                 self.obs_f[0] += round(templ[0], 2)
                 self.obs_f[1] += round(templ[1], 2)
 
-    # -------------------------  get_robot, modify_angle  ------------------------------#
+    # ------------------------- check_topic -- get_odom  ------------------------------#
+    def check_topic(self):
+        self.topic_msg = None
+        rospy.loginfo(self.action_name + " WayPointsTrack, checking topic ...")
+        while self.topic_msg is None:
+            try:
+                self.topic_msg = rospy.wait_for_message(
+                    self.topic, self.topic_type, timeout=3.0)
+                rospy.logdebug(self.action_name + " WayPointsTrack, current topic is ready!")
+            except:
+                rospy.loginfo(self.action_name + " WayPointsTrack, current topic is not ready yet, retrying ...")
+        return self.topic_msg
+    
+    def get_odom(self, odom):
+        position = odom.pose.pose.position
+        quaternion = odom.pose.pose.orientation
+        orientation = euler_from_quaternion([quaternion.x, quaternion.y, quaternion.z, quaternion.w])
+        self.r_x = position.x
+        self.r_y = position.y
+        self.r_theta = orientation[2]
 
-    def get_robot(self):
-        self.r_x = self.model.robots[self.ind].xs
-        self.r_y = self.model.robots[self.ind].ys
-        self.r_theta = self.model.robots[self.ind].heading
-
-    def modify_angle(self, theta):
-        theta_mod = (theta + np.pi) % (2*np.pi) - np.pi
-        return theta_mod
+    
+    # ----------------  get_robot -- map -- modify_angle -- shutdown_hook -------------------#
 
     def map(self):
 
@@ -225,5 +257,17 @@ class InitRobotAcion(object):
         self.obs_x = self.model.obst.x
         self.obs_y = self.model.obst.y
 
+    def modify_angle(self, theta):
+        theta_mod = (theta + np.pi) % (2*np.pi) - np.pi
+        return theta_mod
+
+    def stop(self):
+        t = 0
+        while t < 10:
+            self.cmd_vel.publish(Twist())
+            self.rate.sleep()
+            t += 1
+    
     def shutdown_hook(self):
         print("shutting down from robot action")
+        self.stop()

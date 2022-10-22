@@ -2,11 +2,12 @@
 
 import rospy
 import actionlib
+from parameters import Params
 from matplotlib.pylab import plt
 from plot_model import plot_model
 from create_model import CreateModel
 from pose_service import PoseService
-from robot_action_static import InitRobotAcion
+from robot_action_dynamic import InitRobotAcion
 from apf.msg import InitRobotAction, InitRobotGoal
 
 
@@ -14,7 +15,6 @@ class APF(object):
     def __init__(self):
 
         # setting
-        dt = 0.1
         zeta = 1
         robot_r = 1.0               # robots effective radius
         danger_r = 0.25             # real obst radius
@@ -22,14 +22,20 @@ class APF(object):
         goal_distance = 1000
         pose_srv_name = "/pose_service"
         self.velocities = {"v": 0.5, "v_min": 0.01, "v_max": 0.2, "w_min":0, "w_max":1.0}
-        self.settings = {"robot_r": robot_r, "obs_effect_r": obs_effect_r, "dt": dt, "zeta": zeta, "goal_distance": goal_distance, "pose_srv_name": pose_srv_name, "danger_r":danger_r}
+        self.settings = {"robot_r": robot_r, "obs_effect_r": obs_effect_r, "zeta": zeta, "goal_distance": goal_distance, "pose_srv_name": pose_srv_name, "danger_r":danger_r}
 
         # ros
-        self.rate = rospy.Rate(100)
+        self.rate = rospy.Rate(20)
         rospy.on_shutdown(self.shutdown_hook)
 
+        # parameters
+        self.name_s = '/r' + str(0+1)
+        action_params = Params()
+        # action_params.set_name_space(self.name_s)
+        self.action_params = action_params
+
         # model
-        self.model = CreateModel(map_id=4)
+        self.model = CreateModel(map_id=5)
 
         # robots poses
         robot_poses = []
@@ -72,7 +78,7 @@ class APF(object):
         self.action_servers = []
         for i in range(self.model.robot_count):
             action_name = "/r" + str(self.model.robots[i].id)+common_ac_name
-            ac_server = InitRobotAcion(self.model, i, action_name, self.settings, self.velocities)
+            ac_server = InitRobotAcion(self.model, i, action_name, self.settings, self.velocities, self.action_params)
             self.action_names.append(action_name)
             self.action_servers.append(ac_server)
 
@@ -105,12 +111,8 @@ class APF(object):
             ax.plot(res.path_x, res.path_y, color=colors(i))
         
         fig1, ax1 = plt.subplots(1, 1)
-        ax1.plot(self.action_servers[0].force_r)
-        ax1.plot(self.action_servers[0].force_t)
-
-        fig2, ax2 = plt.subplots(1, 1)
-        ax2.plot(self.action_servers[0].v_lin)
-        ax2.plot(self.action_servers[0].v_ang)
+        ax1.plot(self.action_servers[0].v_lin)
+        ax1.plot(self.action_servers[0].v_ang)
         
         plt.show()
 
