@@ -23,7 +23,7 @@ class PoseService(object):
         inds = [j for j in self.rind if j != req_i]
         resp.x = [self.x[i] for i in inds]
         resp.y = [self.y[i] for i in inds]
-        resp.count = self.count-1 #mh
+        resp.count = self.count-1
         return resp
 
     def update_poses(self, poses):
