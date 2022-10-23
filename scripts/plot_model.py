@@ -28,6 +28,8 @@ def plot_model(model, settings):
         ax.text(robot.xt, robot.yt, str(i+1), {'fontsize': 10, 'fontweight': 'normal', 'horizontalalignment': 'center', 'fontname': 'serif'})
 
     # # Obstacles
+    obs_r = 1
+    danger_r = 0.25
     thetas = np.linspace(0, np.pi*2, 20)
     ax.plot(model.obst.x, model.obst.y, 'o',  markersize=5,
             markeredgecolor='k', markerfacecolor='k')
