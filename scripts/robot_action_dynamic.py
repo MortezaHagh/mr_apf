@@ -11,7 +11,7 @@ from apf.msg import InitRobotAction, InitRobotResult, InitRobotFeedback
 
 
 class InitRobotAcion(object):
-    def __init__(self, model, ind, name, settings, velocities, init_params):
+    def __init__(self, model, ind, name, init_params):
 
         # ros
         self.rate = rospy.Rate(20)
@@ -27,40 +27,33 @@ class InitRobotAcion(object):
         self.res = InitRobotResult()
         self.feedback = InitRobotFeedback()
 
-        self.ind = ind
+        # data
         self.model = model
-        self.action_name = name
+        self.ind = init_params.ind
+        self.action_name = init_params.name
         
-        # velocity limits
-        self.v = 0
-        self.w = 0
-        self.v_min = velocities["v_min"]
-        self.v_max = velocities["v_max"]
-        self.w_min = velocities["w_min"]
-        self.w_max = velocities["w_max"]
-
-        # parameters
+        # parameters vel
         self.v = 0
         self.w = 0
         self.v_min = init_params.linear_min_speed
         self.v_max = init_params.linear_max_speed
         self.w_min = init_params.angular_min_speed
         self.w_max = init_params.angular_max_speed
-        self.topic_type = Odometry
 
-        # settings
-        self.dis_tresh = 0.2
-        self.theta_thresh = np.pi/2
-        self.f_r_min = 0
-        self.f_r_max = 5
-        self.w_coeff = 1
-        self.f_theta_min = 1
-        self.f_theta_max = 5
-        self.zeta = settings["zeta"]
-        self.robot_r = settings["robot_r"]
-        self.obs_effect_r = settings["obs_effect_r"]
-        self.pose_srv_name = settings["pose_srv_name"]
-        self.goal_distance = settings["goal_distance"]
+        # parameters & settings
+        self.topic_type = Odometry
+        self.zeta = init_params.zeta
+        self.robot_r = init_params.robot_r
+        self.w_coeff = init_params.w_coeff
+        self.dis_tresh = init_params.dis_tresh
+        self.f_r_min = init_params.f_r_min #
+        self.f_r_max = init_params.f_r_maxv#
+        self.f_theta_min = init_params.f_theta_min #
+        self.f_theta_max = init_params.f_theta_maxb#
+        self.theta_thresh = init_params.theta_thresh
+        self.obs_effect_r = init_params.obs_effect_r
+        self.pose_srv_name = init_params.pose_srv_name
+        self.goal_distance = init_params.goal_distance
 
         # map: target and obstacles coordinates
         self.map()

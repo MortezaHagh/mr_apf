@@ -2,6 +2,7 @@
 
 import rospy
 import actionlib
+from parameters import Params
 from matplotlib.pylab import plt
 from plot_model import plot_model
 from create_model import CreateModel
@@ -13,16 +14,10 @@ from apf.msg import InitRobotAction, InitRobotGoal
 class APF(object):
     def __init__(self):
 
-        # setting
-        dt = 0.1
-        zeta = 1
-        robot_r = 1.0               # robots effective radius
-        danger_r = 0.25             # real obst radius
-        obs_effect_r = 1.0          # obstacles effective radius
-        goal_distance = 1000
-        pose_srv_name = "/pose_service"
-        self.velocities = {"v": 0.5, "v_min": 0.01, "v_max": 0.2, "w_min":0, "w_max":1.0}
-        self.settings = {"robot_r": robot_r, "obs_effect_r": obs_effect_r, "dt": dt, "zeta": zeta, "goal_distance": goal_distance, "pose_srv_name": pose_srv_name, "danger_r":danger_r}
+        # preallocation
+        self.ac_clients = []
+        self.action_names = []
+        self.action_servers = []
 
         # ros
         self.rate = rospy.Rate(100)
@@ -30,6 +25,17 @@ class APF(object):
 
         # model
         self.model = CreateModel(map_id=4)
+        self.count = self.model.robot_count
+
+        # setting - parameters
+        params = []
+        pose_srv_name = "/pose_service"
+        common_ac_name = "/robot_action"
+        for i in range(self.count):
+            params.append(Params(pose_srv_name, common_ac_name, i))
+            params[-1].set_name_space("/r"+str(i))
+            self.action_names.append(params[-1].action_name)
+        self.params = params
 
         # robots poses
         robot_poses = []
@@ -38,9 +44,7 @@ class APF(object):
             robot_poses.append(pose)
 
         # pose service
-        count = self.model.robot_count
-        self.pose_srv_name = pose_srv_name
-        self.pose_srv = PoseService(robot_poses, count, self.pose_srv_name)
+        self.pose_srv = PoseService(robot_poses, self.count, pose_srv_name)
 
         # actions
         self.manage_actions()
@@ -67,17 +71,11 @@ class APF(object):
 
     def manage_actions(self):
         # running action servers
-        common_ac_name = "/robot_action"
-        self.action_names = []
-        self.action_servers = []
         for i in range(self.model.robot_count):
-            action_name = "/r" + str(self.model.robots[i].id)+common_ac_name
-            ac_server = InitRobotAcion(self.model, i, action_name, self.settings, self.velocities)
-            self.action_names.append(action_name)
+            ac_server = InitRobotAcion(self.params[i], self.model)
             self.action_servers.append(ac_server)
 
         # calling action servers
-        self.ac_clients = []
         for i in range(self.model.robot_count):
             client = actionlib.SimpleActionClient(self.action_names[i], InitRobotAction)
             client.wait_for_server()
@@ -97,7 +95,7 @@ class APF(object):
     # -----------------------  plotting  --------------------------------#
 
     def plotting(self):
-        fig, ax = plot_model(self.model, self.settings)
+        fig, ax = plot_model(self.model, self.params[0])
 
         # paths
         colors = plt.cm.get_cmap('rainbow', self.model.robot_count)
@@ -105,19 +103,23 @@ class APF(object):
             ax.plot(res.path_x, res.path_y, color=colors(i))
         
         fig1, ax1 = plt.subplots(1, 1)
-        ax1.plot(self.action_servers[0].force_r)
-        ax1.plot(self.action_servers[0].force_t)
+        ax1.plot(self.action_servers[0].force_r, label="force_r")
+        ax1.plot(self.action_servers[0].force_t, label="force_t")
+        ax1.set_title("forces")
+        ax1.legend()
 
         fig2, ax2 = plt.subplots(1, 1)
-        ax2.plot(self.action_servers[0].v_lin)
-        ax2.plot(self.action_servers[0].v_ang)
+        ax2.plot(self.action_servers[0].v_lin, label="v_lin")
+        ax2.plot(self.action_servers[0].v_ang, label="v_ang")
+        ax2.legend()
         
         plt.show()
 
     def shutdown_hook(self):
         # fig1, ax1 = plt.subplots(1, 1)
-        # ax1.plot(self.action_servers[0].force_r)
-        # ax1.plot(self.action_servers[0].force_t)
+        # ax1.plot(self.action_servers[0].force_r, label="force_r")
+        # ax1.plot(self.action_servers[0].force_t, label="force_t")
+        # ax1.legend()
         # plt.show()
         print("-----------------------------------")
         print(" --- shutting down from main ---")

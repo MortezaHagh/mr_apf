@@ -14,22 +14,15 @@ from apf.msg import InitRobotAction, InitRobotGoal
 class APF(object):
     def __init__(self):
 
-        # setting
-        zeta = 1
-        robot_r = 1.0               # robots effective radius
-        danger_r = 0.25             # real obst radius
-        obs_effect_r = 1.0          # obstacles effective radius
-        goal_distance = 1000
-        pose_srv_name = "/pose_service"
-        self.velocities = {"v": 0.5, "v_min": 0.01, "v_max": 0.2, "w_min":0, "w_max":1.0}
-        self.settings = {"robot_r": robot_r, "obs_effect_r": obs_effect_r, "zeta": zeta, "goal_distance": goal_distance, "pose_srv_name": pose_srv_name, "danger_r":danger_r}
-
         # ros
         self.rate = rospy.Rate(20)
         rospy.on_shutdown(self.shutdown_hook)
 
+        # setting - parameters
+        params = Params()
+        
         # parameters
-        self.name_s = '/r' + str(0+1)
+        # self.name_s = '/r' + str(0+1)
         action_params = Params()
         # action_params.set_name_space(self.name_s)
         self.action_params = action_params

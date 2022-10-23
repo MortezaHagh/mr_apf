@@ -1,0 +1,5 @@
+<launch>
+    <include file= "$(find apf)/launch/turtlebot3_empty_world.launch"/>
+    <node pkg="apf" name="main" type="main.py" output="screen"/>
+
+</launch>

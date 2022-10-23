@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 def plot_model(model, settings):
     # setting
     obs_r = settings["obs_effect_r"]
-    robot_r = settings["robot_r"]
     danger_r = settings["danger_r"]
+    robot_r = settings["robot_r"]
 
     fig, ax = plt.subplots(1, 1)
     ax.set_title('MRPP')
