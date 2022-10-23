@@ -11,7 +11,7 @@ from apf.msg import InitRobotAction, InitRobotResult, InitRobotFeedback
 
 
 class InitRobotAcion(object):
-    def __init__(self, model, ind, name, init_params):
+    def __init__(self, init_params, model):
 
         # ros
         self.rate = rospy.Rate(20)
@@ -29,8 +29,8 @@ class InitRobotAcion(object):
 
         # data
         self.model = model
-        self.ind = init_params.ind
-        self.action_name = init_params.name
+        self.ind = init_params.id
+        self.action_name = init_params.action_name
         
         # parameters vel
         self.v = 0
@@ -47,9 +47,9 @@ class InitRobotAcion(object):
         self.w_coeff = init_params.w_coeff
         self.dis_tresh = init_params.dis_tresh
         self.f_r_min = init_params.f_r_min #
-        self.f_r_max = init_params.f_r_maxv#
+        self.f_r_max = init_params.f_r_max #
         self.f_theta_min = init_params.f_theta_min #
-        self.f_theta_max = init_params.f_theta_maxb#
+        self.f_theta_max = init_params.f_theta_max #
         self.theta_thresh = init_params.theta_thresh
         self.obs_effect_r = init_params.obs_effect_r
         self.pose_srv_name = init_params.pose_srv_name

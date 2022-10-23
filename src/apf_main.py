@@ -39,7 +39,7 @@ class APF(object):
 
         # robots poses
         robot_poses = []
-        for i in range(self.model.robot_count):
+        for i in range(self.count):
             pose = [self.model.robots[i].xs, self.model.robots[i].ys]
             robot_poses.append(pose)
 
@@ -71,12 +71,12 @@ class APF(object):
 
     def manage_actions(self):
         # running action servers
-        for i in range(self.model.robot_count):
+        for i in range(self.count):
             ac_server = InitRobotAcion(self.params[i], self.model)
             self.action_servers.append(ac_server)
 
         # calling action servers
-        for i in range(self.model.robot_count):
+        for i in range(self.count):
             client = actionlib.SimpleActionClient(self.action_names[i], InitRobotAction)
             client.wait_for_server()
             goal = InitRobotGoal()
@@ -130,11 +130,4 @@ class APF(object):
 if __name__ == "__main__":
     rospy.init_node("main_node")
     apf = APF()
-
-
-# # velocity
-# self.v = 0.5
-# self.v_max = 0.5
-# self.v_min = 0
-# self.w_max = 0.3
-# self.w_min = -0.3
+    

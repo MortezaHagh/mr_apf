@@ -14,25 +14,32 @@ from apf.msg import InitRobotAction, InitRobotGoal
 class APF(object):
     def __init__(self):
 
+        # preallocation
+        self.ac_clients = []
+        self.action_names = []
+        self.action_servers = []
+
         # ros
         self.rate = rospy.Rate(20)
         rospy.on_shutdown(self.shutdown_hook)
 
-        # setting - parameters
-        params = Params()
-        
-        # parameters
-        # self.name_s = '/r' + str(0+1)
-        action_params = Params()
-        # action_params.set_name_space(self.name_s)
-        self.action_params = action_params
-
         # model
         self.model = CreateModel(map_id=5)
+        self.count = self.model.robot_count
+
+        # setting - parameters
+        params = []
+        pose_srv_name = "/pose_service"
+        common_ac_name = "/robot_action"
+        for i in range(self.count):
+            params.append(Params(pose_srv_name, common_ac_name, i))
+            # params[-1].set_name_space("/r"+str(i))
+            self.action_names.append(params[-1].action_name)
+        self.params = params
 
         # robots poses
         robot_poses = []
-        for i in range(self.model.robot_count):
+        for i in range(self.count):
             pose = [self.model.robots[i].xs, self.model.robots[i].ys]
             robot_poses.append(pose)
 
@@ -66,18 +73,12 @@ class APF(object):
 
     def manage_actions(self):
         # running action servers
-        common_ac_name = "/robot_action"
-        self.action_names = []
-        self.action_servers = []
-        for i in range(self.model.robot_count):
-            action_name = "/r" + str(self.model.robots[i].id)+common_ac_name
-            ac_server = InitRobotAcion(self.model, i, action_name, self.settings, self.velocities, self.action_params)
-            self.action_names.append(action_name)
+        for i in range(self.count):
+            ac_server = InitRobotAcion(self.params[i], self.model)
             self.action_servers.append(ac_server)
 
         # calling action servers
-        self.ac_clients = []
-        for i in range(self.model.robot_count):
+        for i in range(self.count):
             client = actionlib.SimpleActionClient(self.action_names[i], InitRobotAction)
             client.wait_for_server()
             goal = InitRobotGoal()
@@ -96,7 +97,7 @@ class APF(object):
     # -----------------------  plotting  --------------------------------#
 
     def plotting(self):
-        fig, ax = plot_model(self.model, self.settings)
+        fig, ax = plot_model(self.model, self.params[0])
 
         # paths
         colors = plt.cm.get_cmap('rainbow', self.model.robot_count)
@@ -104,15 +105,23 @@ class APF(object):
             ax.plot(res.path_x, res.path_y, color=colors(i))
         
         fig1, ax1 = plt.subplots(1, 1)
-        ax1.plot(self.action_servers[0].v_lin)
-        ax1.plot(self.action_servers[0].v_ang)
+        ax1.plot(self.action_servers[0].force_r, label="force_r")
+        ax1.plot(self.action_servers[0].force_t, label="force_t")
+        ax1.set_title("forces")
+        ax1.legend()
+
+        fig2, ax2 = plt.subplots(1, 1)
+        ax2.plot(self.action_servers[0].v_lin, label="v_lin")
+        ax2.plot(self.action_servers[0].v_ang, label="v_ang")
+        ax2.legend()
         
         plt.show()
 
     def shutdown_hook(self):
         # fig1, ax1 = plt.subplots(1, 1)
-        # ax1.plot(self.action_servers[0].force_r)
-        # ax1.plot(self.action_servers[0].force_t)
+        # ax1.plot(self.action_servers[0].force_r, label="force_r")
+        # ax1.plot(self.action_servers[0].force_t, label="force_t")
+        # ax1.legend()
         # plt.show()
         print("-----------------------------------")
         print(" --- shutting down from main ---")
@@ -124,10 +133,3 @@ if __name__ == "__main__":
     rospy.init_node("main_node")
     apf = APF()
 
-
-# # velocity
-# self.v = 0.5
-# self.v_max = 0.5
-# self.v_min = 0
-# self.w_max = 0.3
-# self.w_min = -0.3
