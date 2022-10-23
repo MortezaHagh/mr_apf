@@ -5,47 +5,30 @@ from model_inputs import ModelInputs
 
 class Map(object):
     def __init__(self, inputs):
-        self.lim = inputs.lim
-        self.x_min = inputs.x_min
-        self.y_min = inputs.y_min
-        self.x_max = inputs.x_max
-        self.y_max = inputs.y_max
-        self.nx = self.x_max - self.x_min + 1
-        self.ny = self.y_max - self.y_min + 1
-
+        path_unit = 0.5
+        self.lim = inputs.lim * path_unit
+        self.x_min = inputs.x_min* path_unit
+        self.y_min = inputs.y_min* path_unit
+        self.x_max = inputs.x_max* path_unit
+        self.y_max = inputs.y_max* path_unit
 
 class Robot(object):
-    def __init__(self, map, xs, ys, xt, yt, heading, id, nodes_count):
-
+    def __init__(self, map, xs, ys, xt, yt, heading, id):
+        self.path_unit = 0.5
         self.id = id
-        self.xs = xs
-        self.ys = ys
-        self.xt = xt
-        self.yt = yt
+        self.xs = xs*self.path_unit
+        self.ys = ys*self.path_unit
+        self.xt = xt*self.path_unit
+        self.yt = yt*self.path_unit
         self.heading = np.deg2rad(heading)
-        self.start_node = (self.ys - map.y_min)*(map.nx) + \
-            self.xs+abs(map.x_min)
-        self.goal_node = (self.yt - map.y_min)*(map.nx) + \
-            self.xt+abs(map.x_min)
-
 
 class Obstacles(object):
     def __init__(self, map, inputs):
+        self.path_unit = 0.5
         self.r = 0.25
-        self.x = inputs.x_obst
-        self.y = inputs.y_obst
+        self.x = [x*self.path_unit  for x in inputs.x_obst]
+        self.y = [y*self.path_unit  for y in inputs.y_obst]
         self.count = len(self.x)
-        self.nodes = [(y-map.y_min)*map.nx + x + abs(map.x_min)
-                      for x, y in zip(self.x, self.y)]
-
-
-class Nodes(object):
-    def __init__(self, map):
-        self.count = map.nx*map.ny
-        self.x = [x for x in range(map.x_min, map.x_max+1)]*map.ny
-        self.y = [y for y in range(map.y_min, map.y_max+1)
-                  for x in range(map.nx)]
-
 
 class CreateModel(object):
     def __init__(self, map_id=4):
@@ -59,9 +42,6 @@ class CreateModel(object):
         # Obstacles
         self.obst = Obstacles(map, inputs)
 
-        # Nodes
-        self.nodes = Nodes(map)
-
         # Robot
         self.robot_count = inputs.robot_count
         heading = inputs.heading
@@ -73,7 +53,7 @@ class CreateModel(object):
 
         for i in range(self.robot_count):
             self.robots.append(
-                Robot(map, xs[i], ys[i], xt[i], yt[i], heading[i], i, self.nodes.count))
+                Robot(map, xs[i], ys[i], xt[i], yt[i], heading[i], i))
 
 
 if __name__ == '__main__':

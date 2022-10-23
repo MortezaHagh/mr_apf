@@ -1,4 +1,6 @@
-#goal 
+#goal
+float32 xt
+float32 yt
 --- 
 #result 
 bool result

@@ -1,7 +1,7 @@
 import numpy as np
 
 class Params(object):
-    def __init__(self, pose_srv_name, common_ac_name, id):
+    def __init__(self, pose_srv_name = "", common_ac_name="", id = 0):
         
         self.pose_srv_name = pose_srv_name
         self.action_name = common_ac_name
@@ -16,7 +16,7 @@ class Params(object):
 
     # parameters for simulation
     def sim_params(self):
-        self.action_name = "/motion_action"
+        self.action_name = "/apf_action"
         self.cmd_topic = '/cmd_vel'
         self.lis_topic = '/odom'
         self.linear_max_speed = 0.2
@@ -27,6 +27,7 @@ class Params(object):
         self.ang_tresh0 = 0.02
         self.ang_tresh1 = 0.2
         self.name_space = ''
+        self.path_unit = 0.5
 
         self.zeta = 1
         self.robot_r = 1.0               # robots effective radius
