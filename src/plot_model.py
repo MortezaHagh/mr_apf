@@ -3,14 +3,15 @@ import matplotlib.pyplot as plt
 
 
 def plot_model(model, settings):
-    # setting
+    
+    # settings
     robot_r = settings.robot_r
     danger_r = settings.danger_r
     obs_r = settings.obs_effect_r
 
     fig, ax = plt.subplots(1, 1)
     ax.set_title('MRPP')
-    #     ax.axis("off")
+    # ax.axis("off")
     ax.axis('equal')
     ax.grid('on')
     ax.axis([model.map.x_min-1, model.map.x_max+1,

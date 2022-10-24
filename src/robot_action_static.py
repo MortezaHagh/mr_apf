@@ -3,7 +3,7 @@
 import rospy
 import actionlib
 import numpy as np
-from apf.srv import MyPose, MyPoseRequest
+from apf.srv import SharePoses, SharePosesRequest
 from apf.msg import InitRobotAction, InitRobotResult, InitRobotFeedback
 
 
@@ -27,7 +27,7 @@ class InitRobotAcion(object):
         # data
         self.model = model
         self.ind = init_params.id
-        self.action_name = init_params.action_name
+        self.ac_name = init_params.ac_name
         
         # parameters vel
         self.v = 0
@@ -60,16 +60,15 @@ class InitRobotAcion(object):
 
         # pose service client
         rospy.wait_for_service(self.pose_srv_name)
-        self.pose_client = rospy.ServiceProxy(self.pose_srv_name, MyPose)
+        self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses)
 
         # action
-        self.ac_ = actionlib.SimpleActionServer(self.action_name, InitRobotAction, self.exec_cb)
+        self.ac_ = actionlib.SimpleActionServer(self.ac_name, InitRobotAction, self.exec_cb)
         self.ac_.start()
 
     # --------------------------  exec_cb  ---------------------------#
 
     def exec_cb(self, goal):
-
         # move
         self.go_to_goal()
 
@@ -149,7 +148,7 @@ class InitRobotAcion(object):
         return [f_r, f_theta, phi]
 
     def f_robots(self):
-        req = MyPoseRequest()
+        req = SharePosesRequest()
         req.ind = self.ind
         resp = self.pose_client(req.ind)
         self.robot_f = [0, 0]
@@ -217,7 +216,6 @@ class InitRobotAcion(object):
         return theta_mod
 
     def map(self):
-
         # robot target
         self.goal_x = self.model.robots[self.ind].xt
         self.goal_y = self.model.robots[self.ind].yt
@@ -228,4 +226,4 @@ class InitRobotAcion(object):
         self.obs_y = self.model.obst.y
 
     def shutdown_hook(self):
-        print("shutting down from robot action")
+        print("shutting down from " + self.ac_name)

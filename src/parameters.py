@@ -3,16 +3,16 @@ import numpy as np
 class Params(object):
     def __init__(self, pose_srv_name, common_ac_name, id):
         
-        self.pose_srv_name = pose_srv_name
-        self.action_name = common_ac_name
         self.id = id
+        self.ac_name = common_ac_name
+        self.pose_srv_name = pose_srv_name
         self.sim_params()
 
     def set_name_space(self, name_space):
         self.name_space = name_space
         self.cmd_topic = name_space+self.cmd_topic
         self.lis_topic = name_space+self.lis_topic
-        self.action_name = name_space+self.action_name
+        self.ac_name = name_space+self.ac_name
 
     # parameters for simulation
     def sim_params(self):

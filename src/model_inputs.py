@@ -2,6 +2,7 @@
 
 class ModelInputs():
     def __init__(self, map_id=4):
+        
         print("Inputs for creating model")
 
         if map_id == 1:
