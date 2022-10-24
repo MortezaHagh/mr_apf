@@ -15,9 +15,9 @@ class APF(object):
     def __init__(self):
 
         # preallocation
+        self.ac_name = []
         self.ac_clients = []
-        self.action_names = []
-        self.action_servers = []
+        self.ac_servers = []
 
         # ros
         self.rate = rospy.Rate(20)
@@ -33,8 +33,7 @@ class APF(object):
         common_ac_name = "/robot_action"
         for i in range(self.count):
             params.append(Params(pose_srv_name, common_ac_name, i))
-            # params[-1].set_name_space("/r"+str(i))
-            self.action_names.append(params[-1].action_name)
+            self.ac_name.append(params[-1].ac_name)
         self.params = params
 
         # robots poses
@@ -56,8 +55,8 @@ class APF(object):
         while (0 in status) and (not rospy.is_shutdown()):
             self.manage_poses()
             status = [c.get_state() > 1 for c in self.ac_clients]
-            print(status)
             self.rate.sleep()
+            print(status) # to better
 
         # results
         self.results = []
@@ -67,7 +66,7 @@ class APF(object):
         # plot
         self.plotting()
 
-        rospy.signal_shutdown("ended")
+        rospy.signal_shutdown("signal shutdown ...")
 
     # ----------------------- actions ----------------------------------#
 
@@ -75,11 +74,11 @@ class APF(object):
         # running action servers
         for i in range(self.count):
             ac_server = InitRobotAcion(self.params[i], self.model)
-            self.action_servers.append(ac_server)
+            self.ac_servers.append(ac_server)
 
         # calling action servers
         for i in range(self.count):
-            client = actionlib.SimpleActionClient(self.action_names[i], InitRobotAction)
+            client = actionlib.SimpleActionClient(self.ac_name[i], InitRobotAction)
             client.wait_for_server()
             goal = InitRobotGoal()
             client.send_goal(goal)
@@ -89,7 +88,7 @@ class APF(object):
 
     def manage_poses(self):
         robot_poses = []
-        for ac_server in self.action_servers:
+        for ac_server in self.ac_servers:
             pose = [ac_server.r_x, ac_server.r_y]
             robot_poses.append(pose)
         self.pose_srv.update_poses(robot_poses)
@@ -104,27 +103,38 @@ class APF(object):
         for i, res in enumerate(self.results):
             ax.plot(res.path_x, res.path_y, color=colors(i))
         
+        # forces
         fig1, ax1 = plt.subplots(1, 1)
-        ax1.plot(self.action_servers[0].force_r, label="force_r")
-        ax1.plot(self.action_servers[0].force_t, label="force_t")
+        ax1.plot(self.ac_servers[0].force_r, label="force_r")
+        ax1.plot(self.ac_servers[0].force_t, label="force_t")
         ax1.set_title("forces")
         ax1.legend()
 
+        # velocities
         fig2, ax2 = plt.subplots(1, 1)
-        ax2.plot(self.action_servers[0].v_lin, label="v_lin")
-        ax2.plot(self.action_servers[0].v_ang, label="v_ang")
+        ax2.plot(self.ac_servers[0].v_lin, label="v_lin")
+        ax2.plot(self.ac_servers[0].v_ang, label="v_ang")
         ax2.legend()
         
         plt.show()
 
     def shutdown_hook(self):
-        # fig1, ax1 = plt.subplots(1, 1)
-        # ax1.plot(self.action_servers[0].force_r, label="force_r")
-        # ax1.plot(self.action_servers[0].force_t, label="force_t")
-        # ax1.legend()
-        # plt.show()
-        print("-----------------------------------")
-        print(" --- shutting down from main ---")
+        # forces
+        fig1, ax1 = plt.subplots(1, 1)
+        ax1.plot(self.ac_servers[0].force_r, label="force_r")
+        ax1.plot(self.ac_servers[0].force_t, label="force_t")
+        ax1.set_title("forces")
+        ax1.legend()
+
+        # velocities
+        fig2, ax2 = plt.subplots(1, 1)
+        ax2.plot(self.ac_servers[0].v_lin, label="v_lin")
+        ax2.plot(self.ac_servers[0].v_ang, label="v_ang")
+        ax2.legend()
+        
+        plt.show()
+        print("----------------------------------------")
+        print(" --- shutting down from dynamic main ---")
 
 # ------------------------------------------------------------------- #
 

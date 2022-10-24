@@ -30,7 +30,7 @@ class InitRobotAcion(object):
         # data
         self.model = model
         self.ind = init_params.id
-        self.action_name = init_params.action_name
+        self.ac_name = init_params.ac_name
         
         # parameters vel
         self.v = 0
@@ -67,12 +67,8 @@ class InitRobotAcion(object):
         rospy.Subscriber(self.topic, self.topic_type, self.get_odom)
         rospy.wait_for_message(self.topic, self.topic_type, timeout=3.0)
 
-        # # pose service client
-        # rospy.wait_for_service(self.pose_srv_name)
-        # self.pose_client = rospy.ServiceProxy(self.pose_srv_name, MyPose)
-
         # action
-        self.ac_ = actionlib.SimpleActionServer(self.action_name, InitRobotAction, self.exec_cb)
+        self.ac_ = actionlib.SimpleActionServer(self.ac_name, InitRobotAction, self.exec_cb)
         self.ac_.start()
 
     # --------------------------  exec_cb  ---------------------------#
@@ -120,7 +116,6 @@ class InitRobotAcion(object):
             self.rate.sleep()
         
         self.stop()
-
 
     # -----------------------  cal_vel  ----------------------------#
 
@@ -218,14 +213,14 @@ class InitRobotAcion(object):
     # ------------------------- check_topic -- get_odom  ------------------------------#
     def check_topic(self):
         self.topic_msg = None
-        rospy.loginfo(self.action_name + " apf, checking topic ...")
+        rospy.loginfo(self.ac_name + " apf, checking topic ...")
         while self.topic_msg is None:
             try:
                 self.topic_msg = rospy.wait_for_message(
                     self.topic, self.topic_type, timeout=3.0)
-                rospy.logdebug(self.action_name + " apf, current topic is ready!")
+                rospy.logdebug(self.ac_name + " apf, current topic is ready!")
             except:
-                rospy.loginfo(self.action_name + " apf, current topic is not ready yet, retrying ...")
+                rospy.loginfo(self.ac_name + " apf, current topic is not ready yet, retrying ...")
         return self.topic_msg
     
     def get_odom(self, odom):
@@ -262,5 +257,5 @@ class InitRobotAcion(object):
             t += 1
     
     def shutdown_hook(self):
-        print("shutting down from robot action")
+        print("shutting down from " + self.ac_name)
         self.stop()
