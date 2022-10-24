@@ -10,13 +10,9 @@ class Map(object):
         self.y_min = inputs.y_min
         self.x_max = inputs.x_max
         self.y_max = inputs.y_max
-        self.nx = self.x_max - self.x_min + 1
-        self.ny = self.y_max - self.y_min + 1
-
 
 class Robot(object):
     def __init__(self, xs, ys, xt, yt, heading, id):
-
         self.id = id
         self.xs = xs
         self.ys = ys
@@ -30,12 +26,6 @@ class Obstacles(object):
         self.x = inputs.x_obst
         self.y = inputs.y_obst
         self.count = len(self.x)
-
-class Nodes(object):
-    def __init__(self, map):
-        self.count = map.nx*map.ny
-        self.x = [x for x in range(map.x_min, map.x_max+1)]*map.ny
-        self.y = [y for y in range(map.y_min, map.y_max+1) for x in range(map.nx)]
 
 # ---------------------------- CreateModel ----------------------------------
 class CreateModel(object):
@@ -52,9 +42,6 @@ class CreateModel(object):
 
         # Obstacles
         self.obst = Obstacles(map, inputs)
-
-        # Nodes
-        self.nodes = Nodes(map)
 
         # Robot
         self.robot_count = inputs.robot_count

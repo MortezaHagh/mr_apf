@@ -70,7 +70,6 @@ class ApfStatic(object):
     # ----------------------- actions ----------------------------------#
 
     def manage_actions(self):
-        
         # running action servers
         for i in range(self.count):
             ac_server = InitRobotAcion(self.params[i], self.model)

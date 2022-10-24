@@ -10,9 +10,9 @@ class Params(object):
 
     def set_name_space(self, name_space):
         self.name_space = name_space
+        self.ac_name = name_space+self.ac_name
         self.cmd_topic = name_space+self.cmd_topic
         self.lis_topic = name_space+self.lis_topic
-        self.ac_name = name_space+self.ac_name
 
     # parameters for simulation
     def sim_params(self):
