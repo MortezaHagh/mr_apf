@@ -165,7 +165,7 @@ class ModelInputs():
         # robots
         self.robot_count = 1
         self.heading = [0.0]
-        self.xs = [1]
-        self.ys = [3]
-        self.xt = [4]
-        self.yt = [4]
+        self.xs = [0]
+        self.ys = [0]
+        self.xt = [10]
+        self.yt = [10]

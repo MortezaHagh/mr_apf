@@ -119,18 +119,18 @@ class APF(object):
         plt.show()
 
     def shutdown_hook(self):
-        # forces
-        fig1, ax1 = plt.subplots(1, 1)
-        ax1.plot(self.ac_servers[0].force_r, label="force_r")
-        ax1.plot(self.ac_servers[0].force_t, label="force_t")
-        ax1.set_title("forces")
-        ax1.legend()
+        # # forces
+        # fig1, ax1 = plt.subplots(1, 1)
+        # ax1.plot(self.ac_servers[0].force_r, label="force_r")
+        # ax1.plot(self.ac_servers[0].force_t, label="force_t")
+        # ax1.set_title("forces")
+        # ax1.legend()
 
-        # velocities
-        fig2, ax2 = plt.subplots(1, 1)
-        ax2.plot(self.ac_servers[0].v_lin, label="v_lin")
-        ax2.plot(self.ac_servers[0].v_ang, label="v_ang")
-        ax2.legend()
+        # # velocities
+        # fig2, ax2 = plt.subplots(1, 1)
+        # ax2.plot(self.ac_servers[0].v_lin, label="v_lin")
+        # ax2.plot(self.ac_servers[0].v_ang, label="v_ang")
+        # ax2.legend()
         
         plt.show()
         print("----------------------------------------")

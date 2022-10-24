@@ -39,6 +39,9 @@ class CreateModel(object):
         # model inputs
         inputs = ModelInputs(map_id)
 
+        #
+        path_unit = 0.5
+
         # Map
         map = Map(inputs)
         self.map = map

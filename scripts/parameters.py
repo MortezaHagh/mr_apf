@@ -32,7 +32,7 @@ class Params(object):
         self.zeta = 1
         self.robot_r = 1.0               # robots effective radius
         self.danger_r = 0.25             # real obst radius
-        self.obs_effect_r = 1.0          # obstacles effective radius
+        self.obs_effect_r = 0.25 #1.0          # obstacles effective radius
         self.goal_distance = 1000
         self.pose_srv_name = "/pose_service"
 
