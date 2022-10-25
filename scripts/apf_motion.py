@@ -83,11 +83,12 @@ class ApfMotion(object):
         self.go_to_goal()
         self.is_reached = True
 
-        # result
-        self.res.result = True
-        self.res.path_x = self.path_x
-        self.res.path_y = self.path_y
-        self.ac_.set_succeeded(self.res)
+        # # result
+        # self.res.result = True
+        # self.res.path_x = self.path_x
+        # self.res.path_y = self.path_y
+        # self.ac_.set_succeeded(self.res)
+        
         return
 
     # --------------------------  go_to_goal  ---------------------------#
@@ -122,17 +123,16 @@ class ApfMotion(object):
         
         self.stop()
 
-
     # -----------------------  cal_vel  ----------------------------#
 
     def cal_vel(self, f_r, f_theta, theta):
 
-        if abs(theta)>self.theta_thresh:
-            v = 0 + self.v_min/10
-            w = self.w_max * np.sign(theta)
-        else:
-            v = self.v_max * (1- (abs(theta)/self.theta_thresh))**2 + self.v_min/10
-            w = theta * self.w_coeff * 0.5
+        # if abs(theta)>self.theta_thresh:
+        #     v = 0 + self.v_min/10
+        #     w = self.w_max * np.sign(theta)
+        # else:
+        v = self.v_max * max(0, (1- (abs(theta)/self.theta_thresh)))**2 + self.v_min/1
+        w = theta * self.w_coeff * 0.5
         v = min(v, self.v_max)
         v = max(v, 0)
         wa = min(abs(w), self.w_max)
@@ -187,7 +187,7 @@ class ApfMotion(object):
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2+dy**2)
         # f = self.zeta * goal_distance
-        f = 1.5
+        f = 1 # 1.5
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -211,8 +211,15 @@ class ApfMotion(object):
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
-                if abs(angle_diff)>np.pi/2:
-                    templ[1] +=  abs(templ[0]) * np.sign(templ[1] /2)
+                if abs(angle_diff)>(4*np.pi/6) and (templ[1]<templ[0]):
+                    templ[1] +=  abs(1*templ[0]/1) * np.sign(templ[1])
+                    templ[0] = 0
+                else:
+                    if abs(angle_diff)<np.pi/2:
+                        continue
+                    else:
+                        templ[0] = templ[0]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
+                        templ[1] = templ[1]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
                 self.obs_f[0] += round(templ[0], 2)
                 self.obs_f[1] += round(templ[1], 2)
 

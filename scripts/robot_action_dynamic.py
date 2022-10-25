@@ -83,6 +83,7 @@ class InitRobotAcion(object):
         self.res.path_x = self.path_x
         self.res.path_y = self.path_y
         self.ac_.set_succeeded(self.res)
+        
         return
 
     # --------------------------  go_to_goal  ---------------------------#
@@ -121,12 +122,12 @@ class InitRobotAcion(object):
 
     def cal_vel(self, f_r, f_theta, theta):
 
-        if abs(theta)>self.theta_thresh:
-            v = 0 + self.v_min/10
-            w = self.w_max * np.sign(theta)
-        else:
-            v = self.v_max * (1- (abs(theta)/self.theta_thresh))**2 + self.v_min/10
-            w = theta * self.w_coeff * 0.5
+        # if abs(theta)>self.theta_thresh:
+        #     v = 0 + self.v_min/1
+        #     w = self.w_max * np.sign(theta)
+        # else:
+        v = self.v_max * max(0, (1- (abs(theta)/self.theta_thresh)))**2 + self.v_min/1
+        w = theta * self.w_coeff * 0.5
         v = min(v, self.v_max)
         v = max(v, 0)
         wa = min(abs(w), self.w_max)
@@ -180,8 +181,8 @@ class InitRobotAcion(object):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2+dy**2)
-        # f = self.zeta * goal_distance * 10
-        f = 5 # 1.5
+        # f = self.zeta * goal_distance
+        f = 1 # 1.5
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -205,22 +206,29 @@ class InitRobotAcion(object):
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
-                if abs(angle_diff)>np.pi/2:
-                    templ[1] +=  abs(templ[0]) * np.sign(templ[1])
+                if abs(angle_diff)>(4*np.pi/6) and (templ[1]<templ[0]):
+                    templ[1] +=  abs(1*templ[0]/1) * np.sign(templ[1])
+                    templ[0] = 0
+                else:
+                    if abs(angle_diff)<np.pi/2:
+                        continue
+                    else:
+                        templ[0] = templ[0]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
+                        templ[1] = templ[1]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
                 self.obs_f[0] += round(templ[0], 2)
                 self.obs_f[1] += round(templ[1], 2)
 
     # ------------------------- check_topic -- get_odom  ------------------------------#
     def check_topic(self):
         self.topic_msg = None
-        rospy.loginfo(self.ac_name + " apf, checking topic ...")
+        rospy.loginfo(self.ac_name + " dynamic, checking topic ...")
         while self.topic_msg is None:
             try:
                 self.topic_msg = rospy.wait_for_message(
                     self.topic, self.topic_type, timeout=3.0)
-                rospy.logdebug(self.ac_name + " apf, current topic is ready!")
+                rospy.logdebug(self.ac_name + " dynamic, current topic is ready!")
             except:
-                rospy.loginfo(self.ac_name + " apf, current topic is not ready yet, retrying ...")
+                rospy.loginfo(self.ac_name + " dynamic, current topic is not ready yet, retrying ...")
         return self.topic_msg
     
     def get_odom(self, odom):
@@ -257,5 +265,5 @@ class InitRobotAcion(object):
             t += 1
     
     def shutdown_hook(self):
-        print("shutting down from " + self.ac_name)
+        print("shutting down from dynamic " + self.ac_name)
         self.stop()

@@ -5,7 +5,7 @@
   <arg name="z_pos" default="0.0"/>
 
   <include file="$(find init_sim)/launch/empty_world_complete.launch">
-    <arg name="world_name" value="$(find init_sim)/worlds/empty.world"/>
+    <arg name="world_name" value="$(find init_sim)/worlds/walls2.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
