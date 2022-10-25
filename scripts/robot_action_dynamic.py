@@ -7,7 +7,7 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from apf.srv import MyPose, MyPoseRequest
 from tf.transformations import euler_from_quaternion
-from apf.msg import InitRobotAction, InitRobotResult, InitRobotFeedback
+from apf.msg import ApfAction, ApfResult, ApfFeedback
 
 
 class InitRobotAcion(object):
@@ -24,8 +24,8 @@ class InitRobotAcion(object):
         self.path_y = []
         self.force_r = []
         self.force_t = []
-        self.res = InitRobotResult()
-        self.feedback = InitRobotFeedback()
+        self.res = ApfResult()
+        self.feedback = ApfFeedback()
 
         # data
         self.model = model
@@ -68,7 +68,7 @@ class InitRobotAcion(object):
         rospy.wait_for_message(self.topic, self.topic_type, timeout=3.0)
 
         # action
-        self.ac_ = actionlib.SimpleActionServer(self.ac_name, InitRobotAction, self.exec_cb)
+        self.ac_ = actionlib.SimpleActionServer(self.ac_name, ApfAction, self.exec_cb)
         self.ac_.start()
 
     # --------------------------  exec_cb  ---------------------------#

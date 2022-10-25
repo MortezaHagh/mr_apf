@@ -1,11 +1,9 @@
 import numpy as np
 
 class Params(object):
-    def __init__(self, pose_srv_name = "", common_ac_name="", id = 0):
+    def __init__(self, id = 0):
         
         self.id = id
-        self.ac_name = common_ac_name
-        self.pose_srv_name = pose_srv_name
         self.sim_params()
 
     def set_name_space(self, name_space):
@@ -16,7 +14,6 @@ class Params(object):
 
     # parameters for simulation
     def sim_params(self):
-        self.ac_name = "/apf_action"
         self.cmd_topic = '/cmd_vel'
         self.lis_topic = '/odom'
         self.linear_max_speed = 0.2
@@ -34,6 +31,7 @@ class Params(object):
         self.danger_r = 0.25             # real obst radius
         self.obs_effect_r = 0.5 #1.0          # obstacles effective radius
         self.goal_distance = 1000
+        self.ac_name = "/apf_action"
         self.pose_srv_name = "/pose_service"
 
         self.f_r_min = 0

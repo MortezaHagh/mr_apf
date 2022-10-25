@@ -22,11 +22,11 @@
   <node pkg="init_sim" type="spawn_map_apf.py" name="spawn_map" output="screen" args="=-from_database $(arg from_database) -warehouse $(arg warehouse) -path_unit $(arg path_unit) -method $(arg method) -stype $(arg stype)">
   </node>
 
-  <!-- <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 odom r1/odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 odom r2/odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0 0 0 0 0 0 1 odom r3/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link4_broadcaster" args="0 0 0 0 0 0 1 odom r4/odom 100" /> -->
+  <node pkg="tf" type="static_transform_publisher" name="link4_broadcaster" args="0 0 0 0 0 0 1 odom r4/odom 100" />
 
   <!-- Load RVIZ -->
   <!-- <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d /home/piotr/mori_ws/src/mr_guide/rviz/config1.rviz" /> -->

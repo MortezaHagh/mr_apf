@@ -8,7 +8,7 @@ from parameters import Params
 from apf_motion import ApfMotion
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
-from apf.msg import InitRobotAction, InitRobotResult, InitRobotFeedback
+from apf.msg import ApfAction, ApfResult, ApfFeedback
 
 
 class InitRobotAcion(object):
@@ -26,25 +26,23 @@ class InitRobotAcion(object):
         self.model = model
 
         # setting - parameters
-        pose_srv_name = "/pose_service"
-        common_ac_name = "/robot_action"
         self.name_s = '/r' + str(robot.id)
-        action_params = Params(pose_srv_name, common_ac_name, robot.id)
+        action_params = Params(robot.id)
         action_params.set_name_space(self.name_s)
         self.action_params = action_params
 
         # shutdown hook
         rospy.on_shutdown(self.shutdown)
 
-        # action: /r#/motion_action ---------------------------------------
-        self._result = InitRobotResult()
-        self._feedback = InitRobotFeedback()
+        # action: /r#/apf_action ---------------------------------------
+        self._result = ApfResult()
+        self._feedback = ApfFeedback()
         self.action_name = action_params.action_name
-        self._as = actionlib.SimpleActionServer(self.action_name, InitRobotAction, self.goal_callback, False)
+        self._as = actionlib.SimpleActionServer(self.action_name, ApfAction, self.goal_callback, False)
         self._as.start()
         print(self.name_s + ": Robot Action Server (" + self.action_name + ") has started.")
 
-    # ---------------------   Main call back   --------------------- #
+    # ---------------------   goal_callback   --------------------- #
 
     def goal_callback(self, goal):
 

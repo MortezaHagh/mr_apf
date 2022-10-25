@@ -7,8 +7,8 @@ from matplotlib.pylab import plt
 from plot_model import plot_model
 from create_model import CreateModel
 from pose_service import PoseService
+from apf.msg import ApfAction, ApfGoal
 from robot_action_dynamic import InitRobotAcion
-from apf.msg import InitRobotAction, InitRobotGoal
 
 
 class APF(object):
@@ -29,10 +29,8 @@ class APF(object):
 
         # setting - parameters
         params = []
-        pose_srv_name = "/pose_service"
-        common_ac_name = "/robot_action"
         for i in range(self.count):
-            params.append(Params(pose_srv_name, common_ac_name, i))
+            params.append(Params(i))
             self.ac_name.append(params[-1].ac_name)
         self.params = params
 
@@ -44,8 +42,7 @@ class APF(object):
 
         # pose service
         count = self.model.robot_count
-        self.pose_srv_name = pose_srv_name
-        self.pose_srv = PoseService(robot_poses, count, self.pose_srv_name)
+        self.pose_srv = PoseService(robot_poses, count, params[-1].pose_srv_name)
 
         # actions
         self.manage_actions()
@@ -78,9 +75,9 @@ class APF(object):
 
         # calling action servers
         for i in range(self.count):
-            client = actionlib.SimpleActionClient(self.ac_name[i], InitRobotAction)
+            client = actionlib.SimpleActionClient(self.ac_name[i], ApfAction)
             client.wait_for_server()
-            goal = InitRobotGoal()
+            goal = ApfGoal()
             client.send_goal(goal)
             self.ac_clients.append(client)
 

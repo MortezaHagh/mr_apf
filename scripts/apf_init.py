@@ -131,6 +131,8 @@ def shutdown_hook():
     print("-----------------------------------")
     print(" --- shutting down from main ---")
 
+# --------------------------------- __main__ ----------------------------
+ 
 if __name__ == "__main__":
     
     # ros
@@ -148,7 +150,8 @@ if __name__ == "__main__":
     # # init_robot service server
     # """" init_apf_srv """""
     print("Initializing Central Service Server (init_apf_srv) for adding robots ... ")
-    rsrv = InitRobotService(model, ax)
+    init_srv_name = "init_apf_srv"
+    rsrv = InitRobotService(model, init_srv_name, ax)
 
 
     while not rospy.is_shutdown():
