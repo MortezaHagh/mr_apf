@@ -4,7 +4,7 @@ import rospy
 import actionlib
 import numpy as np
 from apf.srv import SharePoses, SharePosesRequest
-from apf.msg import InitRobotAction, InitRobotResult, InitRobotFeedback
+from apf.msg import ApfAction, ApfResult, ApfFeedback
 
 
 class InitRobotAcion(object):
@@ -21,8 +21,8 @@ class InitRobotAcion(object):
         self.path_y = []
         self.force_r = []
         self.force_t = []
-        self.res = InitRobotResult()
-        self.feedback = InitRobotFeedback()
+        self.res = ApfResult()
+        self.feedback = ApfFeedback()
 
         # data
         self.model = model
@@ -63,7 +63,7 @@ class InitRobotAcion(object):
         self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses)
 
         # action
-        self.ac_ = actionlib.SimpleActionServer(self.ac_name, InitRobotAction, self.exec_cb)
+        self.ac_ = actionlib.SimpleActionServer(self.ac_name, ApfAction, self.exec_cb)
         self.ac_.start()
 
     # --------------------------  exec_cb  ---------------------------#

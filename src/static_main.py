@@ -7,8 +7,8 @@ from matplotlib.pylab import plt
 from plot_model import plot_model
 from create_model import CreateModel
 from pose_service import PoseService
+from apf.msg import ApfAction, ApfGoal
 from robot_action_static import InitRobotAcion
-from apf.msg import InitRobotAction, InitRobotGoal
 
 
 class ApfStatic(object):
@@ -32,7 +32,7 @@ class ApfStatic(object):
         pose_srv_name = "/pose_service"
         common_ac_name = "/robot_action"
         for i in range(self.count):
-            params.append(Params(pose_srv_name, common_ac_name, i))
+            params.append(Params(i))
             params[-1].set_name_space("/r"+str(i))
             self.ac_names.append(params[-1].ac_name)
         self.params = params
@@ -77,9 +77,9 @@ class ApfStatic(object):
 
         # calling action servers
         for i in range(self.count):
-            client = actionlib.SimpleActionClient(self.ac_names[i], InitRobotAction)
+            client = actionlib.SimpleActionClient(self.ac_names[i], ApfAction)
             client.wait_for_server()
-            goal = InitRobotGoal()
+            goal = ApfGoal()
             client.send_goal(goal)
             self.ac_clients.append(client)
 
