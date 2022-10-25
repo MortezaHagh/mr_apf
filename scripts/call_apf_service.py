@@ -3,7 +3,7 @@
 import rospy
 from apf.srv import InitRobot, InitRobotRequest
 # ros
-rospy.init_node("main_node")
+rospy.init_node("call_apf_service")
 rate = rospy.Rate(20)
 
 # call services

@@ -5,9 +5,8 @@ import actionlib
 import numpy as np
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-from apf.srv import MyPose, MyPoseRequest
+from apf.srv import SharePoses, SharePosesRequest
 from tf.transformations import euler_from_quaternion
-from apf.msg import InitRobotAction, InitRobotResult, InitRobotFeedback
 
 
 class ApfMotion(object):
@@ -24,15 +23,12 @@ class ApfMotion(object):
         self.path_y = []
         self.force_r = []
         self.force_t = []
-        self.res = InitRobotResult()
-        self.feedback = InitRobotFeedback()
 
         # data
         self.model = model
         self.robot = robot
         self.ind = init_params.id
         self.ns = init_params.name_space
-        self.action_name = init_params.action_name
         
         # parameters vel
         self.v = 0
@@ -68,9 +64,9 @@ class ApfMotion(object):
         self.check_topic()
         rospy.Subscriber(self.topic, self.topic_type, self.get_odom)
 
-        # # pose service client
-        # rospy.wait_for_service(self.pose_srv_name)
-        # self.pose_client = rospy.ServiceProxy(self.pose_srv_name, MyPose)
+        # pose service client
+        rospy.wait_for_service(self.pose_srv_name)
+        self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses)
 
         # execute goal
         self.exec_cb()
@@ -82,12 +78,6 @@ class ApfMotion(object):
         # move
         self.go_to_goal()
         self.is_reached = True
-
-        # # result
-        # self.res.result = True
-        # self.res.path_x = self.path_x
-        # self.res.path_y = self.path_y
-        # self.ac_.set_succeeded(self.res)
         
         return
 
@@ -131,7 +121,7 @@ class ApfMotion(object):
         #     v = 0 + self.v_min/10
         #     w = self.w_max * np.sign(theta)
         # else:
-        v = self.v_max * max(0, (1- (abs(theta)/self.theta_thresh)))**2 + self.v_min/1
+        v = self.v_max * max(0, (1- (abs(theta)/self.theta_thresh)))**2 + self.v_min/2
         w = theta * self.w_coeff * 0.5
         v = min(v, self.v_max)
         v = max(v, 0)
@@ -151,16 +141,16 @@ class ApfMotion(object):
         f_r += self.obs_f[0]
         f_theta += self.obs_f[1]
 
-        # self.f_robots()
-        # f_r += self.robot_f[0]
-        # f_theta += self.robot_f[1]
+        self.f_robots()
+        f_r += self.robot_f[0]
+        f_theta += self.robot_f[1]
 
         phi = np.arctan2(f_theta, f_r)
         phi = round(phi, 4)
         return [f_r, f_theta, phi]
 
     def f_robots(self):
-        req = MyPoseRequest()
+        req = SharePosesRequest()
         req.ind = self.ind
         resp = self.pose_client(req.ind)
         self.robot_f = [0, 0]

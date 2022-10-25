@@ -4,7 +4,6 @@
 
 import rospy
 import actionlib
-from parameters import Params
 from apf_motion import ApfMotion
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
@@ -13,40 +12,37 @@ from apf.msg import ApfAction, ApfResult, ApfFeedback
 
 class InitRobotAcion(object):
 
-    def __init__(self, model, robot, ax):
+    def __init__(self, model, robot, action_params):
 
         # pre
         self.mp = 0
 
         # attributes
-        self.ax = ax
         self.robot = robot
 
         # shared data
         self.model = model
 
         # setting - parameters
-        self.name_s = '/r' + str(robot.id)
-        action_params = Params(robot.id)
-        action_params.set_name_space(self.name_s)
         self.action_params = action_params
+        self.name_s = action_params.name_space
 
         # shutdown hook
         rospy.on_shutdown(self.shutdown)
 
         # action: /r#/apf_action ---------------------------------------
-        self._result = ApfResult()
-        self._feedback = ApfFeedback()
-        self.action_name = action_params.action_name
-        self._as = actionlib.SimpleActionServer(self.action_name, ApfAction, self.goal_callback, False)
+        self.result = ApfResult()
+        self.feedback = ApfFeedback()
+        self.ac_name = action_params.ac_name
+        self._as = actionlib.SimpleActionServer(self.ac_name, ApfAction, self.goal_callback, False)
         self._as.start()
-        print(self.name_s + ": Robot Action Server (" + self.action_name + ") has started.")
+        print(self.name_s + ": Robot Action Server (" + self.ac_name + ") has started.")
 
     # ---------------------   goal_callback   --------------------- #
 
     def goal_callback(self, goal):
 
-        print(self.name_s + ": Robot Action Server (" + self.action_name + ") is called.")
+        print(self.name_s + ": Robot Action Server (" + self.ac_name + ") is called.")
 
         # goal received
         self.robot.xt = goal.xt * self.action_params.path_unit
@@ -61,26 +57,26 @@ class InitRobotAcion(object):
 
         # result
         if success:
-            self._result.goal_node = self.robot.goal_node
-            self._result.start_node = self.robot.start_node
-            rospy.loginfo('%s: Succeeded' % self.action_name)
-            self._as.set_succeeded(self._result)
+            self.result.result = True
+            self.result.path_x = self.mp.path_x
+            self.result.path_y = self.mp.path_y
+            rospy.loginfo('%s: Succeeded' % self.ac_name)
+            self._as.set_succeeded(self.result)
         else:
-            rospy.loginfo('%s: Failed' % self.action_name)
-            self._as.set_aborted(self._result)
+            rospy.loginfo('%s: Failed' % self.ac_name)
+            self._as.set_aborted(self.result)
 
     # ---------------------------- get_odom- shutdown -------------------------------- #
 
     def get_odom(self):
         topic_msg = None
-        rospy.loginfo(self.action_name + ", getting topic ...")
+        rospy.loginfo(self.ac_name + ", getting topic ...")
         while topic_msg is None:
             try:
-                topic_msg = rospy.wait_for_message(
-                    self.action_params.lis_topic, Odometry, timeout=3.0)
-                rospy.logdebug(self.action_name + ", current topic is ready.")
+                topic_msg = rospy.wait_for_message(self.action_params.lis_topic, Odometry, timeout=3.0)
+                rospy.logdebug(self.ac_name + ", current topic is ready.")
             except:
-                rospy.loginfo(self.action_name + ", current topic is not ready yet, retrying ...")
+                rospy.loginfo(self.ac_name + ", current topic is not ready yet, retrying ...")
         odom = topic_msg
         quaternion = odom.pose.pose.orientation
         orientation = euler_from_quaternion([quaternion.x, quaternion.y, quaternion.z, quaternion.w])
@@ -92,6 +88,6 @@ class InitRobotAcion(object):
 
 
     def shutdown(self):
-        self.ax.plot(self.mp.path_x, self.mp.path_y)
-        print(self.action_name + ', shutting down')
+        # self.ax.plot(self.mp.path_x, self.mp.path_y)
+        print(self.ac_name + ', shutting down')
         rospy.sleep(1)

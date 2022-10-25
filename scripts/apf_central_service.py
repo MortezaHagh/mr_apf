@@ -4,9 +4,10 @@
 
 import rospy
 import numpy as np
+from parameters import Params
+from pose_service import PoseService 
 from robot_action_server import InitRobotAcion
 from apf.srv import InitRobot, InitRobotResponse
-
 
 class Robot(object):
     def __init__(self, xs=0, ys=0, id=0, name="r", heading=0, xt=0, yt=0):
@@ -21,10 +22,9 @@ class Robot(object):
     # -------------------------------- InitRobotService -------------------------- #
 
 class InitRobotService(object):
-    def __init__(self, model, init_srv_name, ax):
+    def __init__(self, model, init_srv_name):
 
         # data
-        self.ax = ax
         self.model = model
 
         # all robots
@@ -32,6 +32,10 @@ class InitRobotService(object):
         self.robots_id = []
         self.robot_count = 0
         self.ac_services = []
+
+        # pose service
+        posr_srv_name = "/pose_service"
+        self.pose_srv = PoseService(posr_srv_name)
 
         # init_robot_srv Service Server
         init_apf__srv_name = init_srv_name
@@ -63,9 +67,19 @@ class InitRobotService(object):
         self.robots_id.append(id)
         self.robots.append(robot)
 
+        # setting - parameters
+        self.name_s = '/r' + str(id)
+        action_params = Params(id)
+        action_params.set_name_space(self.name_s)
+
+        # update pose service
+        self.pose_srv.count += 1
+        self.pose_srv.ids.append(id)
+        self.pose_srv.topics.append(action_params.lis_topic)
+
         # motion_action action **********************************
         print(ns + ": Creating Initial Robot Action: " + ns + "/motion_action ...")
-        ac = InitRobotAcion(self.model, robot, self.ax)
+        ac = InitRobotAcion(self.model, robot, action_params)
         self.ac_services.append(ac)
 
         # service responce

@@ -27,9 +27,9 @@ class Params(object):
         self.path_unit = 0.5
 
         self.zeta = 1
-        self.robot_r = 1.0               # robots effective radius
+        self.robot_r = 0.6               # robots effective radius
         self.danger_r = 0.25             # real obst radius
-        self.obs_effect_r = 0.5 #1.0          # obstacles effective radius
+        self.obs_effect_r = 0.55 #1.0          # obstacles effective radius
         self.goal_distance = 1000
         self.ac_name = "/apf_action"
         self.pose_srv_name = "/pose_service"
