@@ -180,8 +180,8 @@ class InitRobotAcion(object):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2+dy**2)
-        # f = self.zeta * goal_distance
-        f = 1.5
+        # f = self.zeta * goal_distance * 10
+        f = 5 # 1.5
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -206,7 +206,7 @@ class InitRobotAcion(object):
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
                 if abs(angle_diff)>np.pi/2:
-                    templ[1] +=  abs(templ[0]) * np.sign(templ[1] /2)
+                    templ[1] +=  abs(templ[0]) * np.sign(templ[1])
                 self.obs_f[0] += round(templ[0], 2)
                 self.obs_f[1] += round(templ[1], 2)
 

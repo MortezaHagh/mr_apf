@@ -32,14 +32,14 @@ class Params(object):
         self.zeta = 1
         self.robot_r = 1.0               # robots effective radius
         self.danger_r = 0.25             # real obst radius
-        self.obs_effect_r = 0.25 #1.0          # obstacles effective radius
+        self.obs_effect_r = 0.5 #1.0          # obstacles effective radius
         self.goal_distance = 1000
         self.pose_srv_name = "/pose_service"
 
         self.f_r_min = 0
         self.f_r_max = 5
         self.w_coeff = 1
-        self.dis_tresh = 0.2
+        self.dis_tresh = 0.05 #0.2
         self.f_theta_min = 1
         self.f_theta_max = 5
         self.theta_thresh = np.pi/2
