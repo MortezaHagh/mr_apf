@@ -29,8 +29,6 @@ class ApfStatic(object):
 
         # setting - parameters
         params = []
-        pose_srv_name = "/pose_service"
-        common_ac_name = "/robot_action"
         for i in range(self.count):
             params.append(Params(i))
             params[-1].set_name_space("/r"+str(i))
@@ -44,7 +42,7 @@ class ApfStatic(object):
             robot_poses.append(pose)
 
         # pose service
-        self.pose_srv = PoseService(robot_poses, self.count, pose_srv_name)
+        self.pose_srv = PoseService(robot_poses, self.count, params[-1].pose_srv_name)
 
         # actions
         self.manage_actions()
