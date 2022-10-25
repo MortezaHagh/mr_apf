@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 
+import json
 import rospy
 from parameters import Params
 from matplotlib.pylab import plt
 from plot_model import plot_model
 from create_model import CreateModel
 from apf_central_service import InitRobotService
-
 
 class Run():
     def __init__(self):
@@ -17,7 +17,7 @@ class Run():
         # model
         self.model = CreateModel(map_id=4)
         self.count = self.model.robot_count
-        self.paths = []
+        self.paths = {}
 
         # # init_robot service server
         print("Initializing Central Service Server (init_apf_srv) for adding robots ... ")
@@ -35,14 +35,21 @@ class Run():
         fig, ax = plot_model(self.model, params)
 
         # paths
-        for p in self.paths:
-            ax.plot(p[0], p[1])
+        for k, v in self.paths.items():
+            ax.plot(v[0], v[1])
+
+
+    def data(self):
+        with open("/home/piotr/mori_ws/paths.json", "w") as outfile:
+            json.dump(self.paths, outfile)
 
 
     def shutdown_hook(self):
-        # plotting
-        for ac in self.rsrv.ac_services:
-            self.paths.append([ac.result.path_x, ac.result.path_y])
+        # paths
+        for i, ac in enumerate(self.rsrv.ac_services):
+            self.paths[i] = [ac.result.path_x, ac.result.path_y]
+
+        self.data()
         self.plotting()
         plt.show()
         

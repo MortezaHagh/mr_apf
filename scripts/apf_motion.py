@@ -102,8 +102,8 @@ class ApfMotion(object):
             self.cmd_vel.publish(move_cmd)
             
             # result
-            self.path_x.append(self.r_x)
-            self.path_y.append(self.r_y)
+            self.path_x.append(round(self.r_x, 2))
+            self.path_y.append(round(self.r_y, 2))
 
             # # feedback
             # self.feedback.path = [self.r_x, self.r_y]
@@ -155,10 +155,8 @@ class ApfMotion(object):
         resp = self.pose_client(req.ind)
         self.robot_f = [0, 0]
         for i in range(resp.count):
-            dx = resp.x[i]-self.r_x
-            dy = resp.y[i]-self.r_y
-            dy = -dy
-            dx = -dx
+            dx = -(resp.x[i]-self.r_x)
+            dy = -(resp.y[i]-self.r_y)
             d_ro = np.sqrt(dx**2+dy**2)
             if d_ro >= self.robot_r:
                 f = 0
