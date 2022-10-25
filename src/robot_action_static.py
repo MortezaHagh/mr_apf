@@ -200,7 +200,7 @@ class InitRobotAcion(object):
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
                 if abs(angle_diff)>np.pi/2:
-                    templ[1] +=  abs(templ[0]) * np.sign(templ[1] /2)
+                    templ[1] +=  abs(templ[0]) * np.sign(templ[1])
                 self.obs_f[0] += round(templ[0], 2)
                 self.obs_f[1] += round(templ[1], 2)
 
