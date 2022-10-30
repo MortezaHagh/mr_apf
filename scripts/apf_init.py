@@ -35,8 +35,9 @@ class Run():
         fig, ax = plot_model(self.model, params)
 
         # paths
+        colors = plt.cm.get_cmap('rainbow', self.model.robot_count)
         for k, v in self.paths.items():
-            ax.plot(v[0], v[1])
+            ax.plot(v[0], v[1], color=colors(k))
 
 
     def data(self):

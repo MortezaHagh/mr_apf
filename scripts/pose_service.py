@@ -2,7 +2,7 @@
 
 import rospy
 from nav_msgs.msg import Odometry
-from apf.srv import SharePoses, SharePosesResponse
+from apf.srv import SharePoses2, SharePoses2Response
 # from tf.transformations import euler_from_quaternion
 
 class PoseService(object):
@@ -15,22 +15,24 @@ class PoseService(object):
         rospy.on_shutdown(self.shutdown_hook)
 
         # data
-        self.ids = []
-        self.xt = []
-        self.yt = []
         self.count = 0
-        self.topics = []
-        self.priorities = []
+        self.ids = []
+        self.xt = {}
+        self.yt = {}
+        self.topics = {}
+        self.priorities = {}
 
         # service
-        self.srv = rospy.Service(pose_srv_name, SharePoses, self.pose_cb)
+        self.srv = rospy.Service(pose_srv_name, SharePoses2, self.pose_cb)
 
     def pose_cb(self, req):
         req_i = req.ind
-        resp = SharePosesResponse()
+        resp = SharePoses2Response()
         
-        inds = [i for i, id in enumerate(self.ids) if id!=req_i]
-        for i in inds:
+        # inds = [i for i, id in enumerate(self.ids) if id!=req_i]
+        for i in self.ids:
+            if i==req_i:
+                continue
             x,y = self.get_odom(self.topics[i])
             resp.x.append(x)
             resp.y.append(y)

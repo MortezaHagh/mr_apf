@@ -75,11 +75,11 @@ class InitRobotService(object):
 
         # update pose service
         self.pose_srv.count += 1
-        self.pose_srv.xt.append(0)
-        self.pose_srv.yt.append(0)
+        self.pose_srv.xt[id] = 0
+        self.pose_srv.yt[id] = 0
         self.pose_srv.ids.append(id)
-        self.pose_srv.priorities.append(robot.priority)
-        self.pose_srv.topics.append(action_params.lis_topic)
+        self.pose_srv.priorities[id] = robot.priority
+        self.pose_srv.topics[id] = action_params.lis_topic
 
         # motion_action action **********************************
         print(ns + ": Creating Initial Robot Action: " + ns + "/motion_action ...")

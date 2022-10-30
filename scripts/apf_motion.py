@@ -5,7 +5,7 @@ import actionlib
 import numpy as np
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-from apf.srv import SharePoses, SharePosesRequest
+from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 
 
@@ -68,7 +68,7 @@ class ApfMotion(object):
 
         # pose service client
         rospy.wait_for_service(self.pose_srv_name)
-        self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses)
+        self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses2)
 
         # execute goal
         self.exec_cb()
@@ -91,14 +91,17 @@ class ApfMotion(object):
             [f_r, f_theta, phi, stop_flag] = self.forces()
             self.force_r.append(f_r)
             self.force_t.append(f_theta)
-            if stop_flag:
-                self.stop()
-                continue
 
             # calculate velocities
             self.cal_vel(f_r, f_theta, phi)
             self.v_lin.append(self.v)
             self.v_ang.append(self.w)
+
+            if stop_flag:
+                self.v = self.v/2
+                self.w = self.w/2
+                # self.stop()
+                # continue
 
             # publish cmd
             move_cmd = Twist()
@@ -149,16 +152,14 @@ class ApfMotion(object):
         self.f_robots()
         f_r += self.robot_f[0]
         f_theta += self.robot_f[1]
-        if self.stop_flag:
-            return [0,0,0, True]
 
         phi = np.arctan2(f_theta, f_r)
         phi = round(phi, 4)
-        return [f_r, f_theta, phi, False]
+        return [f_r, f_theta, phi, self.stop_flag]
 
     def f_robots(self):
         self.stop_flag = False
-        req = SharePosesRequest()
+        req = SharePoses2Request()
         req.ind = self.ind
         resp = self.pose_client(req)
         self.robot_f = [0, 0]
@@ -172,12 +173,21 @@ class ApfMotion(object):
             else:
                 if self.prioriy<resp.priority[i]:
                     self.stop_flag = True
-                    return
+                    # return
                 f = ((self.zeta*1)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**2
                 theta = np.arctan2(dy, dx)
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
+                if abs(angle_diff)>(4*np.pi/6) and (templ[1]<templ[0]):
+                    templ[1] +=  abs(1*templ[0]/1) * np.sign(templ[1])
+                    templ[0] = 0
+                else:
+                    if abs(angle_diff)<np.pi/2:
+                        continue
+                    else:
+                        templ[0] = templ[0]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
+                        templ[1] = templ[1]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
                 self.robot_f[0] += round(templ[0], 3)
                 self.robot_f[1] += round(templ[1], 3)
 

@@ -29,6 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
+  SharePoses2.srv
   SharePoses.srv
   InitRobot.srv
 )
