@@ -16,6 +16,8 @@ class PoseService(object):
 
         # data
         self.ids = []
+        self.xt = []
+        self.yt = []
         self.count = 0
         self.topics = []
         self.priorities = []
