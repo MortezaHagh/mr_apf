@@ -161,6 +161,7 @@ class ApfMotion(object):
         self.stop_flag = False
         req = SharePoses2Request()
         req.ind = self.ind
+        req.update = False
         resp = self.pose_client(req)
         self.robot_f = [0, 0]
         for i in range(resp.count):

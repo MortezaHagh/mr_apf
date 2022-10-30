@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from cmath import sqrt
 import rospy
 from nav_msgs.msg import Odometry
 from apf.srv import SharePoses2, SharePoses2Response
@@ -28,18 +29,42 @@ class PoseService(object):
     def pose_cb(self, req):
         req_i = req.ind
         resp = SharePoses2Response()
-        
-        # inds = [i for i, id in enumerate(self.ids) if id!=req_i]
+
+        if req.update:
+            self.update_goal(req)
+            return resp
+
+        xy = {}
         for i in self.ids:
+            x,y = self.get_odom(self.topics[i])
+            xy[i] = [x, y]
+
             if i==req_i:
                 continue
-            x,y = self.get_odom(self.topics[i])
             resp.x.append(x)
             resp.y.append(y)
-            resp.priority.append(self.priorities[i])
-      
+        
+        priorities = self.cal_priorities(xy, req_i)
+        resp.priority = priorities
         resp.count = self.count-1
         return resp
+    
+    def cal_priorities(self, xy, req_i):
+        distances = {}
+        for i in self.ids:
+            distances[i] = ((self.xt[i]-xy[i][0])**2 + (self.yt[i]-xy[i][1])**2)
+        
+        distances = dict(sorted(distances.items(), key=lambda item: -item[1]))
+        del distances[req_i]
+        
+        priorities = list(distances.keys())
+        return priorities
+
+    
+
+    def update_goal(self, req):
+        self.xt[req.ind] = req.xt
+        self.yt[req.ind] = req.yt
 
 
     def get_odom(self, topic):
@@ -53,10 +78,6 @@ class PoseService(object):
         position = odom.pose.pose.position
         x = position.x
         y = position.y
-        # quaternion = odom.pose.pose.orientation
-        # orientation = euler_from_quaternion([quaternion.x, quaternion.y, quaternion.z, quaternion.w])
-        # orientation = orientation[2]
-        # heading = round(orientation, 2)
         return x, y
 
 

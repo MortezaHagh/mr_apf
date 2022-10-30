@@ -6,6 +6,7 @@ import rospy
 import actionlib
 from apf_motion import ApfMotion
 from nav_msgs.msg import Odometry
+from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 from apf.msg import ApfAction, ApfResult, ApfFeedback
 
@@ -30,6 +31,10 @@ class InitRobotAcion(object):
         # shutdown hook
         rospy.on_shutdown(self.shutdown)
 
+        # pose service client
+        rospy.wait_for_service(action_params.pose_srv_name)
+        self.pose_client = rospy.ServiceProxy(action_params.pose_srv_name, SharePoses2)
+
         # action: /r#/apf_action ---------------------------------------
         self.result = ApfResult()
         self.feedback = ApfFeedback()
@@ -50,6 +55,14 @@ class InitRobotAcion(object):
 
         # get robots initial odom - start state
         self.get_odom()
+
+        # update target coordinates in pose service
+        req = SharePoses2Request()
+        req.ind = self.robot.id
+        req.xt = self.robot.xt
+        req.yt = self.robot.yt
+        req.update = True
+        self.pose_client(req)
 
         # motion planning   # --------------------------------------------------------------
         self.mp = ApfMotion(self.model, self.robot, self.action_params)
