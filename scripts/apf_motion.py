@@ -98,8 +98,8 @@ class ApfMotion(object):
             self.v_ang.append(self.w)
 
             if stop_flag:
-                self.v = self.v/2
-                self.w = self.w/2
+                self.v = self.v/3
+                self.w = self.w/3
                 # self.stop()
                 # continue
 
@@ -175,7 +175,7 @@ class ApfMotion(object):
                 if self.prioriy<resp.priority[i]:
                     self.stop_flag = True
                     # return
-                f = ((self.zeta*1)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**2
+                f = ((self.zeta*1)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**2 *10
                 theta = np.arctan2(dy, dx)
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -187,8 +187,8 @@ class ApfMotion(object):
                     if abs(angle_diff)<np.pi/2:
                         continue
                     else:
-                        templ[0] = templ[0]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
-                        templ[1] = templ[1]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
+                        templ[0] = templ[0]*(abs(angle_diff)-np.pi/2)/abs(np.pi/2)
+                        templ[1] = templ[1]*(abs(angle_diff)-np.pi/2)/abs(np.pi/2)
                 self.robot_f[0] += round(templ[0], 3)
                 self.robot_f[1] += round(templ[1], 3)
 
@@ -216,20 +216,19 @@ class ApfMotion(object):
                 f = 0
                 theta = 0
             else:
-                f = ((self.zeta*1)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**2  # mh 100
+                f = ((self.zeta*1)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**2 
                 theta = np.arctan2(dy, dx)
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-                templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
-                if abs(angle_diff)>(4*np.pi/6) and (templ[1]<templ[0]):
-                    templ[1] +=  abs(1*templ[0]/1) * np.sign(templ[1])
-                    templ[0] = 0
+                # templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
+                
+                templ = [0,0]
+                if abs(angle_diff)<np.pi/2:
+                    templ[0] = f *  (np.pi/2 - abs(angle_diff)) * np.sign(np.cos(angle_diff)) / (np.pi/2)
                 else:
-                    if abs(angle_diff)<np.pi/2:
-                        continue
-                    else:
-                        templ[0] = templ[0]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
-                        templ[1] = templ[1]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
+                    templ[1] = f *  (abs(angle_diff)-np.pi/2) * np.sign(np.sin(angle_diff)) / (np.pi/2)
+                    # templ[0] = f/2 *  -(np.pi - abs(angle_diff)) * np.sign(np.cos(angle_diff)) / (np.pi/2)
+
                 self.obs_f[0] += round(templ[0], 3)
                 self.obs_f[1] += round(templ[1], 3)
 
@@ -288,3 +287,11 @@ class ApfMotion(object):
     def shutdown_hook(self):
         print("shutting down from apf_motion")
         self.stop()
+
+    def mod_angle(self, theta):
+        if theta<0:
+            theta = theta + 2*np.pi
+        elif theta>2*np.pi:
+            theta = theta- 2*np.pi
+        return theta
+        
