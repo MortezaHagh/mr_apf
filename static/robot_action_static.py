@@ -150,7 +150,7 @@ class InitRobotAcion(object):
     def f_robots(self):
         req = SharePosesRequest()
         req.ind = self.ind
-        resp = self.pose_client(req.ind)
+        resp = self.pose_client(req)
         self.robot_f = [0, 0]
         for i in range(resp.count):
             dx = resp.x[i]-self.r_x

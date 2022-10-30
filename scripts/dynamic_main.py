@@ -40,9 +40,9 @@ class APF(object):
             pose = [self.model.robots[i].xs, self.model.robots[i].ys]
             robot_poses.append(pose)
 
-        # pose service
-        count = self.model.robot_count
-        self.pose_srv = PoseService(robot_poses, count, params[-1].pose_srv_name)
+        # # pose service
+        # count = self.model.robot_count
+        # self.pose_srv = PoseService(params[-1].pose_srv_name)
 
         # actions
         self.manage_actions()
@@ -50,7 +50,7 @@ class APF(object):
         # status check
         status = [c.get_state() > 1 for c in self.ac_clients]
         while (0 in status) and (not rospy.is_shutdown()):
-            self.manage_poses()
+            # self.manage_poses()
             status = [c.get_state() > 1 for c in self.ac_clients]
             self.rate.sleep()
             print(status) # to better
