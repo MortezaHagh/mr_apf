@@ -18,6 +18,7 @@ class PoseService(object):
         self.ids = []
         self.count = 0
         self.topics = []
+        self.priorities = []
 
         # service
         self.srv = rospy.Service(pose_srv_name, SharePoses, self.pose_cb)
@@ -31,6 +32,7 @@ class PoseService(object):
             x,y = self.get_odom(self.topics[i])
             resp.x.append(x)
             resp.y.append(y)
+            resp.priority.append(self.priorities[i])
       
         resp.count = self.count-1
         return resp

@@ -18,6 +18,7 @@ class Robot(object):
         self.yt = yt
         self.name = name
         self.heading = heading
+        self.priority = id
 
     # -------------------------------- InitRobotService -------------------------- #
 
@@ -75,6 +76,7 @@ class InitRobotService(object):
         # update pose service
         self.pose_srv.count += 1
         self.pose_srv.ids.append(id)
+        self.pose_srv.priorities.append(robot.priority)
         self.pose_srv.topics.append(action_params.lis_topic)
 
         # motion_action action **********************************

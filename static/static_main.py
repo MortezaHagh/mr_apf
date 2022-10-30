@@ -111,6 +111,7 @@ class ApfStatic(object):
         fig2, ax2 = plt.subplots(1, 1)
         ax2.plot(self.ac_servers[0].v_lin, label="v_lin")
         ax2.plot(self.ac_servers[0].v_ang, label="v_ang")
+        ax2.set_title("velocities")
         ax2.legend()
         
         plt.show()

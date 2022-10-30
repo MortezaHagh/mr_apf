@@ -41,3 +41,5 @@ class Params(object):
         self.f_theta_max = 5
         self.dis_tresh = 0.2
         self.theta_thresh = np.pi/2
+
+        self.priority = id

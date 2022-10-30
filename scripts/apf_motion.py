@@ -23,6 +23,7 @@ class ApfMotion(object):
         self.path_y = []
         self.force_r = []
         self.force_t = []
+        self.stop_flag = False
 
         # data
         self.model = model
@@ -39,6 +40,7 @@ class ApfMotion(object):
         self.w_max = init_params.angular_max_speed
 
         # parameters & settings
+        self.prioriy = robot.priority
         self.topic_type = Odometry
         self.zeta = init_params.zeta
         self.robot_r = init_params.robot_r
@@ -86,9 +88,12 @@ class ApfMotion(object):
     def go_to_goal(self):
         while self.goal_distance > self.dis_tresh and not rospy.is_shutdown():
             # calculate forces
-            [f_r, f_theta, phi] = self.forces()
+            [f_r, f_theta, phi, stop_flag] = self.forces()
             self.force_r.append(f_r)
             self.force_t.append(f_theta)
+            if stop_flag:
+                self.stop()
+                continue
 
             # calculate velocities
             self.cal_vel(f_r, f_theta, phi)
@@ -102,8 +107,8 @@ class ApfMotion(object):
             self.cmd_vel.publish(move_cmd)
             
             # result
-            self.path_x.append(round(self.r_x, 2))
-            self.path_y.append(round(self.r_y, 2))
+            self.path_x.append(round(self.r_x, 3))
+            self.path_y.append(round(self.r_y, 3))
 
             # # feedback
             # self.feedback.path = [self.r_x, self.r_y]
@@ -144,15 +149,18 @@ class ApfMotion(object):
         self.f_robots()
         f_r += self.robot_f[0]
         f_theta += self.robot_f[1]
+        if self.stop_flag:
+            return [0,0,0, True]
 
         phi = np.arctan2(f_theta, f_r)
         phi = round(phi, 4)
-        return [f_r, f_theta, phi]
+        return [f_r, f_theta, phi, False]
 
     def f_robots(self):
+        self.stop_flag = False
         req = SharePosesRequest()
         req.ind = self.ind
-        resp = self.pose_client(req.ind)
+        resp = self.pose_client(req)
         self.robot_f = [0, 0]
         for i in range(resp.count):
             dx = -(resp.x[i]-self.r_x)
@@ -162,13 +170,16 @@ class ApfMotion(object):
                 f = 0
                 theta = 0
             else:
+                if self.prioriy<resp.priority[i]:
+                    self.stop_flag = True
+                    return
                 f = ((self.zeta*1)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**2
                 theta = np.arctan2(dy, dx)
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
-                self.robot_f[0] += round(templ[0], 2)
-                self.robot_f[1] += round(templ[1], 2)
+                self.robot_f[0] += round(templ[0], 3)
+                self.robot_f[1] += round(templ[1], 3)
 
     def f_target(self):
         dx = self.goal_x - self.r_x
@@ -180,8 +191,8 @@ class ApfMotion(object):
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
         self.goal_distance = goal_distance
-        fx = round(f*np.cos(angle_diff), 2)
-        fy = round(f*np.sin(angle_diff), 2)
+        fx = round(f*np.cos(angle_diff), 3)
+        fy = round(f*np.sin(angle_diff), 3)
         self.target_f = [fx, fy]
 
     def f_obstacle(self):
@@ -208,8 +219,8 @@ class ApfMotion(object):
                     else:
                         templ[0] = templ[0]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
                         templ[1] = templ[1]*(abs(angle_diff)-np.pi/2)/abs(angle_diff)
-                self.obs_f[0] += round(templ[0], 2)
-                self.obs_f[1] += round(templ[1], 2)
+                self.obs_f[0] += round(templ[0], 3)
+                self.obs_f[1] += round(templ[1], 3)
 
     # ------------------------- check_topic -- get_odom  ------------------------------#
     def check_topic(self):
@@ -258,7 +269,7 @@ class ApfMotion(object):
 
     def stop(self):
         t = 0
-        while t < 10:
+        while t < 5:
             self.cmd_vel.publish(Twist())
             self.rate.sleep()
             t += 1
