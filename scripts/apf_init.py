@@ -41,7 +41,7 @@ class Run():
 
 
     def data(self):
-        with open("/home/piotr/mori_ws/paths.json", "w") as outfile:
+        with open("/home/piotr/mori_ws/apf_paths.json", "w") as outfile:
             json.dump(self.paths, outfile)
 
 
