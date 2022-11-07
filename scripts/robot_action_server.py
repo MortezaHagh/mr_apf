@@ -68,18 +68,19 @@ class InitRobotAcion(object):
         self.pose_client(req)
 
         # start time
-        self.time[0] = rospy.Time.now().to_sec()
+        self.time[0] = rospy.get_time()
 
         # motion planning   # --------------------------------------------------------------
+        self.success = False
         self.mp = ApfMotion(self.model, self.robot, self.action_params)
-        success = self.mp.is_reached
+        self.success = self.mp.is_reached
 
         # time
-        self.time[1] = rospy.Time.now().to_sec()
-        self.time[2] = self.time[1] - self.time[0]
+        self.time[1] = rospy.get_time()
+        self.time[2] = round(self.time[1] - self.time[0], 2)
 
         # result
-        if success:
+        if self.success:
             self.result.result = True
             self.result.path_x = self.mp.path_x
             self.result.path_y = self.mp.path_y

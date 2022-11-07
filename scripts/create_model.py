@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 from model_inputs import ModelInputs
 
 
+class RobotI(object):
+    def __init__(self, inputs):
+        self.ids = inputs.ids
+        self.xs = inputs.xs 
+        self.ys = inputs.ys
+        self.xt = inputs.xt
+        self.yt = inputs.yt
+        
 class Map(object):
     def __init__(self, inputs):
         path_unit = 0.5
@@ -60,6 +68,9 @@ class CreateModel(object):
 
         for i in range(self.robot_count):
             self.robots.append(Robot(xs[i], ys[i], xt[i], yt[i], heading[i], i))
+
+        # robot I
+        self.robots_i = RobotI(inputs)
 
 # -------------------------------- __main__  -----------------------------------
 

@@ -141,6 +141,7 @@ class ModelInputs():
         self.ys = [3, 10, 1, 12]
         self.xt = [10, 4, 4, 10]
         self.yt = [10, 4, 10, 4]
+        self.ids = list(range(1, self.robot_count+1))
     
     def map5(self):
 

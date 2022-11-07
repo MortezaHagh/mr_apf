@@ -64,7 +64,7 @@ class InitRobotService(object):
 
         # update robotic system data
         self.robot_count += 1
-        self.model.robot_count += 1
+        # self.model.robot_count += 1
         self.robots_id.append(id)
         self.robots.append(robot)
 

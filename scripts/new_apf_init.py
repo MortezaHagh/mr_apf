@@ -7,6 +7,9 @@ from matplotlib.pylab import plt
 from plot_model import plot_model
 from create_model import CreateModel
 from apf_central_service import InitRobotService
+from send_goals import send_goal
+from broadcaster import BroadCast
+from call_apf_service import call_apf_service
 
 class Run():
     def __init__(self):
@@ -33,6 +36,20 @@ class Run():
         print("Initializing Central Service Server (init_apf_srv) for adding robots ... ")
         init_srv_name = "init_apf_srv"
         self.rsrv = InitRobotService(self.model, init_srv_name)
+
+        # broadcasters
+        for i in self.model.robots_i.ids:
+            BroadCast(i)
+        rate.sleep()
+
+        # calling services
+        call_apf_service(self.model.robots_i.ids)
+        rate.sleep()
+
+        # send goals
+        send_goal(self.model.robots_i)
+
+
 
         while not rospy.is_shutdown():
             rate.sleep()
