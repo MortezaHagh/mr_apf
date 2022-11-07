@@ -15,6 +15,9 @@ class InitRobotAcion(object):
 
     def __init__(self, model, robot, action_params):
 
+        # times
+        self.time = [0, 0, 0]
+
         # pre
         self.mp = 0
 
@@ -64,9 +67,16 @@ class InitRobotAcion(object):
         req.update = True
         self.pose_client(req)
 
+        # start time
+        self.time[0] = rospy.Time.now().to_sec()
+
         # motion planning   # --------------------------------------------------------------
         self.mp = ApfMotion(self.model, self.robot, self.action_params)
         success = self.mp.is_reached
+
+        # time
+        self.time[1] = rospy.Time.now().to_sec()
+        self.time[2] = self.time[1] - self.time[0]
 
         # result
         if success:
