@@ -2,6 +2,7 @@
 
 import json
 import rospy
+import rospkg
 from parameters import Params
 from matplotlib.pylab import plt
 from plot_model import plot_model
@@ -12,9 +13,10 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test = "T1"
-        # self.pred = "/home/morteza/catkin_ws/src/apf/results/"
-        self.pred = "/home/piotr/mori_ws/src/mr_apf/results/"
+        self.test = "T1_2"
+        rospack = rospkg.RosPack()
+        pkg_path = rospack.get_path('apf')
+        self.pred = pkg_path + "/results/"
         self.dir_p = self.pred + self.test + "/apf_paths.json"
         self.dir_t = self.pred + self.test + "/apf_times.json"
         self.dir_f = self.pred + self.test + "/apf_paths"
