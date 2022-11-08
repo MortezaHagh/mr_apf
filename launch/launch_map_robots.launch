@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <launch>
   
-  <!-- my args -->
+  <!-- my args
   <arg name="from_database" default="False"/>
   <arg name="warehouse" default="DKN"/>
   <arg name="path_unit" default="0.5"/>
   <arg name="method" default="multi_json"/>
-  <arg name="stype" default=""/>
+  <arg name="stype" default=""/> -->
 
   <include file="$(find init_sim)/launch/empty_world_complete.launch">
     <arg name="world_name" value="$(find init_sim)/worlds/walls2.world"/> 

@@ -165,6 +165,7 @@ class ApfMotion(object):
         resp = self.pose_client(req)
         self.robot_f = [0, 0]
         for i in range(resp.count):
+            # heading = resp.heading
             dx = -(resp.x[i]-self.r_x)
             dy = -(resp.y[i]-self.r_y)
             d_ro = np.sqrt(dx**2+dy**2)

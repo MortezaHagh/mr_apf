@@ -4,7 +4,7 @@ from cmath import sqrt
 import rospy
 from nav_msgs.msg import Odometry
 from apf.srv import SharePoses2, SharePoses2Response
-# from tf.transformations import euler_from_quaternion
+from tf.transformations import euler_from_quaternion
 
 class PoseService(object):
     def __init__(self, pose_srv_name):
@@ -36,13 +36,14 @@ class PoseService(object):
 
         xy = {}
         for i in self.ids:
-            x,y = self.get_odom(self.topics[i])
+            x,y, h = self.get_odom(self.topics[i])
             xy[i] = [x, y]
 
             if i==req_i:
                 continue
             resp.x.append(x)
             resp.y.append(y)
+            resp.heading.append(h)
         
         priorities = self.cal_priorities(xy, req_i)
         resp.priority = priorities
@@ -76,9 +77,12 @@ class PoseService(object):
                 rospy.loginfo(", current topic is not ready yet, retrying ...")
         odom = topic_msg
         position = odom.pose.pose.position
+        quaternion = odom.pose.pose.orientation
+        orientation = euler_from_quaternion([quaternion.x, quaternion.y, quaternion.z, quaternion.w])
         x = position.x
         y = position.y
-        return x, y
+        heading = orientation[2]
+        return x, y, heading
 
 
     def shutdown_hook(self):

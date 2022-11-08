@@ -5,11 +5,12 @@ from model_inputs import ModelInputs
 
 class RobotI(object):
     def __init__(self, inputs):
-        self.ids = inputs.ids
         self.xs = inputs.xs 
         self.ys = inputs.ys
         self.xt = inputs.xt
         self.yt = inputs.yt
+        self.ids = inputs.ids
+        self.robot_count = len(inputs.ids)
         
 class Map(object):
     def __init__(self, inputs):
