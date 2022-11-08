@@ -13,7 +13,7 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test = "T1_2"
+        self.test = "T1"
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
         self.pred = pkg_path + "/results/"
