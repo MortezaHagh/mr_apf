@@ -3,10 +3,11 @@
 import json
 import rospy
 import rospkg
+from results import Results
 from parameters import Params
 from spawn_map import Spawning
 from matplotlib.pylab import plt
-from send_goals import send_goal
+from  send_goals import SendGoal
 from broadcaster import BroadCast
 from plot_model import plot_model
 from create_model import CreateModel
@@ -17,7 +18,8 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test = "T1"
+        self.test_id = 1
+        self.test = "T" + str(self.test_id)
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
         self.pred = pkg_path + "/results/"
@@ -38,28 +40,45 @@ class Run():
         # spawn
         Spawning(self.model)
 
-        # # init_robot service server
+        # # init_robot service server ------------------------------------------------------
         print("Initializing Central Service Server (init_apf_srv) for adding robots ... ")
         init_srv_name = "init_apf_srv"
         self.rsrv = InitRobotService(self.model, init_srv_name)
 
-        # broadcasters
-        for i in self.model.robots_i.ids:
-            BroadCast(i)
-        rate.sleep()
+        # ------------------------- call_init_service - SendGoal - status---------
+
+        # # broadcasters
+        # for i in self.model.robots_i.ids:
+        #     BroadCast(i)
+        # rate.sleep()
 
         # calling services
         call_apf_service(self.model.robots_i.ids)
         rate.sleep()
 
         # send goals
-        send_goal(self.model.robots_i)
+        clients = SendGoal(self.model.robots_i)
 
-
-
-        while not rospy.is_shutdown():
+        # status checking
+        status = [c.get_state() for c in clients.clients]
+        s_flags = [s<2 for s in status]
+        while (not rospy.is_shutdown()) and (any(s_flags)):
             rate.sleep()
-    
+            status = [c.get_state() for c in clients.clients]
+            s_flags = [s<2 for s in status]
+        print(" -----------------------")
+        print("APF Mission Accomplished.")
+        print(" -----------------------")
+
+        # --------------------------------- results ---------------------
+        # paths and times
+        for i, ac in enumerate(self.rsrv.ac_services):
+            self.paths[i] = [ac.result.path_x, ac.result.path_y]
+            self.times[i] = ac.time
+        
+        Results(self.paths, self.times, self.model.path_unit, self.test_id)
+        self.data()
+        self.plotting()
 # -----------------------plotting - shutdown_hook---------------------------#
 
     def plotting(self):
@@ -82,18 +101,10 @@ class Run():
             json.dump(self.times, outfile)
 
 
-
     def shutdown_hook(self):
-        # paths and times
-        for i, ac in enumerate(self.rsrv.ac_services):
-            self.paths[i] = [ac.result.path_x, ac.result.path_y]
-            self.times[i] = ac.time
-
-        self.data()
-        self.plotting()
-        
-        print("------------------------------------")
-        print(" ----- shutting down from main -----")
+        pass
+        # print("------------------------------------")
+        # print(" ----- shutting down from main -----")
 
 # --------------------------------- __main__ ----------------------------
 

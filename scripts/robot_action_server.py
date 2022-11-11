@@ -112,6 +112,5 @@ class InitRobotAcion(object):
 
 
     def shutdown(self):
-        # self.ax.plot(self.mp.path_x, self.mp.path_y)
         print(self.ac_name + ', shutting down')
-        rospy.sleep(1)
+        # rospy.sleep(1)

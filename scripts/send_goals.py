@@ -4,19 +4,22 @@
 
 import rospy
 import actionlib
-from apf.msg import InitRobotAction, InitRobotGoal
+from apf.msg import ApfAction, ApfGoal
 
 
-def send_goal(robots):
-    ids = robots.ids
-    for id in ids:
-        goal = InitRobotGoal()
-        goal.xt = robots.xt[id-1]
-        goal.yt = robots.yt[id-1]
-        name = "/r"+str(id)+"/apf_action"
-        client = actionlib.SimpleActionClient(name, InitRobotAction)
-        client.wait_for_server()
-        client.send_goal(goal)
+class SendGoal:
+    def __init__(self, robots):
+        ids = robots.ids
+        self.clients = []
+        for id in ids:
+            goal = ApfGoal()
+            goal.xt = robots.xt[id-1]
+            goal.yt = robots.yt[id-1]
+            name = "/r"+str(id)+"/apf_action"
+            client = actionlib.SimpleActionClient(name, ApfAction)
+            client.wait_for_server()
+            client.send_goal(goal)
+            self.clients.append(client)
         rospy.sleep(0.4)
 
 
@@ -28,11 +31,11 @@ if __name__ == "__main__":
     xy =[[10, 10], [4, 4], [4, 10], [10, 4]]
 
     for id in range(1,5):
-        goal = InitRobotGoal()
+        goal = ApfGoal()
         goal.xt = xy[id-1][0]
         goal.yt = xy[id-1][1]
         name = "/r"+str(id)+"/apf_action"
-        client = actionlib.SimpleActionClient(name, InitRobotAction)
+        client = actionlib.SimpleActionClient(name, ApfAction)
         client.wait_for_server()
         client.send_goal(goal)
         rospy.sleep(0.4)
