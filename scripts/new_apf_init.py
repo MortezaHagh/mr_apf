@@ -32,7 +32,7 @@ class Run():
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
-        self.model = CreateModel(map_id=4)
+        self.model = CreateModel(map_id=-1) # map_id=4
         self.count = self.model.robot_count
         self.paths = {}
         self.times = {}

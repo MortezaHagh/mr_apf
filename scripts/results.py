@@ -18,7 +18,7 @@ class Results:
         self.operation_time = 0
         self.headings = []
         self.total_headings = 0
-        self.path_unit = path_unit
+        self.path_unit = 1
         self.test_name = "res_" + str(test_id) + ".json"
 
         #
