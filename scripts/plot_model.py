@@ -12,7 +12,7 @@ def plot_model(model, settings):
     ax.set_title('MRPP')
     #     ax.axis("off")
     ax.axis('equal')
-    ax.grid('on')
+    # ax.grid('on')
     ax.axis([model.map.x_min-1, model.map.x_max+1,
             model.map.y_min-1, model.map.y_max+1])
 

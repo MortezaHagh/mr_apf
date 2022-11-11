@@ -90,7 +90,7 @@ class Run():
         colors = plt.cm.get_cmap('rainbow', self.model.robot_count)
         for k, v in self.paths.items():
             ax.plot(v[0], v[1], color=colors(k))
-        plt.savefig(self.dir_f, format="png")
+        plt.savefig(self.dir_f+"png", format="png")
         plt.show()
 
 
