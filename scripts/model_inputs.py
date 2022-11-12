@@ -9,7 +9,7 @@ class ModelInputs():
         elif map_id == 2:
             self.map2()
         elif map_id == -1:
-            self.map_now()
+            self.map1() #map_now()
 
 
     def map0(self):

@@ -51,18 +51,21 @@ class PoseService(object):
         return resp
     
     def cal_priorities(self, xy, req_i):
-        distances = {}
+        priorities = []
+        d0 = (self.xt[req_i]-xy[req_i][0])**2 + (self.yt[req_i]-xy[req_i][1])**2
+        
         for i in self.ids:
-            distances[i] = ((self.xt[i]-xy[i][0])**2 + (self.yt[i]-xy[i][1])**2)
-        
-        distances = dict(sorted(distances.items(), key=lambda item: -item[1])) # todo -1 priority
-        del distances[req_i]
-        
-        priorities = list(distances.keys())
+            if i==req_i:
+                continue
+            distance = ((self.xt[i]-xy[i][0])**2 + (self.yt[i]-xy[i][1])**2)
+            if distance<d0:
+                priorities.append(1)
+            else:
+                priorities.append(-1)
+
         return priorities
 
     
-
     def update_goal(self, req):
         self.xt[req.ind] = req.xt
         self.yt[req.ind] = req.yt
