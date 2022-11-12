@@ -90,14 +90,14 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 13
+        self.robot_count = 12
         # robots
-        robot_count = 13
+        robot_count = 12
         self.ids = list(range(1,robot_count+1))
         self.heading = [0.0 for i in range(robot_count)]
-        self.xs = [1, 12, 10, 4, 12, 1, 6, 1, 10,1, 8, 3, 4]
-        self.ys = [3, 10, 1, 12, 6, 8, 10, 6, 9, 12, 11, 1, 5]
-        self.xt = [10, 4, 4, 10, 3, 10, 6, 7, 1, 5, 2, 10, 5]
-        self.yt = [10, 4, 10, 4, 8, 7, 5, 7, 7, 8, 1, 13, 7]
+        self.xs = [1, 12, 10, 4, 12, 1, 6, 1, 10,1, 8, 3]
+        self.ys = [3, 10, 1, 12, 6, 8, 10, 6, 9, 12, 11, 1]
+        self.xt = [10, 4, 4, 10, 3, 10, 6, 7, 1, 5, 2, 10]
+        self.yt = [10, 4, 10, 4, 8, 7, 5, 7, 7, 8, 1, 13]
 
 

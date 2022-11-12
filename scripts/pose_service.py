@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-from cmath import sqrt
 import rospy
 from nav_msgs.msg import Odometry
 from apf.srv import SharePoses2, SharePoses2Response
@@ -58,7 +57,7 @@ class PoseService(object):
             if i==req_i:
                 continue
             distance = ((self.xt[i]-xy[i][0])**2 + (self.yt[i]-xy[i][1])**2)
-            if distance<d0:
+            if distance>d0:
                 priorities.append(1)
             else:
                 priorities.append(-1)
