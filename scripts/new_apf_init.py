@@ -18,7 +18,7 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test_id = 1
+        self.test_id = 10 #r13
         self.test = "T" + str(self.test_id)
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
@@ -90,7 +90,7 @@ class Run():
         colors = plt.cm.get_cmap('rainbow', self.model.robot_count)
         for k, v in self.paths.items():
             ax.plot(v[0], v[1], color=colors(k))
-        plt.savefig(self.dir_f+"png", format="png")
+        plt.savefig(self.dir_f+".png", format="png")
         plt.show()
 
 

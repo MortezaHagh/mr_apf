@@ -55,7 +55,7 @@ class PoseService(object):
         for i in self.ids:
             distances[i] = ((self.xt[i]-xy[i][0])**2 + (self.yt[i]-xy[i][1])**2)
         
-        distances = dict(sorted(distances.items(), key=lambda item: -item[1]))
+        distances = dict(sorted(distances.items(), key=lambda item: -item[1])) # todo -1 priority
         del distances[req_i]
         
         priorities = list(distances.keys())

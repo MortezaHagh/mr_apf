@@ -42,15 +42,19 @@ class Results:
                       "total_len": self.total_len, "operation_time":self.operation_time}
 
         hwading_data = {"headings":self.headings, "total_heading":self.total_headings}      
-
+        robot_count = {"robot_count": len(paths)}
+        
         #
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
         save_path = pkg_path + '/result_apf/' + self.test_name
         with open(save_path, "w") as outfile:
             json.dump(final_data, outfile, indent=2)
+            outfile.write("\n")
         with open(save_path, "a") as outfile:
             json.dump(hwading_data, outfile, indent=2)
+            outfile.write("\n")
+            json.dump(robot_count, outfile, indent=2)
 
 
     def cal_len(self, p):
