@@ -131,7 +131,7 @@ class ApfMotion(object):
         #     w = self.w_max * np.sign(theta)
         # else:
         theta_thresh = self.theta_thresh
-        v = self.v_max * max(0, (1- (abs(theta)/theta_thresh)))**1 #+ self.v_min/2
+        v = self.v_max * max(0, (1- (abs(theta)/theta_thresh)))**1 + self.v_min
         w = theta * self.w_coeff * 4 * (abs(theta)/theta_thresh)
         v = min(v, self.v_max)
         v = max(v, 0)
