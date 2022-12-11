@@ -41,7 +41,7 @@ class Obstacles(object):
 
 # ---------------------------- CreateModel ----------------------------------
 class CreateModel(object):
-    def __init__(self, map_id=4):
+    def __init__(self, map_id=-1):
 
         print('Create Base Model')
         

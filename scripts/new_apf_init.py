@@ -18,7 +18,7 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test_id = 0 #r4
+        self.test_id = 11
         self.test = "T" + str(self.test_id)
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
@@ -32,7 +32,7 @@ class Run():
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
-        self.model = CreateModel(map_id=-1) # map_id=4
+        self.model = CreateModel(map_id=-1)
         self.count = self.model.robot_count
         self.paths = {}
         self.times = {}
@@ -87,7 +87,7 @@ class Run():
         fig, ax = plot_model(self.model, params)
 
         # paths
-        colors = plt.cm.get_cmap('rainbow', self.model.robot_count)
+        colors = plt.cm.get_cmap('rainbow', len(self.paths))
         for k, v in self.paths.items():
             ax.plot(v[0], v[1], color=colors(k))
         plt.savefig(self.dir_f+".png", format="png")
