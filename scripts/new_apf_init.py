@@ -18,7 +18,7 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test_id = 11
+        self.test_id = 200                                # check 3 !!!!!!!!!!
         self.test = "T" + str(self.test_id)
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
@@ -32,7 +32,7 @@ class Run():
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
-        self.model = CreateModel(map_id=-1)
+        self.model = CreateModel(map_id=-1)                # check 3 !!!!!!!!!!
         self.count = self.model.robot_count
         self.paths = {}
         self.times = {}
@@ -79,7 +79,8 @@ class Run():
         Results(self.paths, self.times, self.model.path_unit, self.test_id)
         self.data()
         self.plotting()
-# -----------------------plotting - shutdown_hook---------------------------#
+
+    # -----------------------plotting - shutdown_hook---------------------------#
 
     def plotting(self):
         # map
@@ -103,7 +104,6 @@ class Run():
 
     def shutdown_hook(self):
         pass
-        # print("------------------------------------")
         # print(" ----- shutting down from main -----")
 
 # --------------------------------- __main__ ----------------------------

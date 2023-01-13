@@ -1,5 +1,0 @@
-<launch>
-    <include file= "$(find apf)/launch/turtlebot3_empty_world.launch"/>
-    <node pkg="apf" name="dynamic_main" type="dynamic_main.py" output="screen"/>
-
-</launch>

@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="apf" name="static_main" type="static_main.py" output="screen"/>
-</launch>
