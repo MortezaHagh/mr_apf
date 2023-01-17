@@ -99,8 +99,8 @@ class ApfMotion(object):
             self.v_ang.append(self.w)
 
             if stop_flag:
-                self.v = self.v/3 # 0
-                self.w = self.w/3 # 0
+                self.v = self.v/5 # 0
+                self.w = self.w/10 # 0
                 # self.stop()
                 # continue
 
@@ -133,11 +133,11 @@ class ApfMotion(object):
         # theta_thresh = self.theta_thresh
         # v = self.v_max * max(0, (1- (abs(theta)/theta_thresh)))**1 + self.v_min
         # w = theta * self.w_coeff * 4 * (abs(theta)/theta_thresh)
-        v = self.v_max * max(0, (1- (abs(theta)/self.theta_thresh)))**2 + self.v_min/2
-        w = theta * self.w_coeff * 0.5
+        v = self.v_max * max(0, (1- (abs(theta)/self.theta_thresh)))**1 + self.v_min
+        w = theta * self.w_coeff * 0.4 * (abs(theta)/self.theta_thresh)
         v = min(v, self.v_max)
         v = max(v, 0)
-        wa = min(abs(w), self.w_max)
+        wa = min(abs(w), self.w_max/1)
         w = wa * np.sign(w)
 
         self.v = v
@@ -177,32 +177,38 @@ class ApfMotion(object):
                 f = 0
                 theta = 0
             else:
-                if self.prioriy<resp.priority[i]:
+                if resp.priority[i]>0:
                     self.stop_flag = True
                     # return
-                f = ((self.zeta*1)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**2 *10
+                f = ((self.zeta*1)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**1 *1
                 theta = np.arctan2(dy, dx)
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
-                if abs(angle_diff)>(4*np.pi/6) and (templ[1]<templ[0]):
-                    templ[1] +=  abs(1*templ[0]/1) * np.sign(templ[1])
-                    templ[0] = 0
-                else:
-                    if abs(angle_diff)<np.pi/2:
-                        continue
-                    else:
-                        templ[0] = templ[0]*(abs(angle_diff)-np.pi/2)/abs(np.pi/2)
-                        templ[1] = templ[1]*(abs(angle_diff)-np.pi/2)/abs(np.pi/2)
-                self.robot_f[0] += round(templ[0], 3)
-                self.robot_f[1] += round(templ[1], 3)
+                # if abs(angle_diff)>(4*np.pi/6) and (templ[1]<templ[0]):
+                #     templ[1] +=  abs(1*templ[0]/1) * np.sign(templ[1])
+                #     templ[0] = 0
+                # else:
+                #     if abs(angle_diff)<np.pi/2:
+                #         continue
+                #     else:
+                #         templ[0] = templ[0]*(abs(angle_diff)-np.pi/2)/abs(np.pi/2)
+                #         templ[1] = templ[1]*(abs(angle_diff)-np.pi/2)/abs(np.pi/2)
+                tmp_fs = round(templ[0], 3)
+                tmp_fs = np.sign(tmp_fs) * max(abs(tmp_fs), 3)
+                tmp_fr = round(templ[1], 3)
+                tmp_fr = np.sign(tmp_fr) * max(abs(tmp_fr), 3)
+                self.robot_f[0] += round(tmp_fs, 3)
+                self.robot_f[1] += round(tmp_fr, 3)
+                # self.robot_f[0] += round(templ[0], 3)
+                # self.robot_f[1] += round(templ[1], 3)
 
     def f_target(self):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2+dy**2)
-        # f = self.zeta * goal_distance
-        f = 1 # 4
+        # f = self.zeta * goal_distance + 3
+        f = 3 # 4
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -221,21 +227,26 @@ class ApfMotion(object):
                 f = 0
                 theta = 0
             else:
-                f = ((self.zeta*1)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**2 
+                f = ((self.zeta*1.0)*((1/d_ro)-(1/self.obs_effect_r))**2)*(1/d_ro)**1
                 theta = np.arctan2(dy, dx)
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-                # templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
+                templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
                 
-                templ = [0,0]
-                if abs(angle_diff)<np.pi/2:
-                    templ[0] = f *  (np.pi/2 - abs(angle_diff)) * np.sign(np.cos(angle_diff)) / (np.pi/2)
-                else:
-                    templ[1] = f *  (abs(angle_diff)-np.pi/2) * np.sign(np.sin(angle_diff)) / (np.pi/2)
-                    # templ[0] = f/2 *  -(np.pi - abs(angle_diff)) * np.sign(np.cos(angle_diff)) / (np.pi/2)
+                # templ = [0,0]
+                # if abs(angle_diff)<np.pi/2:
+                #     templ[0] = f *  (np.pi/2 - abs(angle_diff)) * np.sign(np.cos(angle_diff)) / (np.pi/2)
+                # else:
+                #     templ[1] = f *  (abs(angle_diff)-np.pi/2) * np.sign(np.sin(angle_diff)) / (np.pi/2)
+                tmp_fs = round(templ[0], 3)
+                tmp_fs = np.sign(tmp_fs) * max(abs(tmp_fs), 3)
+                tmp_fr = round(templ[1], 3)
+                tmp_fr = np.sign(tmp_fr) * max(abs(tmp_fr), 3)
+                self.obs_f[0] += round(tmp_fs, 3)
+                self.obs_f[1] += round(tmp_fr, 3)
+                # self.obs_f[0] += round(templ[0], 3)
+                # self.obs_f[1] += round(templ[1], 3)
 
-                self.obs_f[0] += round(templ[0], 3)
-                self.obs_f[1] += round(templ[1], 3)
 
     # ------------------------- check_topic -- get_odom  ------------------------------#
     def check_topic(self):
