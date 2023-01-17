@@ -18,11 +18,11 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test_id = 200                                # check 3 !!!!!!!!!!
+        self.test_id = 01                                # check 3 !!!!!!!!!!
         self.test = "T" + str(self.test_id)
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
-        self.pred = pkg_path + "/results/"
+        self.pred = pkg_path + "/results/apf_base/"
         self.dir_p = self.pred + self.test + "/apf_paths.json"
         self.dir_t = self.pred + self.test + "/apf_times.json"
         self.dir_f = self.pred + self.test + "/apf_paths"

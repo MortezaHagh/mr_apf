@@ -40,18 +40,19 @@ class ApfMotion(object):
         self.w_max = init_params.angular_max_speed
 
         # parameters & settings
+        self.fix_f = 4
         self.prioriy = robot.priority
         self.topic_type = Odometry
         self.zeta = init_params.zeta
-        self.robot_r = init_params.robot_r
+        self.robot_r = 0.5 # init_params.robot_r
         self.w_coeff = init_params.w_coeff
         self.dis_tresh = init_params.dis_tresh
         self.f_r_min = init_params.f_r_min #
         self.f_r_max = init_params.f_r_max #
         self.f_theta_min = init_params.f_theta_min #
         self.f_theta_max = init_params.f_theta_max #
-        self.theta_thresh = init_params.theta_thresh
-        self.obs_effect_r = init_params.obs_effect_r
+        self.theta_thresh = init_params.theta_thresh # 90*np.pi/180
+        self.obs_effect_r = init_params.obs_effect_r #  0.55
         self.pose_srv_name = init_params.pose_srv_name
         self.goal_distance = init_params.goal_distance
 
@@ -98,8 +99,8 @@ class ApfMotion(object):
             self.v_ang.append(self.w)
 
             if stop_flag:
-                self.v = self.v/3
-                self.w = self.w/3
+                self.v = self.v/3 # 0
+                self.w = self.w/3 # 0
                 # self.stop()
                 # continue
 
@@ -129,6 +130,9 @@ class ApfMotion(object):
         #     v = 0 + self.v_min/10
         #     w = self.w_max * np.sign(theta)
         # else:
+        # theta_thresh = self.theta_thresh
+        # v = self.v_max * max(0, (1- (abs(theta)/theta_thresh)))**1 + self.v_min
+        # w = theta * self.w_coeff * 4 * (abs(theta)/theta_thresh)
         v = self.v_max * max(0, (1- (abs(theta)/self.theta_thresh)))**2 + self.v_min/2
         w = theta * self.w_coeff * 0.5
         v = min(v, self.v_max)
@@ -198,7 +202,7 @@ class ApfMotion(object):
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2+dy**2)
         # f = self.zeta * goal_distance
-        f = 1 # 1.5
+        f = 1 # 4
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -213,7 +217,7 @@ class ApfMotion(object):
             dy = -(self.obs_y[i]-self.r_y)
             dx = -(self.obs_x[i]-self.r_x)
             d_ro = np.sqrt(dx**2+dy**2)
-            if d_ro >= self.obs_effect_r:
+            if d_ro >= self.obs_effect_r: #0.3
                 f = 0
                 theta = 0
             else:

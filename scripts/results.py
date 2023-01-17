@@ -30,6 +30,7 @@ class Results:
             self.headings.append(round(self.cal_angle(v), 2))
         
         self.total_len = round(sum(self.lens), 2)
+        self.mean_len = round(self.total_len/len(self.lens), 2)
         self.total_time = round(sum(self.times),2)
         self.operation_time = max(self.times)
         # self.total_angle = [round(sum(self.angles2), 2)]
@@ -38,8 +39,12 @@ class Results:
         self.total_headings.append(round(180*self.total_headings[0]/np.pi, 2)) 
 
         # 
-        final_data = {"lens":self.lens, "times": self.times, "total_time": self.total_time, 
-                      "total_len": self.total_len, "operation_time":self.operation_time}
+        final_data = {"mean_len": self.mean_len,"operation_time":self.operation_time,
+                        "lens":self.lens, "times": self.times, "total_time": self.total_time, 
+                        "total_len": self.total_len}
+
+        # final_data = {"lens":self.lens, "times": self.times, "total_time": self.total_time, 
+        #               "total_len": self.total_len, "operation_time":self.operation_time}
 
         hwading_data = {"headings":self.headings, "total_heading":self.total_headings}      
         robot_count = {"robot_count": len(paths)}
@@ -47,7 +52,7 @@ class Results:
         #
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
-        save_path = pkg_path + '/result_apf/' + self.test_name
+        save_path = pkg_path + '/result_apf/test_apf_base/' + self.test_name
         with open(save_path, "w") as outfile:
             json.dump(final_data, outfile, indent=2)
             outfile.write("\n")
