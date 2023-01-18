@@ -7,7 +7,7 @@ class ModelInputs():
         if map_id == 1:
             self.map1()
         elif map_id == -1:
-            self.map_6()
+            self.map_1()
 
 
     def map0(self):
@@ -38,6 +38,37 @@ class ModelInputs():
         self.xt = [10]
         self.yt = [10]
 
+    def map_0(self):
+        # area
+        lim = 13
+        self.lim = lim
+        self.x_min = 0
+        self.y_min = 0
+        self.x_max = lim
+        self.y_max = lim
+
+        # obstacles
+        xc1 = [3, 3, 5, 5, 7, 7, 9, 9, 11, 11]
+        yc1 = [3, 5, 3, 5, 3, 5, 3, 5, 3, 5]
+
+        xc2 = xc1*2
+        yc2 = yc1 + [y+6 for y in yc1]
+
+        self.x_obst = xc2
+        self.y_obst = yc2
+
+        # robots
+        self.robot_count = 3
+
+        # robots
+        robot_count = 3
+        self.ids = list(range(1,robot_count+1))
+        self.heading = [0, 0, 0] #[0.0, 0.0, 0.0, 0.0]
+        self.xs = [1, 12, 10] #[1, 12, 10, 4]
+        self.ys = [3, 10, 1] #[3, 10, 1, 12]
+        self.xt = [10, 4, 4] #[10, 4, 4, 10]
+        self.yt = [10, 4, 10] #[10, 4, 10, 4]
+    
     def map_1(self):
         # area
         lim = 13
@@ -58,7 +89,7 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 4
 
         # robots
         robot_count = 4

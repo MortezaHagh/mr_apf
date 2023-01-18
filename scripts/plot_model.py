@@ -17,7 +17,7 @@ def plot_model(model, settings):
             model.map.y_min-1, model.map.y_max+1])
 
     # robots start and target nodes
-    colors = plt.cm.get_cmap('rainbow', model.robot_count)
+    colors = plt.cm.get_cmap('rainbow', len(model.robots))
     for i, robot in enumerate(model.robots):
         ax.plot(robot.xs, robot.ys, marker='s', markersize=10,
                 markeredgecolor=colors(i), markerfacecolor=colors(i))
