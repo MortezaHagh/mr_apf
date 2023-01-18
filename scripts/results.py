@@ -47,7 +47,7 @@ class Results:
         #
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
-        save_path = pkg_path + '/result_apf/' + self.test_name
+        save_path = pkg_path + '/result_apf/paper_3/' + self.test_name
         with open(save_path, "w") as outfile:
             json.dump(final_data, outfile, indent=2)
             outfile.write("\n")
