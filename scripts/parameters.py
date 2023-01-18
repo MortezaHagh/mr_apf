@@ -27,9 +27,9 @@ class Params(object):
         self.path_unit = 0.5
 
         self.zeta = 1
-        self.robot_r = 0.65      #(0.5)        # robots effective radius
+        self.robot_r = 0.65              # robots effective radius
         self.danger_r = 0.25             # real obst radius
-        self.obs_effect_r = 0.55  #(1) /0.55          # obstacles effective radius
+        self.obs_effect_r = 0.55 #1.0          # obstacles effective radius
         self.goal_distance = 1000
         self.ac_name = "/apf_action"
         self.pose_srv_name = "/pose_service"
@@ -40,5 +40,5 @@ class Params(object):
         self.dis_tresh = 0.05 #0.2
         self.f_theta_min = 1
         self.f_theta_max = 5
-        self.theta_thresh = 30*np.pi/180 #(30)
+        self.theta_thresh = 90*np.pi/180
 
