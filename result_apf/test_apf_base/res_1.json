@@ -1,33 +1,24 @@
 {
-  "total_time": 308.5, 
-  "mean_len": 7.83, 
+  "total_time": 77.35, 
+  "mean_len": 5.6, 
   "times": [
-    83.38, 
-    64.22, 
-    80.93, 
-    79.97
+    77.35
   ], 
   "lens": [
-    8.16, 
-    6.9, 
-    8.03, 
-    8.21
+    5.6
   ], 
-  "total_len": 31.3, 
-  "operation_time": 83.38
+  "total_len": 5.6, 
+  "operation_time": 77.35
 }
 {
   "total_heading": [
-    514.47, 
-    29476.96
+    903.96, 
+    51793.09
   ], 
   "headings": [
-    181.64, 
-    54.24, 
-    128.36, 
-    150.23
+    903.96
   ]
 }
 {
-  "robot_count": 4
+  "robot_count": 1
 }

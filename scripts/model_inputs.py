@@ -7,7 +7,7 @@ class ModelInputs():
         if map_id == 1:
             self.map1()
         elif map_id == -1:
-            self.map_1()
+            self.map_6()
 
 
     def map0(self):

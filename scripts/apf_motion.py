@@ -137,7 +137,7 @@ class ApfMotion(object):
         w = theta * self.w_coeff * 0.4 * (abs(theta)/self.theta_thresh)
         v = min(v, self.v_max)
         v = max(v, 0)
-        wa = min(abs(w), self.w_max/1)
+        wa = min(abs(w), self.w_max/2)
         w = wa * np.sign(w)
 
         self.v = v
@@ -195,9 +195,9 @@ class ApfMotion(object):
                 #         templ[0] = templ[0]*(abs(angle_diff)-np.pi/2)/abs(np.pi/2)
                 #         templ[1] = templ[1]*(abs(angle_diff)-np.pi/2)/abs(np.pi/2)
                 tmp_fs = round(templ[0], 3)
-                tmp_fs = np.sign(tmp_fs) * max(abs(tmp_fs), 3)
+                tmp_fs = np.sign(tmp_fs) * max(abs(tmp_fs), abs(self.target_f[0]))
                 tmp_fr = round(templ[1], 3)
-                tmp_fr = np.sign(tmp_fr) * max(abs(tmp_fr), 3)
+                tmp_fr = np.sign(tmp_fr) * max(abs(tmp_fr), abs(self.target_f[0]))
                 self.robot_f[0] += round(tmp_fs, 3)
                 self.robot_f[1] += round(tmp_fr, 3)
                 # self.robot_f[0] += round(templ[0], 3)
@@ -239,9 +239,9 @@ class ApfMotion(object):
                 # else:
                 #     templ[1] = f *  (abs(angle_diff)-np.pi/2) * np.sign(np.sin(angle_diff)) / (np.pi/2)
                 tmp_fs = round(templ[0], 3)
-                tmp_fs = np.sign(tmp_fs) * max(abs(tmp_fs), 3)
+                tmp_fs = np.sign(tmp_fs) * max(abs(tmp_fs), abs(self.target_f[0]))
                 tmp_fr = round(templ[1], 3)
-                tmp_fr = np.sign(tmp_fr) * max(abs(tmp_fr), 3)
+                tmp_fr = np.sign(tmp_fr) * max(abs(tmp_fr), abs(self.target_f[0]))
                 self.obs_f[0] += round(tmp_fs, 3)
                 self.obs_f[1] += round(tmp_fr, 3)
                 # self.obs_f[0] += round(templ[0], 3)

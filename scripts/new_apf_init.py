@@ -22,7 +22,7 @@ class Run():
         self.test = "T" + str(self.test_id)
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
-        self.pred = pkg_path + "/results/apf_base/"
+        self.pred = pkg_path + "/results/apf_paper3/"
         self.dir_p = self.pred + self.test + "/apf_paths.json"
         self.dir_t = self.pred + self.test + "/apf_times.json"
         self.dir_f = self.pred + self.test + "/apf_paths"
