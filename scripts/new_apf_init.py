@@ -18,11 +18,11 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test_id = 4                              # check 3 !!!!!!!!!!
+        self.test_id = 1                              # check 3 !!!!!!!!!!
         self.test = "T" + str(self.test_id)
-        rospack = rospkg.RosPack()
-        pkg_path = rospack.get_path('apf')
-        self.pred = pkg_path + "/results/apf_paper3/"
+        # rospack = rospkg.RosPack()
+        # pkg_path = "rospack.get_path('apf')"
+        self.pred = "/home/piotr/Documents/Morteza/CurrentAPF/"
         self.dir_p = self.pred + self.test + "/apf_paths.json"
         self.dir_t = self.pred + self.test + "/apf_times.json"
         self.dir_f = self.pred + self.test + "/apf_paths"
@@ -76,7 +76,7 @@ class Run():
             self.paths[i] = [ac.result.path_x, ac.result.path_y]
             self.times[i] = ac.time
         
-        Results(self.paths, self.times, self.model.path_unit, self.test_id)
+        Results(self.paths, self.times, self.model.path_unit, self.test_id)  # check 3 !!!!!!!!!!
         self.data()
         self.plotting()
 

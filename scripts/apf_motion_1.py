@@ -159,6 +159,21 @@ class ApfMotion(object):
         phi = round(phi, 4)
         return [f_r, f_theta, phi, self.stop_flag]
 
+    def f_target(self):
+        dx = self.goal_x - self.r_x
+        dy = self.goal_y - self.r_y
+        goal_distance = np.sqrt(dx**2+dy**2)
+        # f = self.zeta * goal_distance
+        f = self.fix_f 
+        theta = np.arctan2(dy, dx)
+        angle_diff = theta - self.r_theta
+        angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+        self.goal_distance = goal_distance
+        fx = round(f*np.cos(angle_diff), 3)
+        fy = round(f*np.sin(angle_diff), 3)
+        self.target_f = [fx, fy]
+    
+    
     def f_robots(self):
         self.stop_flag = False
         req = SharePoses2Request()
@@ -201,20 +216,6 @@ class ApfMotion(object):
 
             self.robot_f[0] += round(templ[0], 3)
             self.robot_f[1] += round(templ[1], 3)
-
-    def f_target(self):
-        dx = self.goal_x - self.r_x
-        dy = self.goal_y - self.r_y
-        goal_distance = np.sqrt(dx**2+dy**2)
-        # f = self.zeta * goal_distance
-        f = self.fix_f 
-        theta = np.arctan2(dy, dx)
-        angle_diff = theta - self.r_theta
-        angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-        self.goal_distance = goal_distance
-        fx = round(f*np.cos(angle_diff), 3)
-        fy = round(f*np.sin(angle_diff), 3)
-        self.target_f = [fx, fy]
 
     def f_obstacle(self):
         self.obs_f = [0, 0]

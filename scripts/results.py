@@ -50,9 +50,9 @@ class Results:
         robot_count = {"robot_count": len(paths)}
         
         #
-        rospack = rospkg.RosPack()
-        pkg_path = rospack.get_path('apf')
-        save_path = pkg_path + '/result_apf/test_paper3/' + self.test_name
+        # rospack = rospkg.RosPack()
+        # pkg_path = rospack.get_path('apf')
+        save_path = "/home/piotr/Documents/Morteza/CurrentAPF" + '/result_apf/' + self.test_name
         with open(save_path, "w") as outfile:
             json.dump(final_data, outfile, indent=2)
             outfile.write("\n")
