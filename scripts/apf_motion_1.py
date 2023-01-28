@@ -21,8 +21,11 @@ class ApfMotion(object):
         self.v_ang = []
         self.path_x = []
         self.path_y = []
-        self.force_r = []
-        self.force_t = []
+        self.force_tr = []
+        self.force_tt = []
+        self.force_or = []
+        self.force_ot = []
+        self.phiis = []
         self.stop_flag = False
 
         # data
@@ -90,8 +93,6 @@ class ApfMotion(object):
         while self.goal_distance > self.dis_tresh and not rospy.is_shutdown():
             # calculate forces
             [f_r, f_theta, phi, stop_flag] = self.forces()
-            self.force_r.append(f_r)
-            self.force_t.append(f_theta)
 
             # calculate velocities
             self.cal_vel(f_r, f_theta, phi)
@@ -139,8 +140,8 @@ class ApfMotion(object):
             print("================")
 
         theta2 = abs(theta)
-        theta_thresh = 360*np.pi/180 #self.theta_thresh
-        v = self.v_max * max(0, (1- (theta2)/theta_thresh))**1 + self.v_min
+        theta_thresh = 180*np.pi/180 #self.theta_thresh
+        v = self.v_max * max(0, (1- (theta2)/theta_thresh))**2 + self.v_min
         w = self.w_max * self.w_coeff * 4 * (theta2/theta_thresh)**1 * np.sign(theta)
         v = min(v, self.v_max)
         v = max(v, 0)
@@ -164,10 +165,18 @@ class ApfMotion(object):
         f_r += self.robot_f[0]
         f_theta += self.robot_f[1]
 
-        phi = np.arctan2(f_r, f_theta)
-        theta = np.pi/2 - phi
+        phi = np.arctan2(f_theta, f_r,)
+        theta =  phi
         theta = np.arctan2(np.sin(theta), np.cos(theta))
         phi = round(theta, 4)
+
+        self.force_tr.append(self.target_f[0])
+        self.force_tt.append(self.target_f[1])
+        self.force_or.append(self.obs_f[0])
+        self.force_ot.append(self.obs_f[1])
+        self.phiis.append(phi)
+
+
         return [f_r, f_theta, phi, self.stop_flag]
 
     def f_target(self):
@@ -175,7 +184,7 @@ class ApfMotion(object):
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2+dy**2)
         f = self.zeta * goal_distance
-        # f = self.fix_f 
+        # f = 5 #self.fix_f 
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))

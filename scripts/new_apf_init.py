@@ -14,6 +14,8 @@ from create_model import CreateModel
 from call_apf_service import call_apf_service
 from apf_central_service import InitRobotService
 
+from plot_forces import plot_forces
+
 class Run():
     def __init__(self):
 
@@ -92,6 +94,8 @@ class Run():
         for k, v in self.paths.items():
             ax.plot(v[0], v[1], color=colors(k))
         plt.savefig(self.dir_f+".png", format="png")
+        
+        plot_forces(self.rsrv.ac_services[0])
         plt.show()
 
 
