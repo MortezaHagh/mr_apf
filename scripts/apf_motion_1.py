@@ -183,8 +183,8 @@ class ApfMotion(object):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2+dy**2)
-        f = self.zeta * goal_distance
-        # f = 5 #self.fix_f 
+        # f = self.zeta * goal_distance
+        f = 5 #self.fix_f 
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
