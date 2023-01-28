@@ -34,8 +34,8 @@ def plot_model(model, settings):
     for i in range(model.obst.count):
             # xor = [model.obst.x[i]+obs_r*np.cos(t) for t in thetas]
             # yor = [model.obst.y[i]+obs_r*np.sin(t) for t in thetas]
-            xdng = [model.obst.x[i]+danger_r*np.cos(t) for t in thetas]
-            ydng = [model.obst.y[i]+danger_r*np.sin(t) for t in thetas]
+            xdng = [model.obst.x[i]+obs_r*np.cos(t) for t in thetas]
+            ydng = [model.obst.y[i]+obs_r*np.sin(t) for t in thetas]
             # ax.plot(xor, yor, '--k')
             ax.plot(xdng, ydng, 'r')
 

@@ -43,7 +43,7 @@ class ApfMotion(object):
         self.w_max = 1.0 #init_params.angular_max_speed
 
         # parameters & settings
-        self.fix_f = 1
+        self.fix_f = 4
         self.prioriy = robot.priority
         self.topic_type = Odometry
         self.zeta = init_params.zeta
@@ -55,7 +55,7 @@ class ApfMotion(object):
         # self.f_theta_min = init_params.f_theta_min #
         # self.f_theta_max = init_params.f_theta_max #
         self.theta_thresh = 30*np.pi/180 #init_params.theta_thresh  # for velocity calculation
-        self.obs_effect_r = 0.4 #init_params.obs_effect_r
+        self.obs_effect_r = 0.5 #init_params.obs_effect_r
         self.pose_srv_name = init_params.pose_srv_name
         self.goal_distance = init_params.goal_distance
 
@@ -140,8 +140,8 @@ class ApfMotion(object):
             print("================")
 
         theta2 = abs(theta)
-        theta_thresh = 180*np.pi/180 #self.theta_thresh
-        v = self.v_max * max(0, (1- (theta2)/theta_thresh))**2 + self.v_min
+        theta_thresh = 90*np.pi/180 #self.theta_thresh
+        v = self.v_max * max(0, (1- (theta2)/theta_thresh))**2 #+ self.v_min
         w = self.w_max * self.w_coeff * 4 * (theta2/theta_thresh)**1 * np.sign(theta)
         v = min(v, self.v_max)
         v = max(v, 0)
@@ -176,7 +176,6 @@ class ApfMotion(object):
         self.force_ot.append(self.obs_f[1])
         self.phiis.append(phi)
 
-
         return [f_r, f_theta, phi, self.stop_flag]
 
     def f_target(self):
@@ -184,7 +183,7 @@ class ApfMotion(object):
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2+dy**2)
         # f = self.zeta * goal_distance
-        f = 5 #self.fix_f 
+        f = self.fix_f 
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -241,15 +240,18 @@ class ApfMotion(object):
             self.robot_f[1] += round(templ[1], 3)
 
     def f_obstacle(self):
+        obst_flag = False
         self.obs_f = [0, 0]
+        obs_f = [0, 0]
         for i in range(self.obs_count):
             dy = -(self.obs_y[i]-self.r_y)
             dx = -(self.obs_x[i]-self.r_x)
             d_ro = np.sqrt(dx**2+dy**2)
-            obs_effect_r = 0.6 # self.obs_effect_r
+            obs_effect_r = self.obs_effect_r
             if d_ro > obs_effect_r:
                 continue
             else:
+                obst_flag = True
                 theta = np.arctan2(dy, dx)
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -273,8 +275,18 @@ class ApfMotion(object):
                 templ[0] += f * np.cos(angle_diff)
                 templ[1] += f * np.sin(angle_diff)        
 
-            self.obs_f[0] += round(templ[0], 3)
-            self.obs_f[1] += round(templ[1], 3)
+            obs_f[0] += round(templ[0], 3)
+            obs_f[1] += round(templ[1], 3)
+
+        if obst_flag:
+            abst_f = np.sqrt((obs_f[0]**2 + obs_f[1]**2))
+            coeff_f = min(abst_f, self.fix_f)/abst_f
+
+            self.obs_f[0] += round(obs_f[0]*coeff_f, 3)
+            self.obs_f[1] += round(obs_f[1]*coeff_f, 3)
+
+            # self.obs_f[0] = min(self.fix_f, abs(self.obs_f[0])) * np.sign(self.obs_f[0])
+            # self.obs_f[1] = min(self.fix_f, abs(self.obs_f[1])) * np.sign(self.obs_f[1])
 
     # ------------------------- check_topic -- get_odom  ------------------------------#
     def check_topic(self):
