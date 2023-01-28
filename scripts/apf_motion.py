@@ -131,13 +131,13 @@ class ApfMotion(object):
         #     v = 0 + self.v_min/10
         #     w = self.w_max * np.sign(theta)
         # else:
-        if self.ind==1:
-            print("self.obs_f", self.obs_f)
-            print("self.robot_f", self.robot_f)
-            print("self.target_f", self.target_f)
-            print(self.ind, "f_r:" , f_r, "f_theta", f_theta)
-            print("theta2", theta*180/3.14)
-            print("================")
+        # if self.ind==1:
+        #     print("self.obs_f", self.obs_f)
+        #     print("self.robot_f", self.robot_f)
+        #     print("self.target_f", self.target_f)
+        #     print(self.ind, "f_r:" , f_r, "f_theta", f_theta)
+        #     print("theta2", theta*180/3.14)
+        #     print("================")
 
         theta2 = abs(theta)
         theta_thresh = 90*np.pi/180 #self.theta_thresh
