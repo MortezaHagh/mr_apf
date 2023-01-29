@@ -28,6 +28,7 @@ class Run():
         self.dir_p = self.pred + self.test + "/apf_paths.json"
         self.dir_t = self.pred + self.test + "/apf_times.json"
         self.dir_f = self.pred + self.test + "/apf_paths"
+        self.dir_force = self.pred + self.test + "/apf_forces"
         res_pred = "res_" + str(self.test_id) + ".json"
         self.result_path = "/home/piotr/Documents/Morteza/CurrentAPF" + '/result_apf/' + res_pred
 
@@ -50,11 +51,6 @@ class Run():
         self.rsrv = InitRobotService(self.model, init_srv_name)
 
         # ------------------------- call_init_service - SendGoal - status---------
-
-        # # broadcasters
-        # for i in self.model.robots_i.ids:
-        #     BroadCast(i)
-        # rate.sleep()
 
         # calling services
         call_apf_service(self.model.robots_i.ids)
@@ -97,7 +93,7 @@ class Run():
             ax.plot(v[0], v[1], color=colors(k))
         plt.savefig(self.dir_f+".png", format="png")
         
-        plot_forces(self.rsrv.ac_services[0])
+        plot_forces(self.rsrv.ac_services[0], self.dir_force)
         plt.show()
 
 
