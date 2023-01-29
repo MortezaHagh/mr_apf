@@ -45,15 +45,15 @@ class ApfMotion(object):
 
         # parameters & settings
         self.fix_f = 4
-        self.fix_f2 = 6
+        self.fix_f2 = 10
         self.prioriy = robot.priority
         self.topic_type = Odometry
         self.zeta = init_params.zeta
-        self.robot_r = 0.8  # init_params.robot_r
+        self.robot_r = 0.7  # init_params.robot_r
         self.w_coeff = init_params.w_coeff  # angular velocity coeff
         self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180  #init_params.theta_thresh  # for velocity calculation
-        self.obs_effect_r = 0.6  #init_params.obs_effect_r
+        self.obs_effect_r = 1.0  #init_params.obs_effect_r
         self.pose_srv_name = init_params.pose_srv_name
         self.goal_distance = init_params.goal_distance
 
@@ -127,10 +127,15 @@ class ApfMotion(object):
             v = 0
         else:
             v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + 0.01
+        
+        if abs(f_r)<0.03:
+            v = 0.02
+            print(self.ns, "v ---- ")
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
         if f_r<=0.01 and abs(w)<0.01:
+            v = 0.02
             print(self.ns, "oi ---- ")
 
         # theta2 = abs(theta)
@@ -249,7 +254,7 @@ class ApfMotion(object):
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
 
-                f = ((self.zeta * 1) * ((1 / d_ro) - (1 / obs_effect_r))**2) * (1 / d_ro)**2
+                f = ((self.zeta * 0.1) * ((1 / d_ro) - (1 / obs_effect_r))**2) * (1 / d_ro)**2
                 templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
                 # templ[0] += f * np.cos(angle_diff)

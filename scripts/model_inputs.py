@@ -7,7 +7,7 @@ class ModelInputs():
         if map_id == 1:
             self.map1()
         elif map_id == -1:
-            self.map_2()
+            self.map_5()
 
 
     def map0(self):
@@ -213,7 +213,7 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 8
 
         # robots
         robot_count = 8
@@ -244,7 +244,7 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 9
 
         # robots
         robot_count = 9
@@ -306,7 +306,7 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 11
 
         # robots
         robot_count = 11
@@ -337,7 +337,7 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 12
 
         # robots
         robot_count = 12
@@ -368,7 +368,7 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 13
 
         # robots
         robot_count = 13
@@ -399,7 +399,7 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 14
 
         # robots
         robot_count = 14
@@ -430,7 +430,7 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 4
 
         # robots
         robot_count = 4
@@ -465,7 +465,7 @@ class ModelInputs():
         self.y_obst = yc2 + yc3
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 1
 
         # robots
         robot_count = 1
@@ -500,7 +500,7 @@ class ModelInputs():
         self.y_obst = yc2 + yc3
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 20
 
         # robots
         robot_count = 20
