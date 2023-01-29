@@ -127,22 +127,19 @@ class ApfMotion(object):
 
     def cal_vel(self, f_r, f_theta, theta):
 
-        # if abs(theta)>self.theta_thresh:
-        #     v = 0 + self.v_min/10
-        #     w = self.w_max * np.sign(theta)
-        # else:
-        # if self.ind==1:
-        #     print("self.obs_f", self.obs_f)
-        #     print("self.robot_f", self.robot_f)
-        #     print("self.target_f", self.target_f)
-        #     print(self.ind, "f_r:" , f_r, "f_theta", f_theta)
-        #     print("theta2", theta*180/3.14)
-        #     print("================")
+        if f_r<0:
+            v = 0
+        else:
+            v = 1 * self.v_max * ((f_r/self.fix_f)**2 + (f_r/self.fix_f)/4)
+        
+        w = 5 * self.w_max * f_theta/self.fix_f 
 
-        theta2 = abs(theta)
-        theta_thresh = 90*np.pi/180 #self.theta_thresh
-        v = self.v_max * max(0, (1- (theta2)/theta_thresh))**2 #+ self.v_min
-        w = self.w_max * self.w_coeff * 4 * (theta2/theta_thresh)**2 * np.sign(theta)
+        # w = 5 * self.w_max * max(0, (abs(f_theta)-(self.fix_f/10))/self.fix_f) * np.sign(f_theta) 
+
+        # theta2 = abs(theta)
+        # theta_thresh = 90*np.pi/180 #self.theta_thresh
+        # v = self.v_max * max(0, (1- (theta2)/theta_thresh))**2 #+ self.v_min
+        # w = self.w_max * self.w_coeff * 4 * (theta2/theta_thresh)**2 * np.sign(theta)
         v = min(v, self.v_max)
         v = max(v, 0)
         wa = min(abs(w), self.w_max)
