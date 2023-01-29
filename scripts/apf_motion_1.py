@@ -14,7 +14,7 @@ class ApfMotion(object):
     def __init__(self, model, robot, init_params):
 
         # ros
-        self.rate = rospy.Rate(20)
+        self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.shutdown_hook)
 
         # preallocation
@@ -45,14 +45,15 @@ class ApfMotion(object):
 
         # parameters & settings
         self.fix_f = 4
+        self.fix_f2 = 4
         self.prioriy = robot.priority
         self.topic_type = Odometry
         self.zeta = init_params.zeta
-        self.robot_r = 0.5  # init_params.robot_r
+        self.robot_r = 0.8  # init_params.robot_r
         self.w_coeff = init_params.w_coeff  # angular velocity coeff
         self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180  #init_params.theta_thresh  # for velocity calculation
-        self.obs_effect_r = 0.5  #init_params.obs_effect_r
+        self.obs_effect_r = 0.6  #init_params.obs_effect_r
         self.pose_srv_name = init_params.pose_srv_name
         self.goal_distance = init_params.goal_distance
 
@@ -125,7 +126,7 @@ class ApfMotion(object):
         if f_r < 0:
             v = 0
         else:
-            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4)
+            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + 0.02
 
         w = 5 * self.w_max * f_theta / self.fix_f
 
@@ -214,15 +215,17 @@ class ApfMotion(object):
                 f = ((self.zeta * 1) * ((1 / d_ro) - (1 / robot_r))**2) * (1 / d_ro)**2
                 templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
-                templ[0] += f * np.cos(angle_diff)
-                templ[1] += f * np.sin(angle_diff)
+                # templ[0] += f * np.cos(angle_diff)
+                # templ[1] += f * np.sin(angle_diff)
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
 
+        coeff_f = 1
         if robot_flag:
             abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
-            coeff_f = min(abst_f, self.fix_f) / abst_f
+            if abst_f>0:
+                coeff_f = min(abst_f, self.fix_f2) / abst_f
 
             self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
             self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
@@ -247,15 +250,17 @@ class ApfMotion(object):
                 f = ((self.zeta * 1) * ((1 / d_ro) - (1 / obs_effect_r))**2) * (1 / d_ro)**2
                 templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
-                templ[0] += f * np.cos(angle_diff)
-                templ[1] += f * np.sin(angle_diff)
+                # templ[0] += f * np.cos(angle_diff)
+                # templ[1] += f * np.sin(angle_diff)
 
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
 
+        coeff_f = 1
         if obst_flag:
             abst_f = np.sqrt((obs_f[0]**2 + obs_f[1]**2))
-            coeff_f = min(abst_f, self.fix_f) / abst_f
+            if abst_f>0:
+                coeff_f = min(abst_f, self.fix_f2) / abst_f
 
             self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
             self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
