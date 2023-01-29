@@ -17,7 +17,7 @@ class Params(object):
         self.cmd_topic = '/cmd_vel'
         self.lis_topic = '/odom'
         self.linear_max_speed = 0.2
-        self.linear_min_speed = 0.05
+        self.linear_min_speed = 0.02
         self.angular_max_speed = 1.0
         self.angular_min_speed = 0.0
         self.dis_tresh = 0.05

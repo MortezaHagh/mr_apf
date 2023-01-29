@@ -10,11 +10,11 @@ from matplotlib.pylab import plt
 from  send_goals import SendGoal
 from broadcaster import BroadCast
 from plot_model import plot_model
+from plot_forces import plot_forces
 from create_model import CreateModel
 from call_apf_service import call_apf_service
 from apf_central_service import InitRobotService
 
-from plot_forces import plot_forces
 
 class Run():
     def __init__(self):

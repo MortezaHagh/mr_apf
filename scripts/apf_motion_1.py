@@ -266,7 +266,7 @@ class ApfMotion(object):
             self.obs_f[0] += round(obs_f[0]*coeff_f, 3)
             self.obs_f[1] += round(obs_f[1]*coeff_f, 3)
 
-    # ------------------------- check_topic -- get_odom  ------------------------------#
+    # ------------------------- check_topic -- get_odom  ------------------------------------#
     def check_topic(self):
         self.topic_msg = None
         rospy.loginfo(self.ns + " apf_motion, checking topic ...")
@@ -293,7 +293,6 @@ class ApfMotion(object):
         self.r_y = position.y
         self.r_theta = orientation[2]
 
-    
     # ----------------  get_robot -- map -- modify_angle -- shutdown_hook -------------------#
 
     def map(self):
@@ -328,4 +327,3 @@ class ApfMotion(object):
         elif theta>2*np.pi:
             theta = theta- 2*np.pi
         return theta
-        
