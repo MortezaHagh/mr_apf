@@ -194,11 +194,13 @@ class ApfMotion(object):
     
 
     def f_robots(self):
+        robot_flag = False
         self.stop_flag = False
         req = SharePoses2Request()
         req.ind = self.ind
         req.update = False
         resp = self.pose_client(req)
+        robot_f = [0, 0]
         self.robot_f = [0, 0]
         for i in range(resp.count):
             # heading = resp.heading
@@ -210,34 +212,29 @@ class ApfMotion(object):
             angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
             
             robot_r = self.robot_r
-            if d_ro > 1*robot_r:  #or abs(angle_diff)<np.pi/2:
+            if d_ro > 1*robot_r:
                 continue
             else:
                 if resp.priority[i]>0 and abs(angle_diff)>np.pi/2:
                     self.stop_flag = True
                     break
-                
-                # if d_ro > robot_r:
-                #     f = self.fix_f * (2*robot_r-d_ro)/robot_r           
-                # else:
-                #     f = self.fix_f + ((self.zeta*1)*((1/d_ro)-(1/robot_r))**2)*(1/d_ro)**2 
 
+                robot_flag = True           
                 f = ((self.zeta*1)*((1/d_ro)-(1/robot_r))**2)*(1/d_ro)**2 
-
                 templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
-                
-                # if angle_diff>0:
-                #     phi = theta-np.pi/2
-                # else:
-                #     phi = theta+np.pi/2
-                # angle_diff = phi - self.r_theta
-                # angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 
                 templ[0] += f*np.cos(angle_diff)
                 templ[1] += f*np.sin(angle_diff)   
 
-            self.robot_f[0] += round(templ[0], 3)
-            self.robot_f[1] += round(templ[1], 3)
+            robot_f[0] += round(templ[0], 3)
+            robot_f[1] += round(templ[1], 3)
+        
+        if robot_flag:
+            abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
+            coeff_f = min(abst_f, self.fix_f)/abst_f
+
+            self.robot_f[0] += round(robot_f[0]*coeff_f, 3)
+            self.robot_f[1] += round(robot_f[1]*coeff_f, 3)
 
     def f_obstacle(self):
         obst_flag = False
@@ -256,21 +253,8 @@ class ApfMotion(object):
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 
-                # if d_ro > obs_effect_r:
-                #     f = self.fix_f * (2*obs_effect_r-d_ro)/obs_effect_r
-                # else:
-                #     f = self.fix_f + ((self.zeta*1)*((1/d_ro)-(1/obs_effect_r))**2)*(1/d_ro)**2 
-
                 f = ((self.zeta*1)*((1/d_ro)-(1/obs_effect_r))**2)*(1/d_ro)**2 
-
                 templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
-                
-                # if angle_diff>0:
-                #     phi = theta-np.pi/2
-                # else:
-                #     phi = theta+np.pi/2
-                # angle_diff = phi - self.r_theta
-                # angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 
                 templ[0] += f * np.cos(angle_diff)
                 templ[1] += f * np.sin(angle_diff)        
@@ -284,9 +268,6 @@ class ApfMotion(object):
 
             self.obs_f[0] += round(obs_f[0]*coeff_f, 3)
             self.obs_f[1] += round(obs_f[1]*coeff_f, 3)
-
-            # self.obs_f[0] = min(self.fix_f, abs(self.obs_f[0])) * np.sign(self.obs_f[0])
-            # self.obs_f[1] = min(self.fix_f, abs(self.obs_f[1])) * np.sign(self.obs_f[1])
 
     # ------------------------- check_topic -- get_odom  ------------------------------#
     def check_topic(self):

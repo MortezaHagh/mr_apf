@@ -28,6 +28,8 @@ class Run():
         self.dir_p = self.pred + self.test + "/apf_paths.json"
         self.dir_t = self.pred + self.test + "/apf_times.json"
         self.dir_f = self.pred + self.test + "/apf_paths"
+        res_pred = "res_" + str(self.test_id) + ".json"
+        self.result_path = "/home/piotr/Documents/Morteza/CurrentAPF" + '/result_apf/' + res_pred
 
         # ros
         rate = rospy.Rate(20)
@@ -78,7 +80,7 @@ class Run():
             self.paths[i] = [ac.result.path_x, ac.result.path_y]
             self.times[i] = ac.time
         
-        Results(self.paths, self.times, self.model.path_unit, self.test_id)  # check 3 !!!!!!!!!!
+        Results(self.paths, self.times, self.model.path_unit, self.test_id, self.result_path)
         self.data()
         self.plotting()
 
