@@ -7,7 +7,7 @@ class ModelInputs():
         if map_id == 1:
             self.map1()
         elif map_id == -1:
-            self.map_3()
+            self.map_2()
 
 
     def map0(self):
@@ -120,7 +120,7 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 5
 
         # robots
         robot_count = 5
@@ -182,7 +182,7 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 0
+        self.robot_count = 7
 
         # robots
         robot_count = 7

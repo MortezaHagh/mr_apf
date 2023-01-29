@@ -45,7 +45,7 @@ class ApfMotion(object):
 
         # parameters & settings
         self.fix_f = 4
-        self.fix_f2 = 4
+        self.fix_f2 = 6
         self.prioriy = robot.priority
         self.topic_type = Odometry
         self.zeta = init_params.zeta
@@ -126,16 +126,18 @@ class ApfMotion(object):
         if f_r < 0:
             v = 0
         else:
-            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + 0.02
+            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + 0.01
 
-        w = 5 * self.w_max * f_theta / self.fix_f
+        w = 1 * self.w_max * f_theta / self.fix_f
 
-        # w = 5 * self.w_max * max(0, (abs(f_theta)-(self.fix_f/10))/self.fix_f) * np.sign(f_theta)
+        if f_r<=0.01 and abs(w)<0.01:
+            print(self.ns, "oi ---- ")
 
         # theta2 = abs(theta)
         # theta_thresh = 90*np.pi/180 #self.theta_thresh
         # v = self.v_max * max(0, (1- (theta2)/theta_thresh))**2 #+ self.v_min
         # w = self.w_max * self.w_coeff * 4 * (theta2/theta_thresh)**2 * np.sign(theta)
+
         v = min(v, self.v_max)
         v = max(v, 0)
         wa = min(abs(w), self.w_max)
