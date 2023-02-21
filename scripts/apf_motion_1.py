@@ -52,7 +52,7 @@ class ApfMotion(object):
         self.v_min = 0.0        # init_params.linear_min_speed
         self.w_min = 0          # init_params.angular_min_speed
         self.w_max = 1.0        # init_params.angular_max_speed
-        self.v_min_2 = 0.03     # init_params.linear_min_speed_2
+        self.v_min_2 = 0.02     # init_params.linear_min_speed_2
 
         # settings
         self.zeta = 1                     

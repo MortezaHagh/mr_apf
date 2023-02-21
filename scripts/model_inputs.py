@@ -69,7 +69,7 @@ class ModelInputs():
         self.xt = [10] #[10, 4, 4, 10]
         self.yt = [10] #[10, 4, 10, 4]
     
-    def map_1(self):
+    def map_4(self):
         # area
         lim = 13
         self.lim = lim
@@ -100,7 +100,7 @@ class ModelInputs():
         self.xt = [10, 4, 4, 10]
         self.yt = [10, 4, 10, 4]
 
-    def map_2(self):
+    def map_5(self):
         # area
         lim = 13
         self.lim = lim
@@ -131,7 +131,7 @@ class ModelInputs():
         self.xt = [10, 4, 4, 10, 2]
         self.yt = [10, 4, 10, 4, 10]
 
-    def map_3(self):
+    def map_6(self):
         # area
         lim = 13
         self.lim = lim
@@ -162,7 +162,7 @@ class ModelInputs():
         self.xt = [10, 4, 4, 10, 3, 10]
         self.yt = [10, 4, 10, 4, 8, 7]
 
-    def map_4(self):
+    def map_7(self):
         # area
         lim = 13
         self.lim = lim
@@ -193,7 +193,7 @@ class ModelInputs():
         self.xt = [10, 4, 4, 10, 3, 10, 6]
         self.yt = [10, 4, 10, 4, 8, 7, 5]
 
-    def map_5(self):
+    def map_8(self):
         # area
         lim = 13
         self.lim = lim
@@ -224,7 +224,7 @@ class ModelInputs():
         self.xt = [10, 4, 4, 10, 3, 10, 6, 7]
         self.yt = [10, 4, 10, 4, 8, 7, 5, 7]
 
-    def map_6(self):
+    def map_9(self):
         # area
         lim = 13
         self.lim = lim
@@ -255,7 +255,7 @@ class ModelInputs():
         self.xt = [10, 4, 4, 10, 3, 10, 6, 7, 1]
         self.yt = [10, 4, 10, 4, 8, 7, 5, 7, 7]
 
-    def map_7(self):
+    def map_10(self):
         # area
         lim = 13
         self.lim = lim
@@ -286,7 +286,7 @@ class ModelInputs():
         self.xt = [10, 4, 4, 10, 3, 10, 6, 7, 1, 5]
         self.yt = [10, 4, 10, 4, 8, 7, 5, 7, 7, 8]
 
-    def map_8(self):
+    def map_11(self):
         # area
         lim = 13
         self.lim = lim
@@ -317,7 +317,7 @@ class ModelInputs():
         self.xt = [10, 4, 4, 10, 3, 10, 6, 7, 1, 5, 2]
         self.yt = [10, 4, 10, 4, 8, 7, 5, 7, 7, 8, 1]
 
-    def map_9(self):
+    def map_12(self):
         # area
         lim = 13
         self.lim = lim
@@ -348,7 +348,7 @@ class ModelInputs():
         self.xt = [10, 4, 4, 10, 3, 10, 6, 7, 1, 5, 2, 10]
         self.yt = [10, 4, 10, 4, 8, 7, 5, 7, 7, 8, 1, 13]
 
-    def map_10(self):
+    def map_13(self):
         # area
         lim = 13
         self.lim = lim
@@ -379,7 +379,7 @@ class ModelInputs():
         self.xt = [10, 4, 4, 10, 3, 10, 6, 7, 1, 5, 2, 10, 5]
         self.yt = [10, 4, 10, 4, 8, 7, 5, 7, 7, 8, 1, 13, 7]
 
-    def map11(self):
+    def map_14(self):
         # area
         lim = 13
         self.lim = lim
