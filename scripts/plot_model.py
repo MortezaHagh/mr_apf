@@ -4,17 +4,15 @@ import matplotlib.pyplot as plt
 
 def plot_model(model, settings):
     # setting
-    robot_r = settings.robot_r
-    danger_r = settings.danger_r
-    obs_r = settings.obs_effect_r
+    obs_r = settings.obst_r
+    obst_prec_d = settings.obst_prec_d
 
     fig, ax = plt.subplots(1, 1)
     ax.set_title('MRPP')
-    #     ax.axis("off")
     ax.axis('equal')
+    # ax.axis("off")0
     # ax.grid('on')
-    ax.axis([model.map.x_min-1, model.map.x_max+1,
-            model.map.y_min-1, model.map.y_max+1])
+    ax.axis([model.map.x_min-1, model.map.x_max+1, model.map.y_min-1, model.map.y_max+1])
 
     # robots start and target nodes
     colors = plt.cm.get_cmap('rainbow', len(model.robots))
@@ -32,11 +30,11 @@ def plot_model(model, settings):
     ax.plot(model.obst.x, model.obst.y, 'o',  markersize=5,
             markeredgecolor='k', markerfacecolor='k')
     for i in range(model.obst.count):
-            # xor = [model.obst.x[i]+obs_r*np.cos(t) for t in thetas]
-            # yor = [model.obst.y[i]+obs_r*np.sin(t) for t in thetas]
+            xor = [model.obst.x[i]+obst_prec_d*np.cos(t) for t in thetas]
+            yor = [model.obst.y[i]+obst_prec_d*np.sin(t) for t in thetas]
             xdng = [model.obst.x[i]+obs_r*np.cos(t) for t in thetas]
             ydng = [model.obst.y[i]+obs_r*np.sin(t) for t in thetas]
-            # ax.plot(xor, yor, '--k')
+            ax.plot(xor, yor, '--k')
             ax.plot(xdng, ydng, 'r')
 
     # Walls

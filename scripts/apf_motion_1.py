@@ -32,31 +32,35 @@ class ApfMotion(object):
         # data
         self.model = model
         self.robot = robot
+
+        # parameters
+        self.topic_type = Odometry
+        self.prioriy = robot.priority
+        self.goal_distance = 1000
+
+        # params 
         self.ind = init_params.id
         self.ns = init_params.name_space
+        self.topic = init_params.lis_topic
+        self.cmd_topic = init_params.cmd_topic
+        self.pose_srv_name = init_params.pose_srv_name
 
         # parameters vel
         self.v = 0
         self.w = 0
         self.v_max = 0.2        # init_params.linear_max_speed
+        self.v_min = 0.0        # init_params.linear_min_speed
         self.w_min = 0          # init_params.angular_min_speed
         self.w_max = 1.0        # init_params.angular_max_speed
-        self.v_min = 0.0        # init_params.linear_min_speed
-        self.v_min_2 = 0.02
-
-        # parameters & settings
-        self.topic_type = Odometry
-        self.prioriy = robot.priority
-        self.pose_srv_name = init_params.pose_srv_name
-        self.goal_distance = init_params.goal_distance
+        self.v_min_2 = 0.02     # init_params.linear_min_speed
 
         # settings
-        self.zeta = 1                           # init_params.zeta
+        self.zeta = 1                     
         self.fix_f = 4
         self.fix_f2 = 10
-        self.robot_r = 0.22                      # init_params.robot_r
-        self.obst_r = 0.15
-        self.prec_d = 0.01
+        self.obst_r = 0.11
+        self.prec_d = 0.06
+        self.robot_r = 0.22             
         
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
         self.obst_start_d = self.obst_prec_d*2
@@ -67,10 +71,8 @@ class ApfMotion(object):
         self.robot_stop_d = self.robot_prec_d
         self.robot_z = 4 * self.fix_f*self.robot_prec_d**4
 
-        self.obs_effect_r = 1.0                 # init_params.obs_effect_r
-        self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
-
         self.w_coeff = 1                        # init_params.w_coeff      # angular velocity coeff
+        self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
 
@@ -78,10 +80,9 @@ class ApfMotion(object):
         self.map()
 
         # /cmd_vel puplisher
-        self.cmd_vel = rospy.Publisher(init_params.cmd_topic, Twist, queue_size=5)
+        self.cmd_vel = rospy.Publisher(self.cmd_topic, Twist, queue_size=5)
 
         # listener
-        self.topic = init_params.lis_topic
         self.check_topic()
         rospy.Subscriber(self.topic, self.topic_type, self.get_odom)
 
