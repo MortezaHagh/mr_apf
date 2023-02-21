@@ -20,7 +20,7 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test_id = 4                              # check 3 !!!!!!!!!!
+        self.test_id = 4                              # check 2 !!!!!!!!!!
         self.test = "T" + str(self.test_id)
         # rospack = rospkg.RosPack()
         # pkg_path = "rospack.get_path('apf')"
@@ -37,7 +37,7 @@ class Run():
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
-        self.model = CreateModel(map_id=-1)                # check 3 !!!!!!!!!!
+        self.model = CreateModel(map_id=-1)                # check 2 !!!!!!!!!! last
         self.count = self.model.robot_count
         self.paths = {}
         self.times = {}
