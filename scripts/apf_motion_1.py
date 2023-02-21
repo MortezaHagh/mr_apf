@@ -52,7 +52,7 @@ class ApfMotion(object):
         self.v_min = 0.0        # init_params.linear_min_speed
         self.w_min = 0          # init_params.angular_min_speed
         self.w_max = 1.0        # init_params.angular_max_speed
-        self.v_min_2 = 0.02     # init_params.linear_min_speed
+        self.v_min_2 = 0.03     # init_params.linear_min_speed_2
 
         # settings
         self.zeta = 1                     
@@ -114,10 +114,8 @@ class ApfMotion(object):
             self.v_ang.append(self.w)
 
             if stop_flag:
-                self.v = 0  #self.v/3
-                self.w = 0  #self.w/3
-                # self.stop()
-                # continue
+                self.v = 0
+                self.w = 0
 
             # publish cmd
             move_cmd = Twist()
@@ -144,10 +142,10 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        if (f_r/self.fix_f)<0.2 and abs(w)<3*np.pi/180:
-            v = 0.05
-            w = np.sign(w)*3*np.pi/180
-            print(self.ns, "v ---- ")
+        # if (f_r<0) and abs(w)<3*np.pi/180:
+        #     v = self.v_min_2
+        #     w = np.sign(w)*v/self.obst_prec_d   #3*np.pi/180
+        #     print(self.ns, "v ---- ")
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -229,17 +227,14 @@ class ApfMotion(object):
                 f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
                 templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
-                # templ[0] += f * np.cos(angle_diff)
-                # templ[1] += f * np.sin(angle_diff)
-
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
 
         coeff_f = 1
         if robot_flag:
             abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
-            if abst_f>0:
-                coeff_f = min(abst_f, self.fix_f2) / abst_f
+            # if abst_f>0:
+            #     coeff_f = min(abst_f, self.fix_f2) / abst_f
 
             self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
             self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
@@ -264,17 +259,14 @@ class ApfMotion(object):
                 f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
                 templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
-                # templ[0] += f * np.cos(angle_diff)
-                # templ[1] += f * np.sin(angle_diff)
-
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
 
         coeff_f = 1
         if obst_flag:
             abst_f = np.sqrt((obs_f[0]**2 + obs_f[1]**2))
-            if abst_f>0:
-                coeff_f = min(abst_f, self.fix_f2) / abst_f
+            # if abst_f>0:
+            #     coeff_f = min(abst_f, self.fix_f2) / abst_f
 
             self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
             self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
