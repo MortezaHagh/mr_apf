@@ -140,13 +140,13 @@ class ApfMotion(object):
         if f_r < 0:
             v = 0
         else:
-            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) #+ self.v_min_2
+            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        if (f_r/self.fix_f)<0.2 and abs(w)<5*np.pi/180:
+        if (f_r/self.fix_f)<0.2 and abs(w)<3*np.pi/180:
             v = 0.05
-            w = np.sign(w)*5*np.pi/180
+            w = np.sign(w)*3*np.pi/180
             print(self.ns, "v ---- ")
 
         v = min(v, self.v_max)

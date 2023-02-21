@@ -12,5 +12,5 @@ def plot_forces(ac, dir_force):
 
     ax.legend(handles=[line1, line2, line3, line4])
     ax2.legend(handles=[line5])
-    fig.savefig(dir_force+".png", format="png")
+    fig.savefig(dir_force+".svg", format="svg")
     # plt.show()

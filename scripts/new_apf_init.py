@@ -91,8 +91,9 @@ class Run():
         colors = plt.cm.get_cmap('rainbow', len(self.paths))
         for k, v in self.paths.items():
             ax.plot(v[0], v[1], color=colors(k))
-        plt.savefig(self.dir_f+".png", format="png")
+        plt.savefig(self.dir_f+".svg", format="svg", dpi=1000)
         
+        # forces
         plot_forces(self.rsrv.ac_services[0], self.dir_force)
         plt.show()
 
