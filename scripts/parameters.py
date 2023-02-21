@@ -13,7 +13,7 @@ class Params(object):
         self.lis_topic = name_space+self.lis_topic
 
     # parameters for simulation
-    def sim_params0(self):
+    def sim_params(self):
         self.name_space = ''
         self.lis_topic = '/odom'
         self.cmd_topic = '/cmd_vel'
