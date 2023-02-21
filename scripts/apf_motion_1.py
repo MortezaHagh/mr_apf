@@ -129,10 +129,6 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
-            # # feedback
-            # self.feedback.path = [self.r_x, self.r_y]
-            # self.ac_.publish_feedback(self.feedback)
-
             self.rate.sleep()
 
         self.stop()
@@ -148,8 +144,8 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        if 0<(f_r/self.fix_f)<0.1 and abs(w)<5*np.pi/180:
-            v = 0.02
+        if (f_r/self.fix_f)<0.2 and abs(w)<5*np.pi/180:
+            v = 0.05
             w = np.sign(w)*5*np.pi/180
             print(self.ns, "v ---- ")
 
