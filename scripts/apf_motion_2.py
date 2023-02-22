@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import rospy
-import actionlib
 import numpy as np
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
