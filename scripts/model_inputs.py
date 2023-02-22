@@ -7,7 +7,7 @@ class ModelInputs():
         if map_id == 1:
             self.map1()
         elif map_id == -1:
-            self.map_4()
+            self.map_0()
 
 
     def map0(self):
@@ -66,8 +66,8 @@ class ModelInputs():
         self.heading = [0] #[0.0, 0.0, 0.0, 0.0]
         self.xs = [1] #[1, 12, 10, 4]
         self.ys = [3] #[3, 10, 1, 12]
-        self.xt = [10] #[10, 4, 4, 10]
-        self.yt = [10] #[10, 4, 10, 4]
+        self.xt = [12] #[10, 4, 4, 10]
+        self.yt = [9] #[10, 4, 10, 4]
     
     def map_4(self):
         # area
