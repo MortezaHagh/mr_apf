@@ -262,7 +262,7 @@ class ApfMotion(object):
 
             if abs(angle_diff2)>(np.pi/2):
                 angle_diff3 = np.pi - abs(angle_diff2)
-                coeff_alpha = np.cos(np.pi/2-abs(angle_diff2))
+                coeff_alpha = np.cos(angle_diff3)
                 templ[1] = f*coeff_alpha*np.sign(np.sin(angle_diff2))
 
             obs_f[0] += round(templ[0], 3)
@@ -270,7 +270,7 @@ class ApfMotion(object):
 
         coeff_f = 1
         if obst_flag:
-            abst_f = np.sqrt((obs_f[0]**2 + obs_f[1]**2))
+            # abst_f = np.sqrt((obs_f[0]**2 + obs_f[1]**2))
             # if abst_f>0:
             #     coeff_f = min(abst_f, self.fix_f2) / abst_f
 
