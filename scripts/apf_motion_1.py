@@ -10,10 +10,11 @@ from tf.transformations import euler_from_quaternion
 
 
 class ApfMotion(object):
+
     def __init__(self, model, robot, init_params):
 
         # ros
-        self.rate = rospy.Rate(20)
+        self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.shutdown_hook)
 
         # preallocation
@@ -21,49 +22,67 @@ class ApfMotion(object):
         self.v_ang = []
         self.path_x = []
         self.path_y = []
-        self.force_r = []
-        self.force_t = []
+        self.force_tr = []
+        self.force_tt = []
+        self.force_or = []
+        self.force_ot = []
+        self.phiis = []
         self.stop_flag = False
 
         # data
         self.model = model
         self.robot = robot
+
+        # parameters
+        self.topic_type = Odometry
+        self.prioriy = robot.priority
+        self.goal_distance = 1000
+
+        # params 
         self.ind = init_params.id
         self.ns = init_params.name_space
-        
+        self.topic = init_params.lis_topic
+        self.cmd_topic = init_params.cmd_topic
+        self.pose_srv_name = init_params.pose_srv_name
+
         # parameters vel
         self.v = 0
         self.w = 0
-        self.v_min = init_params.linear_min_speed
-        self.v_max = init_params.linear_max_speed
-        self.w_min = init_params.angular_min_speed
-        self.w_max = init_params.angular_max_speed
+        self.v_max = 0.2        # init_params.linear_max_speed
+        self.v_min = 0.0        # init_params.linear_min_speed
+        self.w_min = 0          # init_params.angular_min_speed
+        self.w_max = 1.0        # init_params.angular_max_speed
+        self.v_min_2 = 0.02     # init_params.linear_min_speed_2
 
-        # parameters & settings
+        # settings
+        self.zeta = 1                     
         self.fix_f = 4
-        self.prioriy = robot.priority
-        self.topic_type = Odometry
-        self.zeta = init_params.zeta
-        self.robot_r = 0.5 # init_params.robot_r
-        self.w_coeff = init_params.w_coeff
-        self.dis_tresh = init_params.dis_tresh
-        self.f_r_min = init_params.f_r_min #
-        self.f_r_max = init_params.f_r_max #
-        self.f_theta_min = init_params.f_theta_min #
-        self.f_theta_max = init_params.f_theta_max #
-        self.theta_thresh = 30*np.pi/180 #init_params.theta_thresh
-        self.obs_effect_r = 1.0 #init_params.obs_effect_r
-        self.pose_srv_name = init_params.pose_srv_name
-        self.goal_distance = init_params.goal_distance
+        self.fix_f2 = 10
+        self.obst_r = 0.11
+        self.prec_d = 0.06
+        self.robot_r = 0.22             
+        
+        self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
+        self.obst_start_d = self.obst_prec_d*2
+        self.obst_z = 4*self.fix_f*self.obst_prec_d**4
+
+        self.robot_prec_d = 2*self.robot_r + self.prec_d  # 0.64
+        self.robot_start_d = self.robot_prec_d*2
+        self.robot_stop_d = self.robot_prec_d
+        self.robot_z = 4 * self.fix_f*self.robot_prec_d**4
+
+        self.w_coeff = 1                        # init_params.w_coeff      # angular velocity coeff
+        self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
+        self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
+
 
         # map: target and obstacles coordinates
         self.map()
 
         # /cmd_vel puplisher
-        self.cmd_vel = rospy.Publisher(init_params.cmd_topic, Twist, queue_size=5)
+        self.cmd_vel = rospy.Publisher(self.cmd_topic, Twist, queue_size=5)
 
         # listener
-        self.topic = init_params.lis_topic
         self.check_topic()
         rospy.Subscriber(self.topic, self.topic_type, self.get_odom)
 
@@ -77,11 +96,9 @@ class ApfMotion(object):
     # --------------------------  exec_cb  ---------------------------#
 
     def exec_cb(self):
-
         # move
         self.go_to_goal()
         self.is_reached = True
-        
         return
 
     # --------------------------  go_to_goal  ---------------------------#
@@ -90,8 +107,6 @@ class ApfMotion(object):
         while self.goal_distance > self.dis_tresh and not rospy.is_shutdown():
             # calculate forces
             [f_r, f_theta, phi, stop_flag] = self.forces()
-            self.force_r.append(f_r)
-            self.force_t.append(f_theta)
 
             # calculate velocities
             self.cal_vel(f_r, f_theta, phi)
@@ -99,42 +114,41 @@ class ApfMotion(object):
             self.v_ang.append(self.w)
 
             if stop_flag:
-                self.v = 0 #self.v/3
-                self.w = 0 #self.w/3
-                # self.stop()
-                # continue
+                self.v = 0
+                self.w = 0
 
             # publish cmd
             move_cmd = Twist()
             move_cmd.linear.x = self.v
             move_cmd.angular.z = self.w
             self.cmd_vel.publish(move_cmd)
-            
+
             # result
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
-            # # feedback
-            # self.feedback.path = [self.r_x, self.r_y]
-            # self.ac_.publish_feedback(self.feedback)
-
             self.rate.sleep()
-        
+
         self.stop()
 
     # -----------------------  cal_vel  ----------------------------#
 
     def cal_vel(self, f_r, f_theta, theta):
 
-        # if abs(theta)>self.theta_thresh:
-        #     v = 0 + self.v_min/10
-        #     w = self.w_max * np.sign(theta)
-        # else:
-        theta_thresh = self.theta_thresh
-        v = self.v_max * max(0, (1- (abs(theta)/theta_thresh)))**1 + self.v_min
-        w = theta * self.w_coeff * 4 * (abs(theta)/theta_thresh)
+        if f_r < 0:
+            v = 0
+        else:
+            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
+
+        w = 1 * self.w_max * f_theta / self.fix_f
+
+        # if (f_r<0) and abs(w)<3*np.pi/180:
+        #     v = self.v_min_2
+        #     w = np.sign(w)*v/self.obst_prec_d   #3*np.pi/180
+        #     print(self.ns, "v ---- ")
+
         v = min(v, self.v_max)
-        v = max(v, 0)
+        v = max(v, self.v_min)
         wa = min(abs(w), self.w_max)
         w = wa * np.sign(w)
 
@@ -142,6 +156,7 @@ class ApfMotion(object):
         self.w = w
 
     # -----------------------  forces  ----------------------------#
+
     def forces(self):
         self.f_target()
         f_r = self.target_f[0]
@@ -156,100 +171,107 @@ class ApfMotion(object):
         f_theta += self.robot_f[1]
 
         phi = np.arctan2(f_theta, f_r)
-        phi = round(phi, 4)
+        theta = phi
+        theta = np.arctan2(np.sin(theta), np.cos(theta))
+        phi = round(theta, 4)
+
+        self.force_tr.append(self.target_f[0])
+        self.force_tt.append(self.target_f[1])
+        self.force_or.append(self.obs_f[0])
+        self.force_ot.append(self.obs_f[1])
+        self.phiis.append(phi)
+
         return [f_r, f_theta, phi, self.stop_flag]
 
+    def f_target(self):
+        dx = self.goal_x - self.r_x
+        dy = self.goal_y - self.r_y
+        goal_distance = np.sqrt(dx**2 + dy**2)
+        # f = self.zeta * goal_distance
+        f = self.fix_f
+        theta = np.arctan2(dy, dx)
+        angle_diff = theta - self.r_theta
+        angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+        self.goal_distance = goal_distance
+        fx = round(f * np.cos(angle_diff), 3)
+        fy = round(f * np.sin(angle_diff), 3)
+        self.target_f = [fx, fy]
+
     def f_robots(self):
+        robot_flag = False
         self.stop_flag = False
         req = SharePoses2Request()
         req.ind = self.ind
         req.update = False
         resp = self.pose_client(req)
+        robot_f = [0, 0]
         self.robot_f = [0, 0]
         for i in range(resp.count):
             # heading = resp.heading
-            dx = -(resp.x[i]-self.r_x)
-            dy = -(resp.y[i]-self.r_y)
-            d_ro = np.sqrt(dx**2+dy**2)
+            dx = -(resp.x[i] - self.r_x)
+            dy = -(resp.y[i] - self.r_y)
+            d_ro = np.sqrt(dx**2 + dy**2)
             theta = np.arctan2(dy, dx)
             angle_diff = theta - self.r_theta
             angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-            
-            robot_r = self.robot_r
-            if d_ro >= 2*robot_r or abs(angle_diff)<np.pi/2:
-                f = 0
+
+            if d_ro > 1 * self.robot_start_d:
                 continue
             else:
-                if resp.priority[i]>0 and abs(angle_diff)>np.pi/2 and d_ro <= robot_r:
-                    self.stop_flag = True
-                    break
-                
-                if d_ro > robot_r:
-                    f = self.fix_f * (2*robot_r-d_ro)/robot_r           
-                else:
-                    f = self.fix_f + ((self.zeta*1)*((1/d_ro)-(1/robot_r))**2)*(1/d_ro)**2 
+                if d_ro < 1 * self.robot_stop_d:
+                    if resp.priority[i] > 0 and abs(angle_diff) > np.pi / 2:
+                        self.stop_flag = True
+                        break
 
-                templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
-                if angle_diff>0:
-                    phi = theta-np.pi/2
-                else:
-                    phi = theta+np.pi/2
-                angle_diff = phi - self.r_theta
-                angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-                templ[0] += f*np.cos(angle_diff)
-                templ[1] += f*np.sin(angle_diff)   
+                robot_flag = True
+                f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
+                templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
-            self.robot_f[0] += round(templ[0], 3)
-            self.robot_f[1] += round(templ[1], 3)
+            robot_f[0] += round(templ[0], 3)
+            robot_f[1] += round(templ[1], 3)
 
-    def f_target(self):
-        dx = self.goal_x - self.r_x
-        dy = self.goal_y - self.r_y
-        goal_distance = np.sqrt(dx**2+dy**2)
-        # f = self.zeta * goal_distance
-        f = self.fix_f 
-        theta = np.arctan2(dy, dx)
-        angle_diff = theta - self.r_theta
-        angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-        self.goal_distance = goal_distance
-        fx = round(f*np.cos(angle_diff), 3)
-        fy = round(f*np.sin(angle_diff), 3)
-        self.target_f = [fx, fy]
+        coeff_f = 1
+        if robot_flag:
+            abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
+            # if abst_f>0:
+            #     coeff_f = min(abst_f, self.fix_f2) / abst_f
+
+            self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
+            self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
 
     def f_obstacle(self):
+        obst_flag = False
         self.obs_f = [0, 0]
+        obs_f = [0, 0]
         for i in range(self.obs_count):
-            dy = -(self.obs_y[i]-self.r_y)
-            dx = -(self.obs_x[i]-self.r_x)
-            d_ro = np.sqrt(dx**2+dy**2)
-            obs_effect_r = 0.3
-            if d_ro >= 2*obs_effect_r:
-                f = 0
+            dy = -(self.obs_y[i] - self.r_y)
+            dx = -(self.obs_x[i] - self.r_x)
+            d_ro = np.sqrt(dx**2 + dy**2)
+
+            if d_ro > self.obst_start_d:
                 continue
             else:
+                obst_flag = True
                 theta = np.arctan2(dy, dx)
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-                
-                if d_ro > obs_effect_r:
-                    f = self.fix_f * (2*obs_effect_r-d_ro)/obs_effect_r
-                else:
-                    f = self.fix_f + ((self.zeta*1)*((1/d_ro)-(1/obs_effect_r))**2)*(1/d_ro)**2 
-                
-                templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
-                if angle_diff>0:
-                    phi = theta-np.pi/2
-                else:
-                    phi = theta+np.pi/2
-                angle_diff = phi - self.r_theta
-                angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-                templ[0] += f*np.cos(angle_diff)
-                templ[1] += f*np.sin(angle_diff)        
 
-            self.obs_f[0] += round(templ[0], 3)
-            self.obs_f[1] += round(templ[1], 3)
+                f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
+                templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
-    # ------------------------- check_topic -- get_odom  ------------------------------#
+            obs_f[0] += round(templ[0], 3)
+            obs_f[1] += round(templ[1], 3)
+
+        coeff_f = 1
+        if obst_flag:
+            abst_f = np.sqrt((obs_f[0]**2 + obs_f[1]**2))
+            # if abst_f>0:
+            #     coeff_f = min(abst_f, self.fix_f2) / abst_f
+
+            self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
+            self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
+
+    # ------------------------- check_topic -- get_odom  ------------------------------------#
     def check_topic(self):
         self.topic_msg = None
         rospy.loginfo(self.ns + " apf_motion, checking topic ...")
@@ -258,16 +280,16 @@ class ApfMotion(object):
                 self.topic_msg = rospy.wait_for_message(self.topic, self.topic_type, timeout=3.0)
                 rospy.logdebug(self.ns + " apf_motion, current topic is ready!")
             except:
-                rospy.loginfo(self.ns+ " apf_motion, current topic is not ready yet, retrying ...")
-        
-        position =  self.topic_msg.pose.pose.position
-        quaternion =  self.topic_msg.pose.pose.orientation
+                rospy.loginfo(self.ns + " apf_motion, current topic is not ready yet, retrying ...")
+
+        position = self.topic_msg.pose.pose.position
+        quaternion = self.topic_msg.pose.pose.orientation
         orientation = euler_from_quaternion([quaternion.x, quaternion.y, quaternion.z, quaternion.w])
         self.r_x = position.x
         self.r_y = position.y
         self.r_theta = orientation[2]
         return self.topic_msg
-    
+
     def get_odom(self, odom):
         position = odom.pose.pose.position
         quaternion = odom.pose.pose.orientation
@@ -276,7 +298,6 @@ class ApfMotion(object):
         self.r_y = position.y
         self.r_theta = orientation[2]
 
-    
     # ----------------  get_robot -- map -- modify_angle -- shutdown_hook -------------------#
 
     def map(self):
@@ -291,7 +312,7 @@ class ApfMotion(object):
         self.obs_y = self.model.obst.y
 
     def modify_angle(self, theta):
-        theta_mod = (theta + np.pi) % (2*np.pi) - np.pi
+        theta_mod = (theta + np.pi) % (2 * np.pi) - np.pi
         return theta_mod
 
     def stop(self):
@@ -300,15 +321,14 @@ class ApfMotion(object):
             self.cmd_vel.publish(Twist())
             self.rate.sleep()
             t += 1
-    
+
     def shutdown_hook(self):
         print("shutting down from apf_motion")
         self.stop()
 
     def mod_angle(self, theta):
-        if theta<0:
-            theta = theta + 2*np.pi
-        elif theta>2*np.pi:
-            theta = theta- 2*np.pi
+        if theta < 0:
+            theta = theta + 2 * np.pi
+        elif theta > 2 * np.pi:
+            theta = theta - 2 * np.pi
         return theta
-        

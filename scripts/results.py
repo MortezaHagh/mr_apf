@@ -5,7 +5,7 @@ import rospkg
 import numpy as np
 
 class Results:
-    def __init__(self, paths, times, path_unit, test_id):
+    def __init__(self, paths, times, path_unit, test_id, save_path):
         self.paths = paths
         self.times = times
         self.lens = []
@@ -49,10 +49,10 @@ class Results:
         hwading_data = {"headings":self.headings, "total_heading":self.total_headings}      
         robot_count = {"robot_count": len(paths)}
         
-        #
-        rospack = rospkg.RosPack()
-        pkg_path = rospack.get_path('apf')
-        save_path = pkg_path + '/result_apf/paper_3/' + self.test_name
+        # save data JSON
+        # rospack = rospkg.RosPack()
+        # pkg_path = rospack.get_path('apf')
+        # save_path = "/home/piotr/Documents/Morteza/CurrentAPF" + '/result_apf/' + self.test_name
         with open(save_path, "w") as outfile:
             json.dump(final_data, outfile, indent=2)
             outfile.write("\n")

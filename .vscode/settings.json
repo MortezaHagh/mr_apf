@@ -11,5 +11,6 @@
         "/home/piotr/Catkin_ws_isolated/install_isolated/lib/python2.7/dist-packages",
         "/opt/ros/melodic/lib/python2.7/dist-packages"
     ],
-    "editor.detectIndentation": false
+    "editor.detectIndentation": false,
+    "python.formatting.provider": "yapf"
 }

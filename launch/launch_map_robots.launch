@@ -9,7 +9,7 @@
   <arg name="stype" default=""/> -->
 
   <include file="$(find init_sim)/launch/empty_world_complete.launch">
-    <arg name="world_name" value="$(find init_sim)/worlds/walls2.world"/> 
+    <arg name="world_name" value="$(find init_sim)/worlds/walls3.world"/> 
     
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
