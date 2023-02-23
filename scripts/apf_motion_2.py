@@ -215,19 +215,28 @@ class ApfMotion(object):
             d_ro = np.sqrt(dx**2 + dy**2)
             theta = np.arctan2(dy, dx)
             angle_diff = theta - self.r_theta
-            angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+            angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
 
             if d_ro > 1 * self.robot_start_d:
                 continue
-            else:
-                if d_ro < 1 * self.robot_stop_d:
-                    if resp.priority[i] > 0 and abs(angle_diff) > np.pi / 2:
-                        self.stop_flag = True
-                        break
+            
+            if d_ro < 1 * self.robot_stop_d:
+                if resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
+                    self.stop_flag = True
+                    break
 
-                robot_flag = True
-                f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
-                templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
+            robot_flag = True
+            f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
+            templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
+
+            if d_ro<2*self.robot_prec_d and abs(angle_diff2)>(np.pi/2):  # + np.pi/4
+                angle_diff3 = np.pi - abs(angle_diff2)
+                coeff_alpha = np.cos(angle_diff3)
+                templ[1] += (f+0.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
+                print(" yes ", abs(angle_diff2)*180/np.pi)
+            else:
+                templ[0] = f
+                templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)

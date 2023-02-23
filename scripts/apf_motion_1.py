@@ -216,15 +216,14 @@ class ApfMotion(object):
 
             if d_ro > 1 * self.robot_start_d:
                 continue
-            else:
-                if d_ro < 1 * self.robot_stop_d:
-                    if resp.priority[i] > 0 and abs(angle_diff) > np.pi / 2:
-                        self.stop_flag = True
-                        break
 
-                robot_flag = True
-                f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
-                templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
+            if resp.priority[i] > 0 and abs(angle_diff) > np.pi / 2:
+                self.stop_flag = True
+                break
+
+            robot_flag = True
+            f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
+            templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -249,14 +248,14 @@ class ApfMotion(object):
 
             if d_ro > self.obst_start_d:
                 continue
-            else:
-                obst_flag = True
-                theta = np.arctan2(dy, dx)
-                angle_diff = theta - self.r_theta
-                angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
 
-                f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
-                templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
+            obst_flag = True
+            theta = np.arctan2(dy, dx)
+            angle_diff = theta - self.r_theta
+            angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+
+            f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
+            templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
