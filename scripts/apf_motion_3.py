@@ -60,7 +60,7 @@ class ApfMotion(object):
         self.fix_f2 = 10
         self.obst_r = 0.11
         self.prec_d = 0.06
-        self.robot_r = 0.26             
+        self.robot_r = 0.22             
         
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
         self.obst_start_d = self.obst_prec_d*2
@@ -142,11 +142,8 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        # if (f_r < 0) and abs(f_theta)<0.5:
-        #     w = 1 * self.w_max * 4 *np.sign(f_theta) / self.fix_f
-
         # if (v==0) and abs(w)<3*np.pi/180:
-        #     v = self.v_min_2 * 2
+        #     v = self.v_min_2
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -223,7 +220,7 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
             
-            if  d_ro < 0.8 * self.robot_prec_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
+            if  d_ro < 1.2 * self.robot_prec_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
                 self.stop_flag = True
                 print(self.ns, "stop")
                 break
@@ -245,11 +242,8 @@ class ApfMotion(object):
 
                     templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
                 else:
-                    # templ[0] = f + 3.0
+                    templ[0] = f + 2.5
                     templ[1] = 0
-            
-            # templ[0] = min(templ[0], self.fix_f)
-            # templ[1] = min(templ[1], self.fix_f)
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -285,7 +279,7 @@ class ApfMotion(object):
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff2), f * np.sin(angle_diff2)]
 
-            if d_ro<1.9*self.obst_prec_d: 
+            if d_ro<2.0*self.obst_prec_d: 
                 if abs(angle_diff2)>(np.pi/2):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)
@@ -299,11 +293,8 @@ class ApfMotion(object):
                     templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
                 else:
-                    # templ[0] = f + 2.0
+                    templ[0] = f #+ 2.0
                     templ[1] = 0
-
-            # templ[0] = min(templ[0], self.fix_f)
-            # templ[1] = min(templ[1], self.fix_f)
             
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
