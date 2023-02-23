@@ -141,10 +141,8 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        # if (f_r<0) and abs(w)<3*np.pi/180:
-        #     v = self.v_min_2
-        #     w = np.sign(w)*v/self.obst_prec_d   #3*np.pi/180
-        #     print(self.ns, "v ---- ")
+        if (v==0) and abs(w)<3*np.pi/180:
+            v = self.v_min_2
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -220,7 +218,7 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
             
-            if resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
+            if  d_ro < 1.2 * self.robot_prec_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
                 self.stop_flag = True
                 print(self.ns, "stop")
                 break
@@ -232,10 +230,10 @@ class ApfMotion(object):
             if d_ro<2*self.robot_prec_d and abs(angle_diff2)>(np.pi/2):  # + np.pi/4
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
-                templ[1] += (f+0.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
+                templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
                 # print(" yes robot ", abs(angle_diff2)*180/np.pi)
             else:
-                templ[0] = f
+                templ[0] = f+2.5
                 templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
