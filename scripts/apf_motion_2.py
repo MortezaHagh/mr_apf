@@ -174,6 +174,9 @@ class ApfMotion(object):
         theta = np.arctan2(np.sin(theta), np.cos(theta))
         phi = round(theta, 4)
 
+        print(f_r, f_theta)
+        print(" ------------ ")
+
         self.force_tr.append(self.target_f[0])
         self.force_tt.append(self.target_f[1])
         self.force_or.append(self.obs_f[0])
@@ -260,10 +263,14 @@ class ApfMotion(object):
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff2), f * np.sin(angle_diff2)]
 
-            if abs(angle_diff2)>(np.pi/2):
+            if d_ro<2*self.obst_prec_d and abs(angle_diff2)>(np.pi/2):  # + np.pi/4
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
-                templ[1] = f*coeff_alpha*np.sign(np.sin(angle_diff2))
+                templ[1] += (f+0.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
+                print(" yes ", abs(angle_diff2)*180/np.pi)
+            else:
+                templ[0] = 0
+                templ[1] = 0
 
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
@@ -276,6 +283,7 @@ class ApfMotion(object):
 
             self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
             self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
+            print(self.obs_f[0], self.obs_f[1])
 
     # ------------------------- check_topic -- get_odom  ------------------------------------#
     def check_topic(self):
