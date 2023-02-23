@@ -275,7 +275,7 @@ class ApfMotion(object):
             if d_ro<2*self.obst_prec_d and abs(angle_diff2)>(np.pi/2):  # + np.pi/4
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
-                templ[1] += (f+0.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
+                templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
                 # print(" yes ", abs(angle_diff2)*180/np.pi)
             else:
                 templ[0] = f
@@ -292,7 +292,7 @@ class ApfMotion(object):
 
             self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
             self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
-            print(self.obs_f[0], self.obs_f[1])
+            # print(self.obs_f[0], self.obs_f[1])
 
     # ------------------------- check_topic -- get_odom  ------------------------------------#
     def check_topic(self):
