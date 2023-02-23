@@ -36,6 +36,7 @@ class ApfMotion(object):
         self.topic_type = Odometry
         self.prioriy = robot.priority
         self.goal_distance = 1000
+        self.goal_theta = 0
 
         # params 
         self.ind = init_params.id
@@ -141,8 +142,11 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
+        # if (f_r < 0) and abs(f_theta)<0.5:
+        #     w = 1 * self.w_max * 4 *np.sign(f_theta) / self.fix_f
+
         if (v==0) and abs(w)<3*np.pi/180:
-            v = self.v_min_2
+            v = self.v_min_2 * 2
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -192,6 +196,7 @@ class ApfMotion(object):
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+        self.goal_theta = theta
         self.goal_distance = goal_distance
         fx = round(f * np.cos(angle_diff), 3)
         fy = round(f * np.sin(angle_diff), 3)
@@ -227,14 +232,24 @@ class ApfMotion(object):
             f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
-            if d_ro<2*self.robot_prec_d and abs(angle_diff2)>(np.pi/2):  # + np.pi/4
-                angle_diff3 = np.pi - abs(angle_diff2)
-                coeff_alpha = np.cos(angle_diff3)
-                templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
-                # print(" yes robot ", abs(angle_diff2)*180/np.pi)
-            else:
-                templ[0] = f+2.5
-                templ[1] = 0
+            if d_ro<2*self.robot_prec_d:
+                if abs(angle_diff2)>(np.pi/2):
+                    angle_diff3 = np.pi - abs(angle_diff2)
+                    coeff_alpha = np.cos(angle_diff3)
+
+                    goal_theta = self.mod_angle(self.goal_theta)
+                    angle_diff4 = theta - goal_theta
+                    angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                    if angle_diff4*angle_diff2<0:
+                        coeff_alpha = -1*coeff_alpha
+
+                    templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
+                else:
+                    templ[0] = f + 1.5
+                    templ[1] = 0
+            
+            # templ[0] = min(templ[0], self.fix_f)
+            # templ[1] = min(templ[1], self.fix_f)
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -270,15 +285,26 @@ class ApfMotion(object):
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff2), f * np.sin(angle_diff2)]
 
-            if d_ro<2*self.obst_prec_d and abs(angle_diff2)>(np.pi/2):  # + np.pi/4
-                angle_diff3 = np.pi - abs(angle_diff2)
-                coeff_alpha = np.cos(angle_diff3)
-                templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
-                # print(" yes ", abs(angle_diff2)*180/np.pi)
-            else:
-                templ[0] = f
-                templ[1] = 0
+            if d_ro<1.5*self.obst_prec_d: 
+                if abs(angle_diff2)>(np.pi/2):
+                    angle_diff3 = np.pi - abs(angle_diff2)
+                    coeff_alpha = np.cos(angle_diff3)
+                    
+                    goal_theta = self.mod_angle(self.goal_theta)
+                    angle_diff4 = theta - goal_theta
+                    angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                    if angle_diff4*angle_diff2<0:
+                        coeff_alpha = -1*coeff_alpha
+                    
+                    templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
+                else:
+                    templ[0] = f + 2.0
+                    templ[1] = 0
+
+            # templ[0] = min(templ[0], self.fix_f)
+            # templ[1] = min(templ[1], self.fix_f)
+            
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
 
@@ -290,7 +316,6 @@ class ApfMotion(object):
 
             self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
             self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
-            # print(self.obs_f[0], self.obs_f[1])
 
     # ------------------------- check_topic -- get_odom  ------------------------------------#
     def check_topic(self):
@@ -331,6 +356,15 @@ class ApfMotion(object):
         self.obs_count = self.model.obst.count
         self.obs_x = self.model.obst.x
         self.obs_y = self.model.obst.y
+
+        # dist o-t
+        self.d_ot = []
+        for i in range(self.obs_count):
+            xo = self.obs_x[i]
+            yo = self.obs_y[i]
+            d = np.sqrt((xo-self.goal_x)**2 + (yo-self.goal_y)**2)
+            self.d_ot.append(d)
+
 
     def modify_angle(self, theta):
         theta_mod = (theta + np.pi) % (2 * np.pi) - np.pi
