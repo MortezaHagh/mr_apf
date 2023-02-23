@@ -20,7 +20,7 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test_id = 0                              # check 2 !!!!!!!!!!
+        self.test_id = 4                              # check 2 !!!!!!!!!!
         self.test = "T" + str(self.test_id)
         # rospack = rospkg.RosPack()
         # pkg_path = "rospack.get_path('apf')"
@@ -93,8 +93,8 @@ class Run():
             ax.plot(v[0], v[1], color=colors(k))
         plt.savefig(self.dir_f+".svg", format="svg", dpi=1000)
         
-        # forces
-        plot_forces(self.rsrv.ac_services[0], self.dir_force)
+        # # forces
+        # plot_forces(self.rsrv.ac_services[0], self.dir_force)
         plt.show()
 
 

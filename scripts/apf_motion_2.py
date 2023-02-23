@@ -174,8 +174,8 @@ class ApfMotion(object):
         theta = np.arctan2(np.sin(theta), np.cos(theta))
         phi = round(theta, 4)
 
-        print(f_r, f_theta)
-        print(" ------------ ")
+        # print(f_r, f_theta)
+        # print(" ------------ ")
 
         self.force_tr.append(self.target_f[0])
         self.force_tt.append(self.target_f[1])
@@ -220,10 +220,10 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
             
-            if d_ro < 1 * self.robot_stop_d:
-                if resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
-                    self.stop_flag = True
-                    break
+            if resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
+                self.stop_flag = True
+                print(self.ns, "stop")
+                break
 
             robot_flag = True
             f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
@@ -233,7 +233,7 @@ class ApfMotion(object):
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
                 templ[1] += (f+0.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
-                print(" yes ", abs(angle_diff2)*180/np.pi)
+                # print(" yes robot ", abs(angle_diff2)*180/np.pi)
             else:
                 templ[0] = f
                 templ[1] = 0
@@ -276,7 +276,7 @@ class ApfMotion(object):
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
                 templ[1] += (f+0.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
-                print(" yes ", abs(angle_diff2)*180/np.pi)
+                # print(" yes ", abs(angle_diff2)*180/np.pi)
             else:
                 templ[0] = f
                 templ[1] = 0
