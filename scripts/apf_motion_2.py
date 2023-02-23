@@ -269,7 +269,7 @@ class ApfMotion(object):
                 templ[1] += (f+0.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
                 print(" yes ", abs(angle_diff2)*180/np.pi)
             else:
-                templ[0] = 0
+                templ[0] = f
                 templ[1] = 0
 
             obs_f[0] += round(templ[0], 3)
