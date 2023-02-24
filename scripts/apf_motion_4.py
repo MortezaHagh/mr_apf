@@ -114,27 +114,27 @@ class ApfMotion(object):
             # detect and group
             self.detect_group()
             
-            # calculate forces
-            [f_r, f_theta, phi, stop_flag] = self.forces()
+            # # calculate forces
+            # [f_r, f_theta, phi, stop_flag] = self.forces()
 
-            # calculate velocities
-            self.cal_vel(f_r, f_theta, phi)
-            self.v_lin.append(self.v)
-            self.v_ang.append(self.w)
+            # # calculate velocities
+            # self.cal_vel(f_r, f_theta, phi)
+            # self.v_lin.append(self.v)
+            # self.v_ang.append(self.w)
 
-            if stop_flag:
-                self.v = 0
-                self.w = 0
+            # if stop_flag:
+            #     self.v = 0
+            #     self.w = 0
 
-            # publish cmd
-            move_cmd = Twist()
-            move_cmd.linear.x = self.v
-            move_cmd.angular.z = self.w
-            self.cmd_vel.publish(move_cmd)
+            # # publish cmd
+            # move_cmd = Twist()
+            # move_cmd.linear.x = self.v
+            # move_cmd.angular.z = self.w
+            # self.cmd_vel.publish(move_cmd)
 
-            # result
-            self.path_x.append(round(self.r_x, 3))
-            self.path_y.append(round(self.r_y, 3))
+            # # result
+            # self.path_x.append(round(self.r_x, 3))
+            # self.path_y.append(round(self.r_y, 3))
 
             self.rate.sleep()
 
@@ -244,22 +244,36 @@ class ApfMotion(object):
         robot_inds2 = self.robot_inds[:]
         robot_inds_f = {}
         while (len(robot_inds2)>0):
-            robot_inds_f[robot_inds2[0]] = [robot_inds2[0]]
-            robot_inds2.pop()
+            p = robot_inds2.pop(0)
+            robot_inds_f[p] = [p]
             if len(robot_inds2)==0:
                 break
             
             robot_inds3 = robot_inds2[:]
             for j in robot_inds3:
-                dx = (rrx[robot_inds2[0]] - rrx[j])
-                dy = (rry[robot_inds2[0]] - rry[j])
+                dx = (rrx[p] - rrx[j])
+                dy = (rry[p] - rry[j])
                 dist = np.sqrt(dx**2+dy**2)
-                if dist<self.robot_start_d:
-                    robot_inds_f[robot_inds2[0]].append(robot_inds2)
-                    robot_inds2.pop(j)
+                if dist<self.robot_start_d:     ###################################
+                    robot_inds_f[p].append(j)
 
-        
-    
+        groups = []
+        robot_inds3 = self.robot_inds[:]
+        while len(robot_inds3)>0:
+            groups.append([])
+            p = robot_inds3.pop(0)
+            groups[-1] = robot_inds_f[p]
+            gset = set(groups[-1])
+            robot_inds4 = robot_inds3[:]
+            for j in robot_inds4:
+                nset = set(robot_inds_f[j])
+                if len(gset.intersection(nset))>0:
+                    gset = gset.union(nset)
+                    robot_inds3.pop(j)
+            groups[-1] = list(gset)
+
+        if self.ind==1:
+            print(groups)
 
 
 

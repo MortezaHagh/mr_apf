@@ -63,7 +63,7 @@ class PoseService(object):
             if i==req_i:
                 continue
             distance = ((self.xt[i]-xy[i][0])**2 + (self.yt[i]-xy[i][1])**2)
-            if distance<d0 and (not self.reached[i]):
+            if distance>d0 and (not self.reached[i]):
                 priorities.append(1)
             else:
                 priorities.append(-1)
