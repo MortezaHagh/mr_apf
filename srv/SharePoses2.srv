@@ -2,6 +2,7 @@ int32 ind
 float32 xt
 float32 yt
 bool update
+bool reached
 ---
 int32 count
 float32[] x

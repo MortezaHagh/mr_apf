@@ -129,6 +129,10 @@ class ApfMotion(object):
 
             self.rate.sleep()
 
+        req = SharePoses2Request()
+        req.ind = self.ind
+        req.reached = True
+        resp = self.pose_client(req)
         self.stop()
 
     # -----------------------  cal_vel  ----------------------------#
@@ -220,10 +224,10 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
             
-            if  d_ro < 2.0 * self.robot_prec_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
-                self.stop_flag = True
-                print(self.ns, "stop")
-                break
+            # if  d_ro < 2.0 * self.robot_prec_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
+            #     self.stop_flag = True
+            #     # print(self.ns, "stop")
+            #     break
 
             robot_flag = True
             f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
@@ -243,9 +247,9 @@ class ApfMotion(object):
 
                     templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-                else:
-                    templ[0] = f + 2.5
-                    templ[1] = 0
+                # else:
+                #     templ[0] = f #+ 2.5
+                #     templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -295,7 +299,7 @@ class ApfMotion(object):
                     templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
                 else:
-                    templ[0] = f #+ 2.0
+                    templ[0] = f + 2.0
                     templ[1] = 0
             
             obs_f[0] += round(templ[0], 3)

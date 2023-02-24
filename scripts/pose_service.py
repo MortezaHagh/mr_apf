@@ -21,6 +21,7 @@ class PoseService(object):
         self.yt = {}
         self.topics = {}
         self.priorities = {}
+        self.reached = {}
 
         # service
         self.srv = rospy.Service(pose_srv_name, SharePoses2, self.pose_cb)
@@ -31,6 +32,11 @@ class PoseService(object):
 
         if req.update:
             self.update_goal(req)
+            return resp
+
+        if req.reached:
+            self.reached[req_i] = True
+            print("PoseService: ", req_i, "reached")
             return resp
 
         xy = {}
@@ -57,7 +63,7 @@ class PoseService(object):
             if i==req_i:
                 continue
             distance = ((self.xt[i]-xy[i][0])**2 + (self.yt[i]-xy[i][1])**2)
-            if distance>d0:
+            if distance<d0 and (not self.reached[i]):
                 priorities.append(1)
             else:
                 priorities.append(-1)
