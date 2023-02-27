@@ -172,9 +172,6 @@ class ApfMotion(object):
         theta = np.arctan2(np.sin(theta), np.cos(theta))
         phi = round(theta, 4)
 
-        # print(f_r, f_theta)
-        # print(" ------------ ")
-
         self.force_tr.append(self.target_f[0])
         self.force_tt.append(self.target_f[1])
         self.force_or.append(self.obs_f[0])
@@ -187,7 +184,7 @@ class ApfMotion(object):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2 + dy**2)
-        # f = self.zeta * goal_distance * 4
+        # f = self.zeta * goal_distance
         f = self.fix_f
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
@@ -220,7 +217,6 @@ class ApfMotion(object):
             
             if  d_ro < 1.2 * self.robot_prec_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
                 self.stop_flag = True
-                print(self.ns, "stop")
                 break
 
             robot_flag = True

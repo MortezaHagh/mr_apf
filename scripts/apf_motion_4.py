@@ -28,7 +28,7 @@ class ApfMotion(object):
         self.phiis = []
 
         self.obst_inds = []
-        self.robot_inds = []
+        self.robots_inds = []
         self.obsts_dist = []
         self.robots_dist = []
     
@@ -203,11 +203,13 @@ class ApfMotion(object):
         
         # self.obst_inds = []
         # self.obsts_dist = []
-        self.robot_inds = []
+        self.robots_inds = []
         self.robots_dist = []
         self.robots_pd = []
         self.robots_sd = []
 
+        groups = []
+        robots_inds_f = {}
 
         # for i in range(self.obs_count):
         #     dy = -(self.obs_y[i] - self.r_y)
@@ -218,64 +220,68 @@ class ApfMotion(object):
         #     self.obst_inds.append(i)
         #     self.obsts_dist.append(d_ro)
 
-        req = SharePoses2Request()
-        req.ind = self.ind
-        req.update = False
-        resp = self.pose_client(req)
-        rrx = resp.x
-        rry = resp.y
-        for i in range(resp.count):
-            dx = -(rrx[i] - self.r_x)
-            dy = -(rry[i] - self.r_y)
-            d_ro = np.sqrt(dx**2 + dy**2)
-            if d_ro > 1 * self.robot_start_d:
+
+        # get indices of robots in proximity circle
+        req_poses2 = SharePoses2Request()
+        req_poses2.update = False
+        req_poses2.ind = self.ind
+        resp_poses2 = self.pose_client(req_poses2)
+        robots_x = resp_poses2.x
+        robots_y = resp_poses2.y
+        for i in range(resp_poses2.count):
+            dx = (robots_x[i] - self.r_x)
+            dy = (robots_y[i] - self.r_y)
+            d_rr = np.sqrt(dx**2 + dy**2)
+            if d_rr > 1 * self.robot_start_d:   #####
                 continue
-            self.robot_inds.append(i)
+            self.robots_inds.append(i)
         
-        if len(self.robot_inds)<0:
+        # if there is only one or none robots in proximity
+        if len(self.robots_inds)==0:
             return
-        elif len(self.robot_inds)==1:
-            self.robots_x = rrx[0]
-            self.robots_y = rry[0]
+        elif len(self.robots_inds)==1:
+            self.robots_x = robots_x[0]
+            self.robots_y = robots_y[0]
             self.robots_pd = [self.robot_prec_d]
             self.robots_sd = [self.robot_start_d]
-            return
+            # return
         
-        robot_inds2 = self.robot_inds[:]
-        robot_inds_f = {}
-        while (len(robot_inds2)>0):
-            p = robot_inds2.pop(0)
-            robot_inds_f[p] = [p]
-            if len(robot_inds2)==0:
+        # generate robots_inds_f (neighbor robots in proximity circle)
+        robots_inds_2 = self.robots_inds[:]
+        while (len(robots_inds_2)>0):
+            p = robots_inds_2.pop(0)
+            robots_inds_f[p] = [p]
+            if len(robots_inds_2)==0:
                 break
-            
-            robot_inds3 = robot_inds2[:]
-            for j in robot_inds3:
-                dx = (rrx[p] - rrx[j])
-                dy = (rry[p] - rry[j])
+            for ind_j in robots_inds_2:
+                dx = (robots_x[p] - robots_x[ind_j])
+                dy = (robots_y[p] - robots_y[ind_j])
                 dist = np.sqrt(dx**2+dy**2)
-                if dist<self.robot_start_d:     ###################################
-                    robot_inds_f[p].append(j)
+                if dist<self.robot_start_d:     #####
+                    robots_inds_f[p].append(ind_j)
 
-        groups = []
-        robot_inds3 = self.robot_inds[:]
-        while len(robot_inds3)>0:
+        # if self.ind==1:
+        #     print("robots_inds_f", robots_inds_f)
+        
+        # detect groups
+        robots_inds_3 = self.robots_inds[:]
+        while len(robots_inds_3)>0:
             groups.append([])
-            p = robot_inds3.pop(0)
-            groups[-1] = robot_inds_f[p]
-            gset = set(groups[-1])
-            robot_inds4 = robot_inds3[:]
-            for j in robot_inds4:
-                nset = set(robot_inds_f[j])
+            p = robots_inds_3.pop(0)
+            gset = set(robots_inds_f[p])
+            robots_inds_4 = robots_inds_3[:]
+            for ind_j in robots_inds_4:
+                nset = set(robots_inds_f[ind_j])
                 if len(gset.intersection(nset))>0:
                     gset = gset.union(nset)
-                    robot_inds3.pop(j)
+                    robots_inds_3.remove(ind_j)
             groups[-1] = list(gset)
 
         if self.ind==1:
             print(groups)
-
-
+            print(" -------------- ")
+        
+        
 
     # -----------------------  f_target  ----------------------------#
 
@@ -308,12 +314,12 @@ class ApfMotion(object):
         for i in range(resp.count):
             dx = -(resp.x[i] - self.r_x)
             dy = -(resp.y[i] - self.r_y)
-            d_ro = np.sqrt(dx**2 + dy**2)
+            d_rr = np.sqrt(dx**2 + dy**2)
             theta = np.arctan2(dy, dx)
             angle_diff = theta - self.r_theta
             angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
 
-            if d_ro > 1 * self.robot_start_d:
+            if d_rr > 1 * self.robot_start_d:
                 continue
             
             # if  d_ro < 2.0 * self.robot_prec_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
@@ -322,10 +328,10 @@ class ApfMotion(object):
             #     break
 
             robot_flag = True
-            f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
+            f = ((self.robot_z * 1) * ((1 / d_rr) - (1 / self.robot_start_d))**2) * (1 / d_rr)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
-            if d_ro<2.0*self.robot_prec_d:
+            if d_rr<2.0*self.robot_prec_d:
                 if abs(angle_diff2)>(np.pi/2):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)

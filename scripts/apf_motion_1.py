@@ -217,7 +217,7 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
 
-            if resp.priority[i] > 0 and abs(angle_diff) > np.pi / 2:
+            if d_ro < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff) > np.pi / 2:
                 self.stop_flag = True
                 break
 
@@ -230,7 +230,7 @@ class ApfMotion(object):
 
         coeff_f = 1
         if robot_flag:
-            abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
+            # abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
             # if abst_f>0:
             #     coeff_f = min(abst_f, self.fix_f2) / abst_f
 

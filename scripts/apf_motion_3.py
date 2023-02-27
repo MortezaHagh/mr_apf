@@ -177,9 +177,6 @@ class ApfMotion(object):
         theta = np.arctan2(np.sin(theta), np.cos(theta))
         phi = round(theta, 4)
 
-        # print(f_r, f_theta)
-        # print(" ------------ ")
-
         self.force_tr.append(self.target_f[0])
         self.force_tt.append(self.target_f[1])
         self.force_or.append(self.obs_f[0])
@@ -192,7 +189,7 @@ class ApfMotion(object):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2 + dy**2)
-        # f = self.zeta * goal_distance * 4
+        # f = self.zeta * goal_distance
         f = self.fix_f
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
@@ -239,17 +236,17 @@ class ApfMotion(object):
                     coeff_alpha = np.cos(angle_diff3)
                     templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-                    # goal_theta = self.mod_angle(self.goal_theta)
-                    # angle_diff4 = theta - goal_theta
-                    # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                    # if angle_diff4*angle_diff2<0:
-                    #     coeff_alpha = -1*coeff_alpha
+                    goal_theta = self.mod_angle(self.goal_theta)
+                    angle_diff4 = theta - goal_theta
+                    angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                    if angle_diff4*angle_diff2<0:
+                        coeff_alpha = -1*coeff_alpha
 
                     templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-                # else:
-                #     templ[0] = f #+ 2.5
-                #     templ[1] = 0
+                else:
+                    templ[0] = f #+ 2.5
+                    templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
