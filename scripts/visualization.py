@@ -7,7 +7,7 @@ from sensor_msgs.msg import PointCloud, ChannelFloat32
 from visualization_msgs.msg import Marker, MarkerArray
 
 class Viusalize:
-    def __init__(self, model):
+    def __init__(self, model, ns):
 
         self.rate = rospy.Rate(10)
 
@@ -38,11 +38,14 @@ class Viusalize:
         self.obst_marker_pub = rospy.Publisher("/obstacles_marker", MarkerArray, queue_size = 2)
         self.obst_prec_pc_pub = rospy.Publisher("/obst_prec", PointCloud, queue_size=10)
         self.obst_start_pc_pub = rospy.Publisher("/obst_start", PointCloud, queue_size=10)
+        self.robot_prec_pc_pub = rospy.Publisher(ns+"/robot_prec", PointCloud, queue_size=10)
 
         # initialize obst markers and publish
         self.init_obsts()
         self.init_obsts_prec()
         self.init_obsts_start()
+
+        self.thetas = np.linspace(0, np.pi*2, 180)
 
 
     def init_obsts(self):
@@ -176,3 +179,31 @@ class Viusalize:
             else: 
                 self.rate.sleep()
     
+
+    def robot_circles(self, x, y):
+
+        robot_circle = []
+        c_x = x
+        c_y = y
+        for th in self.thetas:
+            p = Point32()
+            p.x = c_x + self.robot_prec_d*np.cos(th)
+            p.y = c_y + self.robot_prec_d*np.sin(th)
+            robot_circle.append(p)
+
+        robot_prec_pc = PointCloud()
+        robot_prec_pc.header.frame_id = "map"
+        robot_prec_pc.points = robot_circle
+
+        self.robot_prec_pc = robot_prec_pc
+        self.publish_once_robot_prec_points()
+
+
+    def publish_once_robot_prec_points(self): 
+        while not rospy.is_shutdown():
+            connections = self.robot_prec_pc_pub.get_num_connections() 
+            if connections > 0: 
+                self.robot_prec_pc_pub.publish(self.robot_prec_pc) 
+                break 
+            else: 
+                self.rate.sleep()

@@ -76,8 +76,8 @@ class ApfMotion(object):
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
         # visualize
-        vo = Viusalize(model)
-        
+        vo = Viusalize(model, self.ns)
+
         # map: target and obstacles coordinates
         self.map()
 
