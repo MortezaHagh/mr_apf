@@ -3,10 +3,11 @@
 import rospy
 import numpy as np
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist, Point
+from visualization import Viusalize
+from geometry_msgs.msg import Twist
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
-from visualization_msgs.msg import Marker, MarkerArray
+
 
 class ApfMotion(object):
 
@@ -74,6 +75,8 @@ class ApfMotion(object):
         self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
+        # visualize
+        vo = Viusalize(model)
 
         # map: target and obstacles coordinates
         self.map()
@@ -89,14 +92,8 @@ class ApfMotion(object):
         rospy.wait_for_service(self.pose_srv_name)
         self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses2)
 
-        #
-        self.obst_marker_pub = rospy.Publisher("/obstacles_marker", MarkerArray, queue_size = 2)
-
-        #
-        self.init_visualize()
-
-        # # execute goal
-        # self.exec_cb()
+        # execute goal
+        self.exec_cb()
 
     # --------------------------  exec_cb  ---------------------------#
 
@@ -354,46 +351,5 @@ class ApfMotion(object):
         return theta
 
 
-    def init_visualize(self):
-        
-        # obstacles
-        marker_array = MarkerArray()
-        for i in range(self.obs_count):
-            marker = Marker()
-            marker.header.frame_id = "/map"
-            marker.header.stamp = rospy.Time.now()
-
-            # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
-            marker.type = marker.CYLINDER
-            marker.id = i+1
-
-            # Set the scale of the marker
-            marker.scale.x = self.obst_r
-            marker.scale.y = self.obst_r
-            marker.scale.z = 0.4
-
-            # Set the color
-            marker.color.r = 0.0
-            marker.color.g = 1.0
-            marker.color.b = 0.0
-            marker.color.a = 1.0
-        
-            # Set the pose of the marker
-            marker.pose.position.x = self.obs_x[i]
-            marker.pose.position.y = self.obs_y[i]
-            marker.pose.position.z = 0.4/2
-            marker.pose.orientation.x = 0.0
-            marker.pose.orientation.y = 0.0
-            marker.pose.orientation.z = 0.0
-            marker.pose.orientation.w = 1.0
-
-            marker_array.markers.append(marker)
-
-        self.obst_markers = marker_array
-        
-        # for j in range(10):
-        while not rospy.is_shutdown():
-            self.obst_marker_pub.publish(self.obst_markers)
-            self.rate.sleep()
-
+    
         
