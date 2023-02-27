@@ -143,8 +143,6 @@ class ApfMotion(object):
 
         # if (f_r<0) and abs(w)<3*np.pi/180:
         #     v = self.v_min_2
-        #     w = np.sign(w)*v/self.obst_prec_d   #3*np.pi/180
-        #     print(self.ns, "v ---- ")
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)

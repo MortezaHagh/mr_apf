@@ -3,10 +3,10 @@
 import rospy
 import numpy as np
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Point
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
-
+from visualization_msgs.msg import Marker, MarkerArray
 
 class ApfMotion(object):
 
@@ -89,8 +89,14 @@ class ApfMotion(object):
         rospy.wait_for_service(self.pose_srv_name)
         self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses2)
 
-        # execute goal
-        self.exec_cb()
+        #
+        self.obst_marker_pub = rospy.Publisher("/obstacles_marker", MarkerArray, queue_size = 2)
+
+        #
+        self.init_visualize()
+
+        # # execute goal
+        # self.exec_cb()
 
     # --------------------------  exec_cb  ---------------------------#
 
@@ -215,7 +221,7 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
             
-            if  d_ro < 1.2 * self.robot_prec_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
+            if d_ro < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
                 self.stop_flag = True
                 break
 
@@ -236,7 +242,7 @@ class ApfMotion(object):
 
         coeff_f = 1
         if robot_flag:
-            abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
+            # abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
             # if abst_f>0:
             #     coeff_f = min(abst_f, self.fix_f2) / abst_f
 
@@ -268,9 +274,9 @@ class ApfMotion(object):
             if d_ro<2*self.obst_prec_d and abs(angle_diff2)>(np.pi/2):  # + np.pi/4
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
-                templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
+                templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
             else:
-                templ[0] = f
+                templ[0] = f+2.2
                 templ[1] = 0
 
             obs_f[0] += round(templ[0], 3)
@@ -346,3 +352,48 @@ class ApfMotion(object):
         elif theta > 2 * np.pi:
             theta = theta - 2 * np.pi
         return theta
+
+
+    def init_visualize(self):
+        
+        # obstacles
+        marker_array = MarkerArray()
+        for i in range(self.obs_count):
+            marker = Marker()
+            marker.header.frame_id = "/map"
+            marker.header.stamp = rospy.Time.now()
+
+            # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
+            marker.type = marker.CYLINDER
+            marker.id = i+1
+
+            # Set the scale of the marker
+            marker.scale.x = self.obst_r
+            marker.scale.y = self.obst_r
+            marker.scale.z = 0.4
+
+            # Set the color
+            marker.color.r = 0.0
+            marker.color.g = 1.0
+            marker.color.b = 0.0
+            marker.color.a = 1.0
+        
+            # Set the pose of the marker
+            marker.pose.position.x = self.obs_x[i]
+            marker.pose.position.y = self.obs_y[i]
+            marker.pose.position.z = 0.4/2
+            marker.pose.orientation.x = 0.0
+            marker.pose.orientation.y = 0.0
+            marker.pose.orientation.z = 0.0
+            marker.pose.orientation.w = 1.0
+
+            marker_array.markers.append(marker)
+
+        self.obst_markers = marker_array
+        
+        # for j in range(10):
+        while not rospy.is_shutdown():
+            self.obst_marker_pub.publish(self.obst_markers)
+            self.rate.sleep()
+
+        

@@ -3,7 +3,7 @@
 import tf
 import rospy
 import rospkg
-from gazebo_msgs.srv import SpawnModel
+from gazebo_msgs.srv import SpawnModel, SpawnModelRequest
 from geometry_msgs.msg import Pose, Point, Quaternion
 
 class Initialize(object):
@@ -72,14 +72,18 @@ def Spawning(model):
 
     # spawn robots
     name = 'robot'
-    reference_frame = 'world'
+    reference_frame = 'map'
 
     for rd in range(robots_count):
+        sm = SpawnModelRequest()
         id = init_obj.id[rd]
-        model_name = name+str(id)
-        robot_namespace = '/r'+str(id)
-        # rospy.set_param('tf_prefix', '/r'+str(id))
-        spawn_robots_servie(model_name, robot_file, robot_namespace, robots_initial[rd], reference_frame)
+        sm.model_name = name+str(id)
+        sm.model_xml = robot_file
+        sm.robot_namespace = '/r'+str(id)
+        sm.initial_pose = robots_initial[rd]
+        sm.reference_frame = reference_frame
+        rospy.set_param('tf_prefix', '/r'+str(id))
+        spawn_robots_servie(sm)
         rospy.sleep(0.2)
 
 # # spawn obstacles
