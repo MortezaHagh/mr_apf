@@ -43,7 +43,7 @@ class Viusalize:
         self.init_obsts()
         self.init_obsts_prec()
         self.init_obsts_start()
-        
+
 
     def init_obsts(self):
             
@@ -142,7 +142,7 @@ class Viusalize:
     def init_obsts_start(self):
         
         prec_circles = []
-        obst_prec_points = []
+        obst_start_points = []
 
         thetas = np.linspace(0, np.pi*2, 360)
 
@@ -152,31 +152,26 @@ class Viusalize:
             c_y = self.obs_y[i]
             for th in thetas:
                 p = Point32()
-                p.x = c_x + self.obst_prec_d*np.cos(th)
-                p.y = c_y + self.obst_prec_d*np.sin(th)
+                p.x = c_x + self.obst_start_d*np.cos(th)
+                p.y = c_y + self.obst_start_d*np.sin(th)
                 prec_circles[-1].append(p)
 
-            obst_prec_points.extend(prec_circles[-1])
+            obst_start_points.extend(prec_circles[-1])
         
-        obst_prec_pc = PointCloud()
-        obst_prec_pc.header.frame_id = "map"
-        obst_prec_pc.points = obst_prec_points
-        
-        # channel = ChannelFloat32()
-        # channel.name = "intensities"
-        # channel.values = [80 for i in range(len(obst_prec_points))]
-        # obst_prec_pc.channels.append(channel)
+        obst_start_pc = PointCloud()
+        obst_start_pc.header.frame_id = "map"
+        obst_start_pc.points = obst_start_points
         
         #
-        self.obst_prec_pc = obst_prec_pc
-        self.publish_once_obst_prec_points()
+        self.obst_start_pc = obst_start_pc
+        self.publish_once_obst_start_points()
 
     
-    def publish_once_obst_prec_points(self): 
+    def publish_once_obst_start_points(self): 
         while not rospy.is_shutdown():
-            connections = self.obst_prec_pc_pub.get_num_connections() 
+            connections = self.obst_start_pc_pub.get_num_connections() 
             if connections > 0: 
-                self.obst_prec_pc_pub.publish(self.obst_prec_pc) 
+                self.obst_start_pc_pub.publish(self.obst_start_pc) 
                 break 
             else: 
                 self.rate.sleep()
