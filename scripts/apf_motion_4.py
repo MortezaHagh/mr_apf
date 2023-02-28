@@ -52,7 +52,7 @@ class ApfMotion(object):
         self.v_min = 0.0        # init_params.linear_min_speed
         self.w_min = 0          # init_params.angular_min_speed
         self.w_max = 1.0        # init_params.angular_max_speed
-        self.v_min_2 = 0.02     # init_params.linear_min_speed_2
+        self.v_min_2 = 0.04     # init_params.linear_min_speed_2
 
         # settings
         self.zeta = 1                     
@@ -63,17 +63,17 @@ class ApfMotion(object):
         self.robot_r = 0.22             
         
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
-        self.obst_start_d = self.obst_prec_d*2
+        self.obst_start_d = 2*self.obst_prec_d
         self.obst_z = 4*self.fix_f*self.obst_prec_d**4
 
         self.robot_prec_d = 2*self.robot_r + self.prec_d  # 0.64
-        self.robot_start_d = self.robot_prec_d*2
+        self.robot_start_d = 2*self.robot_prec_d
+        self.robot_stop_d = self.robot_prec_d
         self.robot_z = 4 * self.fix_f*self.robot_prec_d**4
 
         self.w_coeff = 1                        # init_params.w_coeff      # angular velocity coeff
         self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
-
 
         # map: target and obstacles coordinates
         self.map()

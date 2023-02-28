@@ -63,11 +63,11 @@ class ApfMotion(object):
         self.robot_r = 0.22             
         
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
-        self.obst_start_d = self.obst_prec_d*2
+        self.obst_start_d = 2*self.obst_prec_d
         self.obst_z = 4*self.fix_f*self.obst_prec_d**4
 
         self.robot_prec_d = 2*self.robot_r + self.prec_d  # 0.64
-        self.robot_start_d = self.robot_prec_d*2
+        self.robot_start_d = 2*self.robot_prec_d
         self.robot_stop_d = self.robot_prec_d
         self.robot_z = 4 * self.fix_f*self.robot_prec_d**4
 
