@@ -125,6 +125,7 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
+            print(self.ns, "moving")
             self.rate.sleep()
 
         self.stop()

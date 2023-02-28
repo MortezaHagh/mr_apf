@@ -75,7 +75,6 @@ class ApfMotion(object):
         self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
-
         # map: target and obstacles coordinates
         self.map()
 
@@ -221,7 +220,7 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
             
-            # if  d_ro < 1.1 * self.robot_prec_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
+            # if  d_ro < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
             #     self.stop_flag = True
             #     # print(self.ns, "stop")
             #     break
@@ -230,23 +229,24 @@ class ApfMotion(object):
             f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff2), f * np.sin(angle_diff2)]
 
-            if d_ro<2.0*self.robot_prec_d:
-                if abs(angle_diff2)>(np.pi/2):
-                    angle_diff3 = np.pi - abs(angle_diff2)
-                    coeff_alpha = np.cos(angle_diff3)
-                    templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
+            if d_ro<2.0*self.robot_prec_d and abs(angle_diff2)>(np.pi/2):
+                angle_diff3 = np.pi - abs(angle_diff2)
+                coeff_alpha = np.cos(angle_diff3)
 
-                    goal_theta = self.mod_angle(self.goal_theta)
-                    angle_diff4 = theta - goal_theta
-                    angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                    if angle_diff4*angle_diff2<0:
-                        coeff_alpha = -1*coeff_alpha
+                goal_theta = self.mod_angle(self.goal_theta)
+                angle_diff4 = theta - goal_theta
+                angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                if angle_diff4*angle_diff2<0:
+                    coeff_alpha = -1*coeff_alpha
 
-                    templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
+                templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-                else:
-                    templ[0] = f #+ 2.5
-                    templ[1] = 0
+            elif self.robot_prec_d<d_ro:
+                templ[0] = 0
+                templ[1] = 0
+            # else:
+            #     templ[0] = f #+ 2.5
+            #     templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -295,9 +295,12 @@ class ApfMotion(object):
                     
                     templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-                else:
-                    templ[0] = f + 2.0
+                elif self.obst_prec_d<d_ro:
+                    templ[0] = 0
                     templ[1] = 0
+                # else:
+                #     templ[0] = f + 2.0
+                #     templ[1] = 0
             
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
