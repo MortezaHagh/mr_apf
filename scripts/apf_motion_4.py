@@ -7,6 +7,12 @@ from geometry_msgs.msg import Twist
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 
+class NewRobots:
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.r_prec = 0
+        self.r_start = 0
 
 class ApfMotion(object):
 
@@ -270,16 +276,14 @@ class ApfMotion(object):
             print(groups)
             # print(" -------------- ")
         
-        ogx = []
-        ogy = []
-        ogrp = []
-        ogrs = []
+        new_robots = []
         for g in groups:
+            nr = NewRobots()
             if len(g)==1:
-                ogx.append(robots_x[g[0]])
-                ogy.append(robots_y[g[0]])
-                ogrp.append(self.robot_prec_d)
-                ogrs.append(2*self.robot_prec_d)
+                nr.x= robots_x[g[0]]
+                nr.y= robots_y[g[0]]
+                nr.r_prec = self.robot_prec_d
+                nr.r_start = 2*self.robot_prec_d
             else:
                 xx = [robots_x[i] for i in g]
                 yy = [robots_y[i] for i in g]
@@ -293,10 +297,13 @@ class ApfMotion(object):
                 xc = (x_min + x_max)/2
                 yc = (y_min + y_max)/2
                 rc = round(dd/2+2*self.robot_r+self.prec_d, 3)
-                ogx.append(xc)
-                ogy.append(yc)
-                ogrp.append(rc)
-
+                nr.x= xc
+                nr.y= yc
+                nr.r_prec = rc
+                nr.r_start = 2*rc
+            new_robots.append(nr)
+        
+        self.new_robots = new_robots
         # if self.ind==1: print(ogx)
         # if self.ind==1: print(" -------------- ")
 
