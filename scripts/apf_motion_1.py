@@ -3,7 +3,6 @@
 import rospy
 import numpy as np
 from nav_msgs.msg import Odometry
-from visualization import Viusalize
 from geometry_msgs.msg import Twist
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
@@ -74,9 +73,6 @@ class ApfMotion(object):
         self.w_coeff = 1                        # init_params.w_coeff      # angular velocity coeff
         self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
-
-        # visualize
-        vo = Viusalize(model, self.ns)
 
         # map: target and obstacles coordinates
         self.map()

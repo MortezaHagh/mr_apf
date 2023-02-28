@@ -7,7 +7,7 @@ from sensor_msgs.msg import PointCloud, ChannelFloat32
 from visualization_msgs.msg import Marker, MarkerArray
 
 class Viusalize:
-    def __init__(self, model, ns):
+    def __init__(self, model):
 
         self.rate = rospy.Rate(10)
 
@@ -38,7 +38,7 @@ class Viusalize:
         self.obst_marker_pub = rospy.Publisher("/obstacles_marker", MarkerArray, queue_size = 2)
         self.obst_prec_pc_pub = rospy.Publisher("/obst_prec", PointCloud, queue_size=10)
         self.obst_start_pc_pub = rospy.Publisher("/obst_start", PointCloud, queue_size=10)
-        self.robot_prec_pc_pub = rospy.Publisher(ns+"/robot_prec", PointCloud, queue_size=10)
+        # self.robot_prec_pc_pub = rospy.Publisher(ns+"/robot_prec", PointCloud, queue_size=10)
 
         # initialize obst markers and publish
         self.init_obsts()

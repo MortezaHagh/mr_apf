@@ -8,9 +8,10 @@ from parameters import Params
 from spawn_map import Spawning
 from matplotlib.pylab import plt
 from  send_goals import SendGoal
-from broadcaster import BroadCast
 from plot_model import plot_model
-from plot_forces import plot_forces
+from visualization import Viusalize
+# from broadcaster import BroadCast
+# from plot_forces import plot_forces
 from create_model import CreateModel
 from call_apf_service import call_apf_service
 from apf_central_service import InitRobotService
@@ -44,6 +45,9 @@ class Run():
 
         # spawn
         Spawning(self.model)
+
+        # visualize
+        vo = Viusalize(self.model)
 
         # # init_robot service server ------------------------------------------------------
         print("Initializing Central Service Server (init_apf_srv) for adding robots ... ")
