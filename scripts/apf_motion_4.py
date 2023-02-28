@@ -130,7 +130,7 @@ class ApfMotion(object):
             # self.path_x.append(round(self.r_x, 3))
             # self.path_y.append(round(self.r_y, 3))
 
-            print(self.ns, "moving", self.stop_flag, round(self.v, 2), round(self.w, 2))
+            # print(self.ns, "moving", self.stop_flag, round(self.v, 2), round(self.w, 2))
             self.rate.sleep()
 
         req = SharePoses2Request()
@@ -194,11 +194,12 @@ class ApfMotion(object):
         
         # self.obst_inds = []
         # self.obsts_dist = []
-        robots_inds = []
-        self.robots_pd = []
-        self.robots_sd = []
+        
+        # self.robots_pd = []
+        # self.robots_sd = []
 
         groups = []
+        robots_inds = []
         robots_inds_f = {}
 
         # for i in range(self.obs_count):
@@ -211,13 +212,16 @@ class ApfMotion(object):
         #     self.obsts_dist.append(d_ro)
 
 
-        # get indices of robots in proximity circle
+        # get data
         req_poses2 = SharePoses2Request()
         req_poses2.update = False
         req_poses2.ind = self.ind
         resp_poses2 = self.pose_client(req_poses2)
         robots_x = resp_poses2.x
         robots_y = resp_poses2.y
+        robots_priority = resp_poses2.priority
+
+        # get indices of robots in proximity circle
         for i in range(resp_poses2.count):
             dx = (robots_x[i] - self.r_x)
             dy = (robots_y[i] - self.r_y)
@@ -232,8 +236,6 @@ class ApfMotion(object):
         elif len(robots_inds)==1:
             self.robots_x = robots_x[0]
             self.robots_y = robots_y[0]
-            self.robots_pd = [self.robot_prec_d]
-            self.robots_sd = [self.robot_start_d]
             # return
         
         # generate robots_inds_f (neighbor robots in proximity circle)
@@ -250,9 +252,6 @@ class ApfMotion(object):
                 if dist<self.robot_start_d:     #####
                     robots_inds_f[p].append(ind_j)
 
-        # if self.ind==1:
-        #     print("robots_inds_f", robots_inds_f)
-        
         # detect groups
         robots_inds_3 = robots_inds[:]
         while len(robots_inds_3)>0:
@@ -269,9 +268,38 @@ class ApfMotion(object):
 
         if self.ind==1:
             print(groups)
-            print(" -------------- ")
+            # print(" -------------- ")
         
-        
+        ogx = []
+        ogy = []
+        ogrp = []
+        ogrs = []
+        for g in groups:
+            if len(g)==1:
+                ogx.append(robots_x[g[0]])
+                ogy.append(robots_y[g[0]])
+                ogrp.append(self.robot_prec_d)
+                ogrs.append(2*self.robot_prec_d)
+            else:
+                xx = [robots_x[i] for i in g]
+                yy = [robots_y[i] for i in g]
+                x_min = min(xx)
+                x_max = max(xx)
+                y_min = min(yy)
+                y_max = max(yy)
+                dx = x_max - x_min
+                dy = y_max - y_min
+                dd = max(dx, dy)
+                xc = (x_min + x_max)/2
+                yc = (y_min + y_max)/2
+                rc = round(dd/2+2*self.robot_r+self.prec_d, 3)
+                ogx.append(xc)
+                ogy.append(yc)
+                ogrp.append(rc)
+
+        # if self.ind==1: print(ogx)
+        # if self.ind==1: print(" -------------- ")
+
 
     # -----------------------  f_target  ----------------------------#
 
