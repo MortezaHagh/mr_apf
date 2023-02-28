@@ -47,8 +47,8 @@ class Viusalize:
 
         # initialize obst markers and publish
         self.init_obsts()
-        self.init_obsts_prec()
-        self.init_obsts_start()
+        # self.init_obsts_prec()
+        # self.init_obsts_start()
 
         self.thetas = np.linspace(0, np.pi*2, 180)
         print("Viusalize init done.")
@@ -56,7 +56,7 @@ class Viusalize:
 
     def robots_circles(self, xy):
         self.robots_prec_circles(xy)
-        self.robots_starts_circles(xy)
+        # self.robots_starts_circles(xy)
         self.robots_texts(xy)
 
 
@@ -231,6 +231,7 @@ class Viusalize:
             marker_array.markers.append(marker)
 
         self.publish_once(self.robots_text_pub, marker_array, "robots_texts ...")
+
 
     def robot_circles(self, x, y):
 
