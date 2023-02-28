@@ -214,7 +214,7 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
             
-            if d_ro < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
+            if d_ro < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi/2:
                 self.stop_flag = True
                 break
 
@@ -226,9 +226,12 @@ class ApfMotion(object):
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
                 templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
-            else:
-                templ[0] = f+2.5
+            elif self.robot_prec_d<d_ro:
+                templ[0] = 0
                 templ[1] = 0
+            # else:
+            #     templ[0] = f+2.5
+            #     templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -264,13 +267,16 @@ class ApfMotion(object):
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff2), f * np.sin(angle_diff2)]
 
-            if d_ro<2*self.obst_prec_d and abs(angle_diff2)>(np.pi/2):  # + np.pi/4
+            if d_ro<2*self.obst_prec_d and abs(angle_diff2)>(np.pi/2):
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
                 templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
-            else:
-                templ[0] = f+2.2
+            elif self.obst_prec_d<d_ro:
+                templ[0] = 0
                 templ[1] = 0
+            # else:
+            #     templ[0] = f+2.2
+            #     templ[1] = 0
 
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
