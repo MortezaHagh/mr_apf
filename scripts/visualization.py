@@ -42,6 +42,7 @@ class Viusalize:
         self.obst_start_pc_pub = rospy.Publisher("/obst_start", PointCloud, queue_size=10)
         self.robots_precs_pc_pub = rospy.Publisher("/robots_precs", PointCloud, queue_size=10)
         self.robots_starts_pc_pub = rospy.Publisher("/robots_starts", PointCloud, queue_size=10)
+        self.robots_text_pub = rospy.Publisher("/robots_texts", MarkerArray, queue_size=10)
         # self.robot_prec_pc_pub = rospy.Publisher(ns+"/robot_prec", PointCloud, queue_size=10)
 
         # initialize obst markers and publish
@@ -56,46 +57,47 @@ class Viusalize:
     def robots_circles(self, xy):
         self.robots_prec_circles(xy)
         self.robots_starts_circles(xy)
+        self.robots_texts(xy)
 
 
     def init_obsts(self):
             
-            # obstacles
-            marker_array = MarkerArray()
-            for i in range(self.obs_count):
-                marker = Marker()
-                marker.header.frame_id = "/map"
-                marker.header.stamp = rospy.Time.now()
+        # obstacles
+        marker_array = MarkerArray()
+        for i in range(self.obs_count):
+            marker = Marker()
+            marker.header.frame_id = "/map"
+            marker.header.stamp = rospy.Time.now()
 
-                # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
-                marker.type = marker.CYLINDER
-                marker.id = i+1
+            # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
+            marker.type = marker.CYLINDER
+            marker.id = i+1
 
-                # Set the scale of the marker
-                marker.scale.x = self.obst_r
-                marker.scale.y = self.obst_r
-                marker.scale.z = 0.4
+            # Set the scale of the marker
+            marker.scale.x = self.obst_r
+            marker.scale.y = self.obst_r
+            marker.scale.z = 0.4
 
-                # Set the color
-                marker.color.r = 0.0
-                marker.color.g = 1.0
-                marker.color.b = 0.0
-                marker.color.a = 1.0
-            
-                # Set the pose of the marker
-                marker.pose.position.x = self.obs_x[i]
-                marker.pose.position.y = self.obs_y[i]
-                marker.pose.position.z = 0.4/2
-                marker.pose.orientation.x = 0.0
-                marker.pose.orientation.y = 0.0
-                marker.pose.orientation.z = 0.0
-                marker.pose.orientation.w = 1.0
+            # Set the color
+            marker.color.r = 0.0
+            marker.color.g = 1.0
+            marker.color.b = 0.0
+            marker.color.a = 1.0
+        
+            # Set the pose of the marker
+            marker.pose.position.x = self.obs_x[i]
+            marker.pose.position.y = self.obs_y[i]
+            marker.pose.position.z = 0.4/2
+            marker.pose.orientation.x = 0.0
+            marker.pose.orientation.y = 0.0
+            marker.pose.orientation.z = 0.0
+            marker.pose.orientation.w = 1.0
 
-                # marker array
-                marker_array.markers.append(marker)
+            # marker array
+            marker_array.markers.append(marker)
 
-            # publish marler array
-            self.publish_once(self.obst_marker_pub, marker_array, "marker_array ...")
+        # publish marler array
+        self.publish_once(self.obst_marker_pub, marker_array, "marker_array ...")
 
     
     def init_obsts_prec(self):
@@ -195,6 +197,43 @@ class Viusalize:
 
         self.publish_once(self.robots_starts_pc_pub, robots_start_pc, "robots_start_circles ...")
 
+    
+    def robots_texts(self, xyd):
+        marker_array = MarkerArray()
+        i = 0
+        for k, xy in xyd.items():
+            marker = Marker()
+            marker.header.frame_id = "/map"
+            marker.header.stamp = rospy.Time.now()
+
+            # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
+            marker.type = marker.TEXT_VIEW_FACING
+            marker.text = "r" + str(i+1)
+            marker.id = i
+            i = i+1
+
+            # Set the scale of the marker
+            marker.scale.z = 0.2
+
+            # Set the color
+            marker.color.r = 1.0
+            marker.color.g = 1.0
+            marker.color.b = 1.0
+            marker.color.a = 1.0
+        
+            # Set the pose of the marker
+            marker.pose.position.x = xy[0]
+            marker.pose.position.y = xy[1]
+            marker.pose.position.z = 0.1
+            marker.pose.orientation.x = 0.0
+            marker.pose.orientation.y = 0.0
+            marker.pose.orientation.z = 0.0
+            marker.pose.orientation.w = 1.0
+
+            # marker array
+            marker_array.markers.append(marker)
+
+        self.publish_once(self.robots_text_pub, marker_array, "robots_texts ...")
 
     def robot_circles(self, x, y):
 
