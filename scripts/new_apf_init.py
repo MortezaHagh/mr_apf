@@ -47,14 +47,14 @@ class Run():
         Spawning(self.model)
 
         # visualize
-        vo = Viusalize(self.model)
+        visualize = Viusalize(self.model)
 
         # # init_robot service server ------------------------------------------------------
         print("Initializing Central Service Server (init_apf_srv) for adding robots ... ")
         init_srv_name = "init_apf_srv"
         self.rsrv = InitRobotService(self.model, init_srv_name)
 
-        # ------------------------- call_init_service - SendGoal - status---------
+        # ------------------------- call_init_service - SendGoal - status----------------------------
 
         # calling services
         call_apf_service(self.model.robots_i.ids)
@@ -67,9 +67,11 @@ class Run():
         status = [c.get_state() for c in clients.clients]
         s_flags = [s<2 for s in status]
         while (not rospy.is_shutdown()) and (any(s_flags)):
-            rate.sleep()
             status = [c.get_state() for c in clients.clients]
             s_flags = [s<2 for s in status]
+            visualize.robots_circles(self.rsrv.pose_srv.xy)
+            rate.sleep()
+
         print(" -----------------------")
         print("APF Mission Accomplished.")
         print(" -----------------------")

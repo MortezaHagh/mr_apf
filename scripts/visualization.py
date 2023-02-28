@@ -9,6 +9,8 @@ from visualization_msgs.msg import Marker, MarkerArray
 class Viusalize:
     def __init__(self, model):
 
+        print("Viusalize started.")
+
         self.rate = rospy.Rate(10)
 
         # obstacles
@@ -38,6 +40,8 @@ class Viusalize:
         self.obst_marker_pub = rospy.Publisher("/obstacles_marker", MarkerArray, queue_size = 2)
         self.obst_prec_pc_pub = rospy.Publisher("/obst_prec", PointCloud, queue_size=10)
         self.obst_start_pc_pub = rospy.Publisher("/obst_start", PointCloud, queue_size=10)
+        self.robots_precs_pc_pub = rospy.Publisher("/robots_precs", PointCloud, queue_size=10)
+        self.robots_starts_pc_pub = rospy.Publisher("/robots_starts", PointCloud, queue_size=10)
         # self.robot_prec_pc_pub = rospy.Publisher(ns+"/robot_prec", PointCloud, queue_size=10)
 
         # initialize obst markers and publish
@@ -46,6 +50,12 @@ class Viusalize:
         self.init_obsts_start()
 
         self.thetas = np.linspace(0, np.pi*2, 180)
+        print("Viusalize init done.")
+    
+
+    def robots_circles(self, xy):
+        self.robots_prec_circles(xy)
+        self.robots_starts_circles(xy)
 
 
     def init_obsts(self):
@@ -85,18 +95,7 @@ class Viusalize:
                 marker_array.markers.append(marker)
 
             # publish marler array
-            self.obst_markers = marker_array
-            self.publish_once_obst_marker()
-
-
-    def publish_once_obst_marker(self): 
-        while not rospy.is_shutdown():
-            connections = self.obst_marker_pub.get_num_connections() 
-            if connections > 0: 
-                self.obst_marker_pub.publish(self.obst_markers) 
-                break 
-            else: 
-                self.rate.sleep()
+            self.publish_once(self.obst_marker_pub, marker_array, "marker_array ...")
 
     
     def init_obsts_prec(self):
@@ -128,18 +127,7 @@ class Viusalize:
         # obst_prec_pc.channels.append(channel)
         
         #
-        self.obst_prec_pc = obst_prec_pc
-        self.publish_once_obst_prec_points()
-
-    
-    def publish_once_obst_prec_points(self): 
-        while not rospy.is_shutdown():
-            connections = self.obst_prec_pc_pub.get_num_connections() 
-            if connections > 0: 
-                self.obst_prec_pc_pub.publish(self.obst_prec_pc) 
-                break 
-            else: 
-                self.rate.sleep()
+        self.publish_once(self.obst_prec_pc_pub, obst_prec_pc, "obst_prec_pc ...")
     
 
     def init_obsts_start(self):
@@ -165,45 +153,77 @@ class Viusalize:
         obst_start_pc.header.frame_id = "map"
         obst_start_pc.points = obst_start_points
         
-        #
-        self.obst_start_pc = obst_start_pc
-        self.publish_once_obst_start_points()
+        self.publish_once(self.obst_start_pc_pub, obst_start_pc, "obst_start_pc ...")
 
     
-    def publish_once_obst_start_points(self): 
-        while not rospy.is_shutdown():
-            connections = self.obst_start_pc_pub.get_num_connections() 
-            if connections > 0: 
-                self.obst_start_pc_pub.publish(self.obst_start_pc) 
-                break 
-            else: 
-                self.rate.sleep()
-    
+    def robots_prec_circles(self, xyd):
+        robots_circles = []
+        robot_circle = []
+        for k, xy in xyd.items():
+            c_x = xy[0]
+            c_y = xy[1]
+            for th in self.thetas:
+                p = Point32()
+                p.x = c_x + self.robot_prec_d*np.cos(th)
+                p.y = c_y + self.robot_prec_d*np.sin(th)
+                robot_circle.append(p)
+            robots_circles.extend(robot_circle)
+        
+        robots_prec_pc = PointCloud()
+        robots_prec_pc.header.frame_id = "map"
+        robots_prec_pc.points = robots_circles
+
+        self.publish_once(self.robots_precs_pc_pub, robots_prec_pc, "robots_precs_circles ...")
+
+
+    def robots_starts_circles(self, xyd):
+        robots_circles = []
+        robot_circle = []
+        for k, xy in xyd.items():
+            c_x = xy[0]
+            c_y = xy[1]
+            for th in self.thetas:
+                p = Point32()
+                p.x = c_x + self.robot_start_d*np.cos(th)
+                p.y = c_y + self.robot_start_d*np.sin(th)
+                robot_circle.append(p)
+            robots_circles.extend(robot_circle)
+        
+        robots_start_pc = PointCloud()
+        robots_start_pc.header.frame_id = "map"
+        robots_start_pc.points = robots_circles
+
+        self.publish_once(self.robots_starts_pc_pub, robots_start_pc, "robots_start_circles ...")
+
 
     def robot_circles(self, x, y):
 
         robot_circle = []
-        c_x = x
-        c_y = y
-        for th in self.thetas:
-            p = Point32()
-            p.x = c_x + self.robot_prec_d*np.cos(th)
-            p.y = c_y + self.robot_prec_d*np.sin(th)
-            robot_circle.append(p)
+        # c_x = x
+        # c_y = y
+        # for th in self.thetas:
+        #     p = Point32()
+        #     p.x = c_x + self.robot_prec_d*np.cos(th)
+        #     p.y = c_y + self.robot_prec_d*np.sin(th)
+        #     robot_circle.append(p)
 
-        robot_prec_pc = PointCloud()
-        robot_prec_pc.header.frame_id = "map"
-        robot_prec_pc.points = robot_circle
+        # robot_prec_pc = PointCloud()
+        # robot_prec_pc.header.frame_id = "map"
+        # robot_prec_pc.points = robot_circle
 
-        self.robot_prec_pc = robot_prec_pc
-        self.publish_once_robot_prec_points()
+        # self.robot_prec_pc = robot_prec_pc
+        # self.publish_once()
 
 
-    def publish_once_robot_prec_points(self): 
+    def publish_once(self, publisher, data, notife): 
         while not rospy.is_shutdown():
-            connections = self.robot_prec_pc_pub.get_num_connections() 
+            connections = publisher.get_num_connections() 
             if connections > 0: 
-                self.robot_prec_pc_pub.publish(self.robot_prec_pc) 
+                publisher.publish(data) 
                 break 
             else: 
+                print(notife) 
                 self.rate.sleep()
+
+    
+    

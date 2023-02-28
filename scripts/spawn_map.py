@@ -86,6 +86,7 @@ def Spawning(model):
         spawn_robots_servie(sm)
         rospy.sleep(0.2)
 
+    print("spawning done!")
 # --------------------------------------------------------------------------------------------
 
 # # spawn obstacles
