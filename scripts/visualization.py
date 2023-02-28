@@ -224,10 +224,7 @@ class Viusalize:
             # Set the pose of the marker
             marker.pose.position.x = xy[0]
             marker.pose.position.y = xy[1]
-            marker.pose.position.z = 0.1
-            marker.pose.orientation.x = 0.0
-            marker.pose.orientation.y = 0.0
-            marker.pose.orientation.z = 0.0
+            marker.pose.position.z = 0.3
             marker.pose.orientation.w = 1.0
 
             # marker array
