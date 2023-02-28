@@ -17,6 +17,7 @@ class ApfMotion(object):
         rospy.on_shutdown(self.shutdown_hook)
 
         # preallocation
+        self.phis = []    
         self.v_lin = []
         self.v_ang = []
         self.path_x = []
@@ -25,13 +26,6 @@ class ApfMotion(object):
         self.force_tt = []
         self.force_or = []
         self.force_ot = []
-        self.phiis = []
-
-        self.obst_inds = []
-        self.robots_inds = []
-        self.obsts_dist = []
-        self.robots_dist = []
-    
         self.stop_flag = False
 
         # data
@@ -181,20 +175,16 @@ class ApfMotion(object):
         f_r += self.robot_f[0]
         f_theta += self.robot_f[1]
 
-        phi = np.arctan2(f_theta, f_r)
-        theta = phi
+        theta = np.arctan2(f_theta, f_r)
         theta = np.arctan2(np.sin(theta), np.cos(theta))
         phi = round(theta, 4)
 
-        # print(f_r, f_theta)
-        # print(" ------------ ")
-
-        self.force_tr.append(self.target_f[0])
-        self.force_tt.append(self.target_f[1])
-        self.force_or.append(self.obs_f[0])
-        self.force_ot.append(self.obs_f[1])
-        self.phiis.append(phi)
-
+        # self.phis.append(phi)
+        # self.force_or.append(self.obs_f[0])
+        # self.force_ot.append(self.obs_f[1])
+        # self.force_tr.append(self.target_f[0])
+        # self.force_tt.append(self.target_f[1])
+        
         return [f_r, f_theta, phi, self.stop_flag]
     
     # -----------------------  detect_group  ----------------------------#

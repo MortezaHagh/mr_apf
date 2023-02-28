@@ -17,6 +17,7 @@ class ApfMotion(object):
         rospy.on_shutdown(self.shutdown_hook)
 
         # preallocation
+        self.phis = []
         self.v_lin = []
         self.v_ang = []
         self.path_x = []
@@ -25,7 +26,6 @@ class ApfMotion(object):
         self.force_tt = []
         self.force_or = []
         self.force_ot = []
-        self.phiis = []
         self.stop_flag = False
 
         # data
@@ -51,7 +51,7 @@ class ApfMotion(object):
         self.v_min = 0.0        # init_params.linear_min_speed
         self.w_min = 0          # init_params.angular_min_speed
         self.w_max = 1.0        # init_params.angular_max_speed
-        self.v_min_2 = 0.02     # init_params.linear_min_speed_2
+        self.v_min_2 = 0.04     # init_params.linear_min_speed_2
 
         # settings
         self.zeta = 1                     
@@ -113,7 +113,7 @@ class ApfMotion(object):
 
             if stop_flag:
                 self.v = 0
-                self.w = 0
+                # self.w = 0
 
             # publish cmd
             move_cmd = Twist()
@@ -125,7 +125,7 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
-            print(self.ns, "moving", round(self.v, 2), round(self.w, 2))
+            print(self.ns, "moving", self.stop_flag, round(self.v, 2), round(self.w, 2))
             self.rate.sleep()
 
         self.stop()
@@ -141,8 +141,8 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        # if (v==0) and abs(w)<3*np.pi/180:
-        #     v = self.v_min_2
+        if (v==0) and abs(w)<0.03:
+            v = self.v_min_2
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -167,17 +167,16 @@ class ApfMotion(object):
         f_r += self.robot_f[0]
         f_theta += self.robot_f[1]
 
-        phi = np.arctan2(f_theta, f_r)
-        theta = phi
+        theta = np.arctan2(f_theta, f_r)
         theta = np.arctan2(np.sin(theta), np.cos(theta))
         phi = round(theta, 4)
 
-        self.force_tr.append(self.target_f[0])
-        self.force_tt.append(self.target_f[1])
-        self.force_or.append(self.obs_f[0])
-        self.force_ot.append(self.obs_f[1])
-        self.phiis.append(phi)
-
+        # self.phis.append(phi)
+        # self.force_or.append(self.obs_f[0])
+        # self.force_ot.append(self.obs_f[1])
+        # self.force_tr.append(self.target_f[0])
+        # self.force_tt.append(self.target_f[1])
+        
         return [f_r, f_theta, phi, self.stop_flag]
 
     def f_target(self):
