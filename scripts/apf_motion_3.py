@@ -352,15 +352,6 @@ class ApfMotion(object):
         self.obs_x = self.model.obst.x
         self.obs_y = self.model.obst.y
 
-        # dist o-t
-        self.d_ot = []
-        for i in range(self.obs_count):
-            xo = self.obs_x[i]
-            yo = self.obs_y[i]
-            d = np.sqrt((xo-self.goal_x)**2 + (yo-self.goal_y)**2)
-            self.d_ot.append(d)
-
-
     def modify_angle(self, theta):
         theta_mod = (theta + np.pi) % (2 * np.pi) - np.pi
         return theta_mod

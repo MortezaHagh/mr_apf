@@ -194,8 +194,7 @@ class ApfMotion(object):
         
         # self.obst_inds = []
         # self.obsts_dist = []
-        self.robots_inds = []
-        self.robots_dist = []
+        robots_inds = []
         self.robots_pd = []
         self.robots_sd = []
 
@@ -225,12 +224,12 @@ class ApfMotion(object):
             d_rr = np.sqrt(dx**2 + dy**2)
             if d_rr > 1 * self.robot_start_d:   #####
                 continue
-            self.robots_inds.append(i)
+            robots_inds.append(i)
         
         # if there is only one or none robots in proximity
-        if len(self.robots_inds)==0:
+        if len(robots_inds)==0:
             return
-        elif len(self.robots_inds)==1:
+        elif len(robots_inds)==1:
             self.robots_x = robots_x[0]
             self.robots_y = robots_y[0]
             self.robots_pd = [self.robot_prec_d]
@@ -238,7 +237,7 @@ class ApfMotion(object):
             # return
         
         # generate robots_inds_f (neighbor robots in proximity circle)
-        robots_inds_2 = self.robots_inds[:]
+        robots_inds_2 = robots_inds[:]
         while (len(robots_inds_2)>0):
             p = robots_inds_2.pop(0)
             robots_inds_f[p] = [p]
@@ -255,7 +254,7 @@ class ApfMotion(object):
         #     print("robots_inds_f", robots_inds_f)
         
         # detect groups
-        robots_inds_3 = self.robots_inds[:]
+        robots_inds_3 = robots_inds[:]
         while len(robots_inds_3)>0:
             groups.append([])
             p = robots_inds_3.pop(0)
@@ -447,15 +446,6 @@ class ApfMotion(object):
         self.obs_count = self.model.obst.count
         self.obs_x = self.model.obst.x
         self.obs_y = self.model.obst.y
-
-        # dist o-t
-        self.d_ot = []
-        for i in range(self.obs_count):
-            xo = self.obs_x[i]
-            yo = self.obs_y[i]
-            d = np.sqrt((xo-self.goal_x)**2 + (yo-self.goal_y)**2)
-            self.d_ot.append(d)
-
 
     def modify_angle(self, theta):
         theta_mod = (theta + np.pi) % (2 * np.pi) - np.pi
