@@ -52,7 +52,7 @@ class ApfMotion(object):
         self.v_min = 0.0        # init_params.linear_min_speed
         self.w_min = 0          # init_params.angular_min_speed
         self.w_max = 1.0        # init_params.angular_max_speed
-        self.v_min_2 = 0.02     # init_params.linear_min_speed_2
+        self.v_min_2 = 0.04     # init_params.linear_min_speed_2
 
         # settings
         self.zeta = 1                     
@@ -126,6 +126,7 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
+            print(self.ns, "moving", self.stop_flag, round(self.v, 2), round(self.w, 2))
             self.rate.sleep()
 
         req = SharePoses2Request()
@@ -145,8 +146,8 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        # if (v==0) and abs(w)<3*np.pi/180:
-        #     v = self.v_min_2
+        if (v==0) and abs(w)<0.03:
+            v = self.v_min_2
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -219,10 +220,9 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
             
-            # if  d_ro < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
-            #     self.stop_flag = True
-            #     # print(self.ns, "stop")
-            #     break
+            if  d_ro < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
+                self.stop_flag = True
+                # break
 
             robot_flag = True
             f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
@@ -240,9 +240,9 @@ class ApfMotion(object):
 
                 templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-            elif self.robot_prec_d<d_ro:
-                templ[0] = 0
-                templ[1] = 0
+            # elif self.robot_prec_d<d_ro:
+            #     templ[0] = 0
+            #     templ[1] = 0
             # else:
             #     templ[0] = f #+ 2.5
             #     templ[1] = 0
@@ -294,9 +294,9 @@ class ApfMotion(object):
                     
                     templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-                elif self.obst_prec_d<d_ro:
-                    templ[0] = 0
-                    templ[1] = 0
+                # elif self.obst_prec_d<d_ro:
+                #     templ[0] = 0
+                #     templ[1] = 0
                 # else:
                 #     templ[0] = f + 2.0
                 #     templ[1] = 0

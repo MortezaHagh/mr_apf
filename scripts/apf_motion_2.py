@@ -216,7 +216,7 @@ class ApfMotion(object):
             
             if d_ro < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi/2:
                 self.stop_flag = True
-                break
+                # break
 
             robot_flag = True
             f = ((self.robot_z * 1) * ((1 / d_ro) - (1 / self.robot_start_d))**2) * (1 / d_ro)**2
