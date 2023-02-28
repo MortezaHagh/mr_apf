@@ -125,7 +125,7 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
-            print(self.ns, "moving")
+            print(self.ns, "moving", round(self.v, 2), round(self.w, 2))
             self.rate.sleep()
 
         self.stop()
@@ -227,9 +227,9 @@ class ApfMotion(object):
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
                 templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
-            elif self.robot_prec_d<d_ro:
-                templ[0] = 0
-                templ[1] = 0
+            # elif self.robot_prec_d<d_ro:
+            #     templ[0] = 0
+            #     templ[1] = 0
             # else:
             #     templ[0] = f+2.5
             #     templ[1] = 0
@@ -272,9 +272,9 @@ class ApfMotion(object):
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
                 templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
-            elif self.obst_prec_d<d_ro:
-                templ[0] = 0
-                templ[1] = 0
+            # elif self.obst_prec_d<d_ro:
+            #     templ[0] = 0
+            #     templ[1] = 0
             # else:
             #     templ[0] = f+2.2
             #     templ[1] = 0
