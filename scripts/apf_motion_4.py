@@ -130,6 +130,7 @@ class ApfMotion(object):
             # self.path_x.append(round(self.r_x, 3))
             # self.path_y.append(round(self.r_y, 3))
 
+            print(self.ns, "moving", self.stop_flag, round(self.v, 2), round(self.w, 2))
             self.rate.sleep()
 
         req = SharePoses2Request()
@@ -149,8 +150,8 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        # if (v==0) and abs(w)<3*np.pi/180:
-        #     v = self.v_min_2
+        if (v==0) and abs(w)<0.03:
+            v = self.v_min_2*2
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -279,7 +280,7 @@ class ApfMotion(object):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
         goal_distance = np.sqrt(dx**2 + dy**2)
-        # f = self.zeta * goal_distance * 4
+        # f = self.zeta * goal_distance
         f = self.fix_f
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
@@ -312,32 +313,33 @@ class ApfMotion(object):
             if d_rr > 1 * self.robot_start_d:
                 continue
             
-            # if  d_ro < 2.0 * self.robot_prec_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
-            #     self.stop_flag = True
-            #     # print(self.ns, "stop")
-            #     break
+            if  d_rr < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
+                self.stop_flag = True
+                # break
 
             robot_flag = True
             f = ((self.robot_z * 1) * ((1 / d_rr) - (1 / self.robot_start_d))**2) * (1 / d_rr)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
-            if d_rr<2.0*self.robot_prec_d:
-                if abs(angle_diff2)>(np.pi/2):
-                    angle_diff3 = np.pi - abs(angle_diff2)
-                    coeff_alpha = np.cos(angle_diff3)
-                    # templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
+            if d_rr<2.0*self.robot_prec_d and abs(angle_diff2)>(np.pi/2):
+                angle_diff3 = np.pi - abs(angle_diff2)
+                coeff_alpha = np.cos(angle_diff3)
+                # templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-                    goal_theta = self.mod_angle(self.goal_theta)
-                    angle_diff4 = theta - goal_theta
-                    angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                    if angle_diff4*angle_diff2<0:
-                        coeff_alpha = -1*coeff_alpha
+                goal_theta = self.mod_angle(self.goal_theta)
+                angle_diff4 = theta - goal_theta
+                angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                if angle_diff4*angle_diff2<0:
+                    coeff_alpha = -1*coeff_alpha
 
-                    templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
+                templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-                # else:
-                #     templ[0] = f #+ 2.5
-                #     templ[1] = 0
+            # elif self.robot_prec_d<d_ro:
+            #     templ[0] = f
+            #     templ[1] = 0
+            # else:
+            #     templ[0] = f #+ 2.5
+            #     templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -375,8 +377,7 @@ class ApfMotion(object):
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff2), f * np.sin(angle_diff2)]
 
-            if d_ro<2.0*self.obst_prec_d: 
-                if abs(angle_diff2)>(np.pi/2):
+            if d_ro<2.0*self.obst_prec_d and abs(angle_diff2)>(np.pi/2):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)
                     
@@ -388,9 +389,12 @@ class ApfMotion(object):
                     
                     templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-                else:
-                    templ[0] = f + 2.0
-                    templ[1] = 0
+            # elif self.obst_prec_d<d_ro:
+            #     templ[0] = f
+            #     templ[1] = 0
+            # else:
+            #     templ[0] = f + 2.0
+            #     templ[1] = 0
             
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
