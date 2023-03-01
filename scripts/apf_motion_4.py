@@ -213,6 +213,7 @@ class ApfMotion(object):
 
         groups = []
         robots_inds = []
+        angle_diffs = []
         robots_inds_f = {}
         self.new_robots = []
 
@@ -240,6 +241,10 @@ class ApfMotion(object):
             dx = (robots_x[i] - self.r_x)
             dy = (robots_y[i] - self.r_y)
             d_rr = np.sqrt(dx**2 + dy**2)
+            theta = np.arctan2(dy, dx)
+            angle_diff = theta - self.r_theta
+            angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+            angle_diffs.append(angle_diff2)
             if d_rr > 1 * self.robot_start_d:   #####
                 continue
             robots_inds.append(i)
@@ -293,12 +298,37 @@ class ApfMotion(object):
                     nr.p = True
             else:
                 pp = [robots_priority[i]>0 for i in g]
-                xy = [[robots_x[i], robots_y[i]] for i in g]
-                circle = make_circle(xy)
 
-                nr.x= circle[0]
-                nr.y= circle[1]
-                nr.r_prec = circle[2] + 2*self.robot_r + self.prec_d
+                ad = [angle_diffs[i] for i in g]
+                a_min = g[np.argmin(ad)]
+                a_max = g[np.argmax(ad)]
+
+                x1 = robots_x[a_min]
+                x2 = robots_x[a_max]
+                y1 = robots_y[a_min]
+                y2 = robots_y[a_max]
+                dx = x2-x1
+                dy = y2-y1 
+                theta = np.arctan2(dy, dx)
+                d12 = np.sqrt(dx**2 + dy**2)
+
+                xx1 = x1 + (d12/np.sqrt(3)) * np.cos(theta+np.pi/3) 
+                yy1 = y1 + (d12/np.sqrt(3)) * np.sin(theta+np.pi/3)
+                xx2 = x1 + (d12/np.sqrt(3)) * np.cos(theta-np.pi/3) 
+                yy2 = y1 + (d12/np.sqrt(3)) * np.sin(theta-np.pi/3)
+                dd1 = np.sqrt((xx1-self.r_x)**2 + (yy1-self.r_y)**2)
+                dd2 = np.sqrt((xx2-self.r_x)**2 + (yy2-self.r_y)**2)
+                if (dd1<dd2):
+                    xc = xx2
+                    yc = yy2
+                else:
+                    xc = xx1
+                    yc = yy1
+                rc = (d12/np.sqrt(3))
+
+                nr.x= xc
+                nr.y= yc
+                nr.r_prec = rc + 2*self.robot_r + self.prec_d
                 nr.r_start = 2*nr.r_prec
 
                 # xx = [robots_x[i] for i in g]
@@ -373,7 +403,7 @@ class ApfMotion(object):
             if d_rr > 1 * self.robot_start_d:
                 continue
             
-            if  d_rr < nr.r_prec and nr.p and abs(angle_diff2) > np.pi / 2:
+            if  d_rr < nr.r_prec and nr.p and abs(angle_diff2) > np.pi/2:
                 self.stop_flag = True
                 # break
 
@@ -397,7 +427,7 @@ class ApfMotion(object):
             elif self.robot_prec_d<d_rr:
                 pass
             else:
-                templ[0] = 0 # f+2.5
+                templ[0] = 2.5
                 templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
@@ -451,7 +481,7 @@ class ApfMotion(object):
             elif self.obst_prec_d<d_ro:
                 pass
             else:
-                templ[0] = 0 #f + 2.0
+                templ[0] = 2.0
                 templ[1] = 0
             
             obs_f[0] += round(templ[0], 3)

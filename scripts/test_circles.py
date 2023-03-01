@@ -3,9 +3,10 @@ from smallest_circle import *
 import matplotlib.pyplot as plt
 
 thetas = np.linspace(0, np.pi*2, 100)
-a=[1,2]
-b = [4,5]
-p = [a, b]
+# a=[1,1]
+b = [2,0]
+d = [0, 2]
+p = [b, d]
 
 c = make_circle(p)
 print(c)
