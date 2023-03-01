@@ -143,7 +143,8 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
-            # print(self.ns, "moving", self.stop_flag, round(self.v, 2), round(self.w, 2))
+            if self.ind==1: print("f_r", f_r, "f_theta", f_theta)
+            if self.ind==1: print("moving", self.stop_flag, "v", round(self.v, 2), "w", round(self.w, 2))
             self.rate.sleep()
 
         req = SharePoses2Request()
@@ -312,10 +313,10 @@ class ApfMotion(object):
                 theta = np.arctan2(dy, dx)
                 d12 = np.sqrt(dx**2 + dy**2)
 
-                xx1 = x1 + (d12/np.sqrt(3)) * np.cos(theta+np.pi/3) 
-                yy1 = y1 + (d12/np.sqrt(3)) * np.sin(theta+np.pi/3)
-                xx2 = x1 + (d12/np.sqrt(3)) * np.cos(theta-np.pi/3) 
-                yy2 = y1 + (d12/np.sqrt(3)) * np.sin(theta-np.pi/3)
+                xx1 = x1 + (d12/np.sqrt(3)) * np.cos(theta+np.pi/6) 
+                yy1 = y1 + (d12/np.sqrt(3)) * np.sin(theta+np.pi/6)
+                xx2 = x1 + (d12/np.sqrt(3)) * np.cos(theta-np.pi/6) 
+                yy2 = y1 + (d12/np.sqrt(3)) * np.sin(theta-np.pi/6)
                 dd1 = np.sqrt((xx1-self.r_x)**2 + (yy1-self.r_y)**2)
                 dd2 = np.sqrt((xx2-self.r_x)**2 + (yy2-self.r_y)**2)
                 if (dd1<dd2):
@@ -330,25 +331,6 @@ class ApfMotion(object):
                 nr.y= yc
                 nr.r_prec = rc + 2*self.robot_r + self.prec_d
                 nr.r_start = 2*nr.r_prec
-
-                # xx = [robots_x[i] for i in g]
-                # yy = [robots_y[i] for i in g]
-                # x_min = min(xx)
-                # x_max = max(xx)
-                # y_min = min(yy)
-                # y_max = max(yy)
-                # dx = abs(x_max - x_min)
-                # dy = abs(y_max - y_min)
-                # dd = max(dx, dy)
-                # xc = abs(x_min + x_max)/2
-                # yc = abs(y_min + y_max)/2
-                # rc = round(dd/2+2*self.robot_r+self.prec_d, 3)
-
-                # nr.x= xc
-                # nr.y= yc
-                # nr.r_prec = rc
-                # nr.r_start = 2*rc
-
                 nr.z = 4 * self.fix_f * nr.r_prec**4
                 if any(pp):
                     nr.p = True
