@@ -319,7 +319,7 @@ class ApfMotion(object):
                 # nr.r_prec = rc
                 # nr.r_start = 2*rc
 
-                nr.z = 4*self.fix_f*rc**4
+                nr.z = 4 * self.fix_f * nr.r_prec**4
                 if any(pp):
                     nr.p = True
             new_robots.append(nr)
@@ -394,7 +394,7 @@ class ApfMotion(object):
 
                 templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-            elif self.robot_prec_d<d_ro:
+            elif self.robot_prec_d<d_rr:
                 pass
             else:
                 templ[0] = 0 # f+2.5
