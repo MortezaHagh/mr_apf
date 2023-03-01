@@ -131,7 +131,7 @@ class ApfMotion(object):
 
             if stop_flag:
                 self.v = 0
-                self.w = 0
+                # self.w = 0
 
             # publish cmd
             move_cmd = Twist()
@@ -143,8 +143,9 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
-            if self.ind==1: print("f_r", f_r, "f_theta", f_theta)
+            if self.ind==1: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
             if self.ind==1: print("moving", self.stop_flag, "v", round(self.v, 2), "w", round(self.w, 2))
+            if self.ind==1: print(" ---------------------------------- ")
             self.rate.sleep()
 
         req = SharePoses2Request()
@@ -166,6 +167,10 @@ class ApfMotion(object):
 
         if (v==0) and abs(w)<0.03:
             v = self.v_min_2*2
+
+        # thresh_theta = np.pi/8
+        # w = 1 * self.w_max * theta / (np.pi/4)
+        # v = 1 * self.v_max * (np.pi-abs(theta))/(np.pi-thresh_theta)
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -269,7 +274,7 @@ class ApfMotion(object):
                 dx = (robots_x[p] - robots_x[ind_j])
                 dy = (robots_y[p] - robots_y[ind_j])
                 dist = np.sqrt(dx**2+dy**2)
-                if dist<self.robot_prec_d*3/2:     ##### robot_start_d
+                if dist<self.robot_prec_d*3/2:     ##### robot_start_d robot_prec_d
                     robots_inds_f[p].append(ind_j)
 
         # detect groups
@@ -382,8 +387,8 @@ class ApfMotion(object):
             angle_diff = theta - self.r_theta
             angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
 
-            if d_rr > 1 * self.robot_start_d:
-                continue
+            # if d_rr > 1 * nr.r_start:
+            #     continue
             
             if  d_rr < nr.r_prec and nr.p and abs(angle_diff2) > np.pi/2:
                 self.stop_flag = True
@@ -396,7 +401,6 @@ class ApfMotion(object):
             if d_rr<2.0*nr.r_prec and abs(angle_diff2)>(np.pi/2):
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
-                # templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
                 goal_theta = self.mod_angle(self.goal_theta)
                 angle_diff4 = theta - goal_theta
@@ -409,7 +413,7 @@ class ApfMotion(object):
             elif self.robot_prec_d<d_rr:
                 pass
             else:
-                templ[0] = 2.5
+                templ[0] = 4.5
                 templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
