@@ -4,14 +4,17 @@ import rospy
 import numpy as np
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
+from visualization import Viusalize
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
+from smallest_circle import *
 
 class NewRobots:
     def __init__(self):
         self.x = 0
         self.y = 0
         self.z = 1
+        self.p = False
         self.r_prec = 0
         self.r_start = 0
 
@@ -22,6 +25,9 @@ class ApfMotion(object):
         # ros
         self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.shutdown_hook)
+
+        #
+        self.vs = Viusalize(model)
 
         # preallocation
         self.phis = []    
@@ -257,7 +263,7 @@ class ApfMotion(object):
                 dx = (robots_x[p] - robots_x[ind_j])
                 dy = (robots_y[p] - robots_y[ind_j])
                 dist = np.sqrt(dx**2+dy**2)
-                if dist<self.robot_prec_d:     ##### robot_start_d
+                if dist<self.robot_prec_d*3/2:     ##### robot_start_d
                     robots_inds_f[p].append(ind_j)
 
         # detect groups
@@ -283,28 +289,46 @@ class ApfMotion(object):
                 nr.r_prec = self.robot_prec_d
                 nr.r_start = 2*self.robot_prec_d
                 nr.z = self.robot_z
+                if robots_priority[g[0]]>0:
+                    nr.p = True
             else:
-                xx = [robots_x[i] for i in g]
-                yy = [robots_y[i] for i in g]
-                x_min = min(xx)
-                x_max = max(xx)
-                y_min = min(yy)
-                y_max = max(yy)
-                dx = abs(x_max - x_min)
-                dy = abs(y_max - y_min)
-                dd = max(dx, dy)
-                xc = abs(x_min + x_max)/2
-                yc = abs(y_min + y_max)/2
-                rc = round(dd/2+2*self.robot_r+self.prec_d, 3)
-                nr.x= xc
-                nr.y= yc
-                nr.r_prec = rc
-                nr.r_start = 2*rc
+                pp = [robots_priority[i]>0 for i in g]
+                xy = [[robots_x[i], robots_y[i]] for i in g]
+                circle = make_circle(xy)
+
+                nr.x= circle[0]
+                nr.y= circle[1]
+                nr.r_prec = circle[2] + 2*self.robot_r + self.prec_d
+                nr.r_start = 2*nr.r_prec
+
+                # xx = [robots_x[i] for i in g]
+                # yy = [robots_y[i] for i in g]
+                # x_min = min(xx)
+                # x_max = max(xx)
+                # y_min = min(yy)
+                # y_max = max(yy)
+                # dx = abs(x_max - x_min)
+                # dy = abs(y_max - y_min)
+                # dd = max(dx, dy)
+                # xc = abs(x_min + x_max)/2
+                # yc = abs(y_min + y_max)/2
+                # rc = round(dd/2+2*self.robot_r+self.prec_d, 3)
+
+                # nr.x= xc
+                # nr.y= yc
+                # nr.r_prec = rc
+                # nr.r_start = 2*rc
+
                 nr.z = 4*self.fix_f*rc**4
+                if any(pp):
+                    nr.p = True
             new_robots.append(nr)
         
         self.new_robots = new_robots
-        # if self.ind==1: print(ogx)
+        
+        if self.ind==1: 
+           self.vs.robot_data(new_robots) 
+
         # if self.ind==1: print(" -------------- ")
 
 
@@ -349,9 +373,9 @@ class ApfMotion(object):
             if d_rr > 1 * self.robot_start_d:
                 continue
             
-            # if  d_rr < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
-            #     self.stop_flag = True
-            #     # break
+            if  d_rr < nr.r_prec and nr.p and abs(angle_diff2) > np.pi / 2:
+                self.stop_flag = True
+                # break
 
             robot_flag = True
             f = ((nr.z * 1) * ((1 / d_rr) - (1 / nr.r_start))**2) * (1 / d_rr)**2
@@ -370,12 +394,11 @@ class ApfMotion(object):
 
                 templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-            # elif self.robot_prec_d<d_ro:
-            #     templ[0] = f
-            #     templ[1] = 0
-            # else:
-            #     templ[0] = f #+ 2.5
-            #     templ[1] = 0
+            elif self.robot_prec_d<d_ro:
+                pass
+            else:
+                templ[0] = 0 # f+2.5
+                templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -425,12 +448,11 @@ class ApfMotion(object):
                     
                     templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-            # elif self.obst_prec_d<d_ro:
-            #     templ[0] = f
-            #     templ[1] = 0
-            # else:
-            #     templ[0] = f + 2.0
-            #     templ[1] = 0
+            elif self.obst_prec_d<d_ro:
+                pass
+            else:
+                templ[0] = 0 #f + 2.0
+                templ[1] = 0
             
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)

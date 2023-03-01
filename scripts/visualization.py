@@ -43,10 +43,10 @@ class Viusalize:
         self.robots_precs_pc_pub = rospy.Publisher("/robots_precs", PointCloud, queue_size=10)
         self.robots_starts_pc_pub = rospy.Publisher("/robots_starts", PointCloud, queue_size=10)
         self.robots_text_pub = rospy.Publisher("/robots_texts", MarkerArray, queue_size=10)
-        # self.robot_prec_pc_pub = rospy.Publisher(ns+"/robot_prec", PointCloud, queue_size=10)
+        self.robot_data_pub = rospy.Publisher("/robot_data", PointCloud, queue_size=10)
 
         # initialize obst markers and publish
-        self.init_obsts()
+        # self.init_obsts()
         # self.init_obsts_prec()
         # self.init_obsts_start()
 
@@ -233,23 +233,25 @@ class Viusalize:
         self.publish_once(self.robots_text_pub, marker_array, "robots_texts ...")
 
 
-    def robot_circles(self, x, y):
+    def robot_data(self, nrs):
 
-        robot_circle = []
-        # c_x = x
-        # c_y = y
-        # for th in self.thetas:
-        #     p = Point32()
-        #     p.x = c_x + self.robot_prec_d*np.cos(th)
-        #     p.y = c_y + self.robot_prec_d*np.sin(th)
-        #     robot_circle.append(p)
+        robots_circles = []
+        circle = []
+        for nr in nrs:
+            c_x = nr.x
+            c_y = nr.y
+            for th in self.thetas:
+                p = Point32()
+                p.x = c_x + nr.r_prec*np.cos(th)
+                p.y = c_y + nr.r_prec*np.sin(th)
+                circle.append(p)
+            robots_circles.extend(circle)
 
-        # robot_prec_pc = PointCloud()
-        # robot_prec_pc.header.frame_id = "map"
-        # robot_prec_pc.points = robot_circle
-
-        # self.robot_prec_pc = robot_prec_pc
-        # self.publish_once()
+        robot_prec_pc = PointCloud()
+        robot_prec_pc.header.frame_id = "map"
+        robot_prec_pc.points = robots_circles
+        self.robot_data_pub.publish(robot_prec_pc)
+        # self.publish_once(self.robot_data_pub, robot_prec_pc, "robot_data")
 
 
     def publish_once(self, publisher, data, notife): 

@@ -48,6 +48,7 @@ class Run():
 
         # visualize
         visualize = Viusalize(self.model)
+        visualize.init_obsts()
 
         # # init_robot service server ------------------------------------------------------
         print("Initializing Central Service Server (init_apf_srv) for adding robots ... ")
