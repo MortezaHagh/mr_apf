@@ -11,6 +11,7 @@ class NewRobots:
     def __init__(self):
         self.x = 0
         self.y = 0
+        self.z = 1
         self.r_prec = 0
         self.r_start = 0
 
@@ -114,27 +115,27 @@ class ApfMotion(object):
             # detect and group
             self.detect_group()
             
-            # # calculate forces
-            # [f_r, f_theta, phi, stop_flag] = self.forces()
+            # calculate forces
+            [f_r, f_theta, phi, stop_flag] = self.forces()
 
-            # # calculate velocities
-            # self.cal_vel(f_r, f_theta, phi)
-            # self.v_lin.append(self.v)
-            # self.v_ang.append(self.w)
+            # calculate velocities
+            self.cal_vel(f_r, f_theta, phi)
+            self.v_lin.append(self.v)
+            self.v_ang.append(self.w)
 
-            # if stop_flag:
-            #     self.v = 0
-            #     self.w = 0
+            if stop_flag:
+                self.v = 0
+                self.w = 0
 
-            # # publish cmd
-            # move_cmd = Twist()
-            # move_cmd.linear.x = self.v
-            # move_cmd.angular.z = self.w
-            # self.cmd_vel.publish(move_cmd)
+            # publish cmd
+            move_cmd = Twist()
+            move_cmd.linear.x = self.v
+            move_cmd.angular.z = self.w
+            self.cmd_vel.publish(move_cmd)
 
-            # # result
-            # self.path_x.append(round(self.r_x, 3))
-            # self.path_y.append(round(self.r_y, 3))
+            # result
+            self.path_x.append(round(self.r_x, 3))
+            self.path_y.append(round(self.r_y, 3))
 
             # print(self.ns, "moving", self.stop_flag, round(self.v, 2), round(self.w, 2))
             self.rate.sleep()
@@ -207,6 +208,7 @@ class ApfMotion(object):
         groups = []
         robots_inds = []
         robots_inds_f = {}
+        self.new_robots = []
 
         # for i in range(self.obs_count):
         #     dy = -(self.obs_y[i] - self.r_y)
@@ -255,7 +257,7 @@ class ApfMotion(object):
                 dx = (robots_x[p] - robots_x[ind_j])
                 dy = (robots_y[p] - robots_y[ind_j])
                 dist = np.sqrt(dx**2+dy**2)
-                if dist<self.robot_start_d:     #####
+                if dist<self.robot_prec_d:     ##### robot_start_d
                     robots_inds_f[p].append(ind_j)
 
         # detect groups
@@ -272,10 +274,6 @@ class ApfMotion(object):
                     robots_inds_3.remove(ind_j)
             groups[-1] = list(gset)
 
-        if self.ind==1:
-            print(groups)
-            # print(" -------------- ")
-        
         new_robots = []
         for g in groups:
             nr = NewRobots()
@@ -284,6 +282,7 @@ class ApfMotion(object):
                 nr.y= robots_y[g[0]]
                 nr.r_prec = self.robot_prec_d
                 nr.r_start = 2*self.robot_prec_d
+                nr.z = self.robot_z
             else:
                 xx = [robots_x[i] for i in g]
                 yy = [robots_y[i] for i in g]
@@ -291,16 +290,17 @@ class ApfMotion(object):
                 x_max = max(xx)
                 y_min = min(yy)
                 y_max = max(yy)
-                dx = x_max - x_min
-                dy = y_max - y_min
+                dx = abs(x_max - x_min)
+                dy = abs(y_max - y_min)
                 dd = max(dx, dy)
-                xc = (x_min + x_max)/2
-                yc = (y_min + y_max)/2
+                xc = abs(x_min + x_max)/2
+                yc = abs(y_min + y_max)/2
                 rc = round(dd/2+2*self.robot_r+self.prec_d, 3)
                 nr.x= xc
                 nr.y= yc
                 nr.r_prec = rc
                 nr.r_start = 2*rc
+                nr.z = 4*self.fix_f*rc**4
             new_robots.append(nr)
         
         self.new_robots = new_robots
@@ -328,17 +328,19 @@ class ApfMotion(object):
     # -----------------------  f_robots  ----------------------------#
 
     def f_robots(self):
+        
+        robot_f = [0, 0]
+        self.robot_f = [0,0]
         robot_flag = False
         self.stop_flag = False
-        req = SharePoses2Request()
-        req.ind = self.ind
-        req.update = False
-        resp = self.pose_client(req)
-        robot_f = [0, 0]
-        self.robot_f = [0, 0]
-        for i in range(resp.count):
-            dx = -(resp.x[i] - self.r_x)
-            dy = -(resp.y[i] - self.r_y)
+        new_robots = self.new_robots
+
+        if new_robots==[]:
+            return
+
+        for nr in new_robots:
+            dx = -(nr.x - self.r_x)
+            dy = -(nr.y - self.r_y)
             d_rr = np.sqrt(dx**2 + dy**2)
             theta = np.arctan2(dy, dx)
             angle_diff = theta - self.r_theta
@@ -347,15 +349,15 @@ class ApfMotion(object):
             if d_rr > 1 * self.robot_start_d:
                 continue
             
-            if  d_rr < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
-                self.stop_flag = True
-                # break
+            # if  d_rr < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff2) > np.pi / 2:
+            #     self.stop_flag = True
+            #     # break
 
             robot_flag = True
-            f = ((self.robot_z * 1) * ((1 / d_rr) - (1 / self.robot_start_d))**2) * (1 / d_rr)**2
+            f = ((nr.z * 1) * ((1 / d_rr) - (1 / nr.r_start))**2) * (1 / d_rr)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
-            if d_rr<2.0*self.robot_prec_d and abs(angle_diff2)>(np.pi/2):
+            if d_rr<2.0*nr.r_prec and abs(angle_diff2)>(np.pi/2):
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
                 # templ[1] += (f+3.5)*coeff_alpha*np.sign(np.sin(angle_diff2))
