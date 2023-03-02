@@ -10,6 +10,7 @@ class RobotI(object):
         self.xt = inputs.xt
         self.yt = inputs.yt
         self.ids = inputs.ids
+        self.ns = '/r' + str(id)
         self.robot_count = len(inputs.ids)
         
 class Map(object):

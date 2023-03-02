@@ -43,7 +43,10 @@ class Viusalize:
         self.robots_precs_pc_pub = rospy.Publisher("/robots_precs", PointCloud, queue_size=10)
         self.robots_starts_pc_pub = rospy.Publisher("/robots_starts", PointCloud, queue_size=10)
         self.robots_text_pub = rospy.Publisher("/robots_texts", MarkerArray, queue_size=10)
-        self.robot_data_pub = rospy.Publisher("/robot_data", PointCloud, queue_size=10)
+
+        self.robots_pubs = {}
+        self.add_robot(model)
+        # self.robot_data_pub = rospy.Publisher("/robot_data", PointCloud, queue_size=10)
 
         # initialize obst markers and publish
         # self.init_obsts()
@@ -53,6 +56,9 @@ class Viusalize:
         self.thetas = np.linspace(0, np.pi*2, 180)
         print("Viusalize init done.")
     
+    def add_robot(self, model):
+        for r in model.robots_i:
+            self.robots_pubs[r.ns] = (rospy.Publisher(r.ns+"/robot_data", PointCloud, queue_size=10))
 
     def robots_circles(self, xy):
         self.robots_prec_circles(xy)
@@ -233,7 +239,7 @@ class Viusalize:
         self.publish_once(self.robots_text_pub, marker_array, "robots_texts ...")
 
 
-    def robot_data(self, nrs):
+    def robot_data(self, nrs, ns):
 
         robots_circles = []
         circle = []
@@ -250,8 +256,7 @@ class Viusalize:
         robot_prec_pc = PointCloud()
         robot_prec_pc.header.frame_id = "map"
         robot_prec_pc.points = robots_circles
-        self.robot_data_pub.publish(robot_prec_pc)
-        # self.publish_once(self.robot_data_pub, robot_prec_pc, "robot_data")
+        self.robots_pubs[ns].publish(robot_prec_pc)
 
 
     def publish_once(self, publisher, data, notife): 

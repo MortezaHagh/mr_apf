@@ -17,6 +17,7 @@ class NewRobots:
         self.p = False
         self.r_prec = 0
         self.r_start = 0
+        self.big = False
 
 class ApfMotion(object):
 
@@ -131,7 +132,7 @@ class ApfMotion(object):
 
             if stop_flag:
                 self.v = 0
-                # self.w = 0
+                self.w = 0
 
             # publish cmd
             move_cmd = Twist()
@@ -143,9 +144,9 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
-            if self.ind==1: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
-            if self.ind==1: print("moving", self.stop_flag, "v", round(self.v, 2), "w", round(self.w, 2))
-            if self.ind==1: print(" ---------------------------------- ")
+            if self.ind==5: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
+            if self.ind==5: print("moving", self.stop_flag, "v", round(self.v, 2), "w", round(self.w, 2))
+            if self.ind==5: print(" ---------------------------------- ")
             self.rate.sleep()
 
         req = SharePoses2Request()
@@ -158,19 +159,22 @@ class ApfMotion(object):
 
     def cal_vel(self, f_r, f_theta, theta):
 
-        if f_r < 0:
-            v = 0
-        else:
-            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
+        # if f_r < 0:
+        #     v = 0
+        # else:
+        #     v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
 
-        w = 1 * self.w_max * f_theta / self.fix_f
+        # w = 1 * self.w_max * f_theta / self.fix_f
 
-        if (v==0) and abs(w)<0.03:
-            v = self.v_min_2*2
+        # if (v==0) and abs(w)<0.03:
+        #     v = self.v_min_2*2
 
-        # thresh_theta = np.pi/8
-        # w = 1 * self.w_max * theta / (np.pi/4)
-        # v = 1 * self.v_max * (np.pi-abs(theta))/(np.pi-thresh_theta)
+        thresh_theta = np.pi/8
+        w = 1 * self.w_max * theta / (np.pi/4)
+        v = 1 * self.v_max * (np.pi-abs(theta))/(np.pi-thresh_theta)
+
+        # if (v<self.v_min_2) and abs(w)<0.03:
+        #     v = self.v_min_2*2
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -274,7 +278,7 @@ class ApfMotion(object):
                 dx = (robots_x[p] - robots_x[ind_j])
                 dy = (robots_y[p] - robots_y[ind_j])
                 dist = np.sqrt(dx**2+dy**2)
-                if dist<self.robot_prec_d*3/2:     ##### robot_start_d robot_prec_d
+                if dist<self.robot_prec_d*2/2:     ##### robot_start_d robot_prec_d
                     robots_inds_f[p].append(ind_j)
 
         # detect groups
@@ -303,8 +307,7 @@ class ApfMotion(object):
                 if robots_priority[g[0]]>0:
                     nr.p = True
             else:
-                pp = [robots_priority[i]>0 for i in g]
-
+                nr.big = True
                 ad = [angle_diffs[i] for i in g]
                 a_min = g[np.argmin(ad)]
                 a_max = g[np.argmax(ad)]
@@ -317,6 +320,8 @@ class ApfMotion(object):
                 dy = y2-y1 
                 theta = np.arctan2(dy, dx)
                 d12 = np.sqrt(dx**2 + dy**2)
+
+                pp = [robots_priority[i]>0 for i in g]
 
                 xx1 = x1 + (d12/np.sqrt(3)) * np.cos(theta+np.pi/6) 
                 yy1 = y1 + (d12/np.sqrt(3)) * np.sin(theta+np.pi/6)
@@ -343,8 +348,8 @@ class ApfMotion(object):
         
         self.new_robots = new_robots
         
-        if self.ind==1: 
-           self.vs.robot_data(new_robots) 
+        if self.ind==5: 
+           self.vs.robot_data(new_robots, self.ns) 
 
         # if self.ind==1: print(" -------------- ")
 
@@ -390,9 +395,9 @@ class ApfMotion(object):
             # if d_rr > 1 * nr.r_start:
             #     continue
             
-            if  d_rr < nr.r_prec and nr.p and abs(angle_diff2) > np.pi/2:
+            if  d_rr < nr.r_prec and nr.big: # and abs(angle_diff2) > np.pi/2:
                 self.stop_flag = True
-                # break
+                break
 
             robot_flag = True
             f = ((nr.z * 1) * ((1 / d_rr) - (1 / nr.r_start))**2) * (1 / d_rr)**2
@@ -408,13 +413,13 @@ class ApfMotion(object):
                 if angle_diff4*angle_diff2<0:
                     coeff_alpha = -1*coeff_alpha
 
-                templ[1] += (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
+                templ[1] = (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-            elif self.robot_prec_d<d_rr:
-                pass
-            else:
-                templ[0] = 4.5
-                templ[1] = 0
+            # elif self.robot_prec_d<d_rr:
+            #     pass
+            # else:
+            #     templ[0] = 4.5
+            #     templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -464,11 +469,11 @@ class ApfMotion(object):
                     
                     templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-            elif self.obst_prec_d<d_ro:
-                pass
-            else:
-                templ[0] = 2.0
-                templ[1] = 0
+            # elif self.obst_prec_d<d_ro:
+            #     pass
+            # else:
+            #     templ[0] = 2.0
+            #     templ[1] = 0
             
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
