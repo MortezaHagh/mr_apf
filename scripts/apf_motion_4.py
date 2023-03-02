@@ -346,7 +346,7 @@ class ApfMotion(object):
                         ros.append = do
 
                 if ros!=[]:
-                    pass
+                    passdd
 
                 nr.x= xc
                 nr.y= yc
