@@ -278,7 +278,7 @@ class ApfMotion(object):
                 dx = (robots_x[p] - robots_x[ind_j])
                 dy = (robots_y[p] - robots_y[ind_j])
                 dist = np.sqrt(dx**2+dy**2)
-                if dist<self.robot_prec_d*2/2:     ##### robot_start_d robot_prec_d
+                if dist<self.robot_prec_d*4/2:     ##### robot_start_d robot_prec_d
                     robots_inds_f[p].append(ind_j)
 
         # detect groups
@@ -394,7 +394,7 @@ class ApfMotion(object):
             # if d_rr > 1 * nr.r_start:
             #     continue
             
-            if  d_rr < nr.r_prec and nr.big: # and abs(angle_diff2) > np.pi/2:
+            if  d_rr < 0.8*nr.r_prec and nr.big: # and abs(angle_diff2) > np.pi/2:
                 self.stop_flag = True
                 break
 
