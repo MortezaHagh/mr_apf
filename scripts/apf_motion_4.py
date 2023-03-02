@@ -170,7 +170,7 @@ class ApfMotion(object):
         #     v = self.v_min_2*2
 
         thresh_theta = np.pi/8
-        w = 1 * self.w_max * theta / (np.pi/4)
+        w = 2 * self.w_max * theta / (np.pi/4)
         v = 1 * self.v_max * (np.pi-abs(theta))/(np.pi-thresh_theta)
 
         # if (v<self.v_min_2) and abs(w)<0.03:
@@ -348,8 +348,7 @@ class ApfMotion(object):
         
         self.new_robots = new_robots
         
-        if self.ind==5: 
-           self.vs.robot_data(new_robots, self.ns) 
+        self.vs.robot_data(new_robots, self.ns) 
 
         # if self.ind==1: print(" -------------- ")
 

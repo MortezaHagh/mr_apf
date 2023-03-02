@@ -57,7 +57,7 @@ class Viusalize:
         print("Viusalize init done.")
     
     def add_robot(self, model):
-        for r in model.robots_i:
+        for r in model.robots_i.ns:
             self.robots_pubs[r.ns] = (rospy.Publisher(r.ns+"/robot_data", PointCloud, queue_size=10))
 
     def robots_circles(self, xy):
