@@ -255,7 +255,7 @@ class ApfMotion(object):
             angle_diff = theta - self.r_theta
             angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
             angle_diffs.append(angle_diff2)
-            if d_rr > 1 * self.robot_start_d:   #####
+            if d_rr > 2 * self.robot_start_d:   #####
                 continue
             robots_inds.append(i)
         
@@ -277,7 +277,7 @@ class ApfMotion(object):
             for ind_j in robots_inds_2:
                 dx = (robots_x[p] - robots_x[ind_j])
                 dy = (robots_y[p] - robots_y[ind_j])
-                dist = np.sqrt(dx**2+dy**2)
+                dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
                 if dist<self.robot_prec_d*4/2:     ##### robot_start_d robot_prec_d
                     robots_inds_f[p].append(ind_j)
 
@@ -319,7 +319,7 @@ class ApfMotion(object):
                 dx = x2-x1
                 dy = y2-y1 
                 theta = np.arctan2(dy, dx)
-                d12 = np.sqrt(dx**2 + dy**2)
+                d12 = self.distance(x1, y1, x2, y2)
 
                 pp = [robots_priority[i]>0 for i in g]
 
@@ -327,8 +327,8 @@ class ApfMotion(object):
                 yy1 = y1 + (d12/np.sqrt(3)) * np.sin(theta+np.pi/6)
                 xx2 = x1 + (d12/np.sqrt(3)) * np.cos(theta-np.pi/6) 
                 yy2 = y1 + (d12/np.sqrt(3)) * np.sin(theta-np.pi/6)
-                dd1 = np.sqrt((xx1-self.r_x)**2 + (yy1-self.r_y)**2)
-                dd2 = np.sqrt((xx2-self.r_x)**2 + (yy2-self.r_y)**2)
+                dd1 = self.distance(xx1, self.r_x, yy1, self.r_y) 
+                dd2 = self.distance(xx2, self.r_x, yy2, self.r_y)
                 if (dd1<dd2):
                     xc = xx2
                     yc = yy2
@@ -336,6 +336,17 @@ class ApfMotion(object):
                     xc = xx1
                     yc = yy1
                 rc = (d12/np.sqrt(3))
+
+                ros = []
+                for oi in range(self.obs_count):
+                    xo = self.obs_x[oi]
+                    yo = self.obs_y[oi]
+                    do = self.distance(xo, yo, xc, yc)
+                    if rc-self.obst_prec_d<do<rc+self.obst_prec_d:
+                        ros.append = do
+
+                if ros!=[]:
+                    pass
 
                 nr.x= xc
                 nr.y= yc
@@ -547,3 +558,6 @@ class ApfMotion(object):
         elif theta > 2 * np.pi:
             theta = theta - 2 * np.pi
         return theta
+
+    def distance(self, x1, y1, x2, y2):
+        return np.sqrt((x1-x2)**2+(y1-y2)**2)
