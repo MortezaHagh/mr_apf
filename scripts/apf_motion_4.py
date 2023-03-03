@@ -255,9 +255,9 @@ class ApfMotion(object):
         # if there is only one or none robots in proximity
         if len(robots_inds)==0:
             return stop_flag_0
-        elif len(robots_inds)==1:
-            self.robots_x = robots_x[0]
-            self.robots_y = robots_y[0]
+        # elif len(robots_inds)==1:
+        #     self.robots_x = robots_x[0]
+        #     self.robots_y = robots_y[0]
             # return
         
         # generate robots_inds_f (neighbor robots in proximity circle)
@@ -299,6 +299,7 @@ class ApfMotion(object):
                 nr.z = self.robot_z
                 if robots_priority[i]>0:
                     nr.p = True
+                new_robots.append(nr)
 
             if len(g)==1:
                 pass
@@ -314,35 +315,35 @@ class ApfMotion(object):
                 if is_in:
                     stop_flag_0 = True
                     return stop_flag_0
+                
+                ad = [angle_diffs[i] for i in g]
+                a_min = g[np.argmin(ad)]
+                a_max = g[np.argmax(ad)]
+
+                x1 = robots_x[a_min]
+                x2 = robots_x[a_max]
+                y1 = robots_y[a_min]
+                y2 = robots_y[a_max]
+                dx = x2-x1
+                dy = y2-y1 
+                theta = np.arctan2(dy, dx)
+                d12 = self.distance(x1, y1, x2, y2)
+
+                pp = [robots_priority[i]>0 for i in g]
+
+                xx1 = x1 + (d12/np.sqrt(3)) * np.cos(theta+np.pi/6) 
+                yy1 = y1 + (d12/np.sqrt(3)) * np.sin(theta+np.pi/6)
+                xx2 = x1 + (d12/np.sqrt(3)) * np.cos(theta-np.pi/6) 
+                yy2 = y1 + (d12/np.sqrt(3)) * np.sin(theta-np.pi/6)
+                dd1 = self.distance(xx1, self.r_x, yy1, self.r_y) 
+                dd2 = self.distance(xx2, self.r_x, yy2, self.r_y)
+                if (dd1<dd2):
+                    xc = xx2
+                    yc = yy2
                 else:
-                    ad = [angle_diffs[i] for i in g]
-                    a_min = g[np.argmin(ad)]
-                    a_max = g[np.argmax(ad)]
-
-                    x1 = robots_x[a_min]
-                    x2 = robots_x[a_max]
-                    y1 = robots_y[a_min]
-                    y2 = robots_y[a_max]
-                    dx = x2-x1
-                    dy = y2-y1 
-                    theta = np.arctan2(dy, dx)
-                    d12 = self.distance(x1, y1, x2, y2)
-
-                    pp = [robots_priority[i]>0 for i in g]
-
-                    xx1 = x1 + (d12/np.sqrt(3)) * np.cos(theta+np.pi/6) 
-                    yy1 = y1 + (d12/np.sqrt(3)) * np.sin(theta+np.pi/6)
-                    xx2 = x1 + (d12/np.sqrt(3)) * np.cos(theta-np.pi/6) 
-                    yy2 = y1 + (d12/np.sqrt(3)) * np.sin(theta-np.pi/6)
-                    dd1 = self.distance(xx1, self.r_x, yy1, self.r_y) 
-                    dd2 = self.distance(xx2, self.r_x, yy2, self.r_y)
-                    if (dd1<dd2):
-                        xc = xx2
-                        yc = yy2
-                    else:
-                        xc = xx1
-                        yc = yy1
-                    rc = (d12/np.sqrt(3))
+                    xc = xx1
+                    yc = yy1
+                rc = (d12/np.sqrt(3))
 
                 ros = []
                 for oi in self.obs_ind_main:
@@ -351,7 +352,7 @@ class ApfMotion(object):
                     do = self.distance(xo, yo, xc, yc)
                     if rc-self.obst_prec_d<do<rc+self.obst_prec_d:
                         self.obs_ind.remove(oi)
-                        ros.append = do
+                        ros.append(do)
 
                 if ros!=[]:
                     do_max = max(ros)
@@ -364,7 +365,8 @@ class ApfMotion(object):
                 nr.z = 4 * self.fix_f * nr.r_prec**4
                 if any(pp):
                     nr.p = True
-            new_robots.append(nr)
+                
+                new_robots.append(nr)
         
         self.new_robots = new_robots
         
