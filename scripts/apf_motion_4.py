@@ -248,17 +248,13 @@ class ApfMotion(object):
             angle_diff = theta - self.r_theta
             angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
             angle_diffs.append(angle_diff2)
-            if d_rr > 2 * self.robot_start_d:   #####
+            if d_rr > 1 * self.robot_start_d:   #####
                 continue
             robots_inds.append(i)
         
         # if there is only one or none robots in proximity
         if len(robots_inds)==0:
             return stop_flag_0
-        # elif len(robots_inds)==1:
-        #     self.robots_x = robots_x[0]
-        #     self.robots_y = robots_y[0]
-            # return
         
         # generate robots_inds_f (neighbor robots in proximity circle)
         robots_inds_2 = robots_inds[:]
