@@ -568,7 +568,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.019999999552965164
       Style: Flat Squares
-      Topic: /robot_data
+      Topic: /r1/robot_data
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
