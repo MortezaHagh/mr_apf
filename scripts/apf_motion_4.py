@@ -294,7 +294,8 @@ class ApfMotion(object):
                 nr = NewRobots()
                 nr.x= robots_x[i]
                 nr.y= robots_y[i]
-                rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d)
+                rc = self.robot_prec_d
+                # rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d)
                 nr.r_prec = rc
                 nr.r_start = 2*rc
                 nr.z = 4 * self.fix_f * rc**4
@@ -360,7 +361,7 @@ class ApfMotion(object):
                     xc = xx1
                     yc = yy1
                 rc = (d12/np.sqrt(3))
-                rc = self.eval_obst(xc, yc, rc)
+                # rc = self.eval_obst(xc, yc, rc)
 
                 nr.x= xc
                 nr.y= yc
@@ -459,10 +460,10 @@ class ApfMotion(object):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)
                     goal_theta = self.mod_angle(self.goal_theta)
-                    angle_diff4 = theta - goal_theta
-                    angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                    if angle_diff4*angle_diff2<0:
-                        coeff_alpha = -1*coeff_alpha
+                    # angle_diff4 = theta - goal_theta
+                    # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                    # if angle_diff4*angle_diff2<0:
+                    #     coeff_alpha = -1*coeff_alpha
                     templ[1] = (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
                 else:
@@ -510,10 +511,10 @@ class ApfMotion(object):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)
                     goal_theta = self.mod_angle(self.goal_theta)
-                    angle_diff4 = theta - goal_theta
-                    angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                    if angle_diff4*angle_diff2<0:
-                        coeff_alpha = -1*coeff_alpha
+                    # angle_diff4 = theta - goal_theta
+                    # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                    # if angle_diff4*angle_diff2<0:
+                    #     coeff_alpha = -1*coeff_alpha
                     templ[1] = (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
                 else:
