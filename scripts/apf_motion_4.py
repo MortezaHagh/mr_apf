@@ -230,6 +230,8 @@ class ApfMotion(object):
         self.new_robots = []
         stop_flag_0 = False
 
+        self.f_obsts_inds = self.detect_obsts()
+
         # get data
         req_poses2 = SharePoses2Request()
         req_poses2.update = False
@@ -323,7 +325,7 @@ class ApfMotion(object):
                     stop_flag_0 = True
                     nr.x= pc.x
                     nr.y= pc.y
-                    nr.r_prec = 1.5*self.robot_prec_d + self.robot_r + self.prec_d
+                    nr.r_prec = 1.5*self.robot_prec_d
                     nr.r_start = 2*nr.r_prec
                     nr.z = 4 * self.fix_f * nr.r_prec**4
                     if any(pp): nr.p = True
@@ -374,15 +376,25 @@ class ApfMotion(object):
         self.vs.robot_data(new_robots, self.ns) 
         return stop_flag_0
 
-
-    def eval_obst(self, xc, yc, rc):
-        ros = []
+    def detect_obsts(self):
+        f_obsts_inds = []
         for oi in self.obs_ind_main:
             xo = self.obs_x[oi]
             yo = self.obs_y[oi]
+            do = self.distance(xo, yo, self.r_x, self.r_y)
+            if do<self.robot_start_d:
+                f_obsts_inds.append(oi)
+        return f_obsts_inds
+
+
+    def eval_obst(self, xc, yc, rc):
+        ros = []
+        for oi in self.f_obsts_inds:
+            xo = self.obs_x[oi]
+            yo = self.obs_y[oi]
             do = self.distance(xo, yo, xc, yc)
-            if rc<do<rc+self.obst_prec_d:
-                ros.append(do)
+            if rc-self.obst_prec_d<do<rc+self.obst_prec_d:
+                ros.append(do+self.obst_prec_d)
 
         if ros!=[]:
             do_max = max(ros)
