@@ -151,8 +151,9 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
+            if self.ind==5: print("f0: ", stop_flag_0, "f: ", self.stop_flag)
             if self.ind==5: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
-            if self.ind==5: print("moving", self.stop_flag, "v", round(self.v, 2), "w", round(self.w, 2))
+            if self.ind==5: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
             if self.ind==5: print(" ---------------------------------- ")
             self.rate.sleep()
 
@@ -286,6 +287,7 @@ class ApfMotion(object):
 
         new_robots = []
         for g in groups:
+            self.obs_ind = self.obs_ind_main[:]
             for i in g:
                 nr = NewRobots()
                 nr.x= robots_x[i]
@@ -347,8 +349,14 @@ class ApfMotion(object):
                     yo = self.obs_y[oi]
                     do = self.distance(xo, yo, xc, yc)
                     if rc-self.obst_prec_d<do<rc+self.obst_prec_d:
-                        self.obs_ind.remove(oi)
-                        ros.append(do)
+                        try:
+                            self.obs_ind.remove(oi)
+                            ros.append(do)
+                        except:
+                            print(self.obs_ind_main)
+                            print(self.obs_ind)
+                            print(oi)
+                            raise
 
                 if ros!=[]:
                     do_max = max(ros)
@@ -418,7 +426,7 @@ class ApfMotion(object):
             f = ((nr.z * 1) * ((1 / d_rr) - (1 / nr.r_start))**2) * (1 / d_rr)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
-            if d_rr<2.0*nr.r_prec and abs(angle_diff2)>(np.pi/2):
+            if (1.0*nr.r_prec<d_rr<2.0*nr.r_prec) and (abs(angle_diff2)>np.pi/2):
                 angle_diff3 = np.pi - abs(angle_diff2)
                 coeff_alpha = np.cos(angle_diff3)
 
@@ -472,7 +480,7 @@ class ApfMotion(object):
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff2), f * np.sin(angle_diff2)]
 
-            if d_ro<2.0*self.obst_prec_d and abs(angle_diff2)>(np.pi/2):
+            if (1.0*self.obst_prec_d<d_ro<2.0*self.obst_prec_d) and (abs(angle_diff2)>np.pi/2):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)
                     
@@ -482,7 +490,7 @@ class ApfMotion(object):
                     if angle_diff4*angle_diff2<0:
                         coeff_alpha = -1*coeff_alpha
                     
-                    templ[1] += (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
+                    templ[1] = (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
             # elif self.obst_prec_d<d_ro:
             #     pass
