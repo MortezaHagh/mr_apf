@@ -75,7 +75,7 @@ class ApfMotion(object):
         self.zeta = 1                     
         self.fix_f = 4
         self.fix_f2 = 10
-        self.obst_r = 0.13
+        self.obst_r = 0.11
         self.prec_d = 0.06
         self.robot_r = 0.22             
         
@@ -178,7 +178,7 @@ class ApfMotion(object):
         #     v = self.v_min_2*2
 
         thresh_theta = np.pi/8
-        w = 2 * self.w_max * theta / (np.pi/4)
+        w = 4 * self.w_max * theta / (np.pi/4)
         v = 1 * self.v_max * (np.pi-abs(theta))/(np.pi-thresh_theta)
 
         # if (v<self.v_min_2) and abs(w)<0.03:
@@ -269,7 +269,7 @@ class ApfMotion(object):
                 dx = (robots_x[p] - robots_x[ind_j])
                 dy = (robots_y[p] - robots_y[ind_j])
                 dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
-                if dist<self.robot_prec_d*2.2/2:     ##### robot_start_d robot_prec_d
+                if dist<self.robot_prec_d*2:     ##### robot_start_d robot_prec_d
                     robots_inds_f[p].append(ind_j)
 
         # detect groups 
@@ -467,7 +467,7 @@ class ApfMotion(object):
                     templ[1] = (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
                 else:
-                    templ[0] = 3
+                    templ[0] = 0
                     templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
@@ -518,7 +518,7 @@ class ApfMotion(object):
                     templ[1] = (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
                 else:
-                    templ[0] = 2.0
+                    templ[0] = 0.0
                     templ[1] = 0
             
             obs_f[0] += round(templ[0], 3)
