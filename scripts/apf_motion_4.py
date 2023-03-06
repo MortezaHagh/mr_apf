@@ -295,7 +295,7 @@ class ApfMotion(object):
                 rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d)
                 nr.r_prec = rc
                 nr.r_start = 2*rc
-                nr.z = self.robot_z
+                nr.z = 4 * self.fix_f * rc**4
                 if robots_priority[i]>0:
                     nr.p = True
                 new_robots.append(nr)
@@ -381,7 +381,7 @@ class ApfMotion(object):
             xo = self.obs_x[oi]
             yo = self.obs_y[oi]
             do = self.distance(xo, yo, xc, yc)
-            if rc-self.obst_prec_d<do<rc+self.obst_prec_d:
+            if rc<do<rc+self.obst_prec_d:
                 ros.append(do)
 
         if ros!=[]:
@@ -453,11 +453,9 @@ class ApfMotion(object):
                         coeff_alpha = -1*coeff_alpha
                     templ[1] = (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-            # elif self.robot_prec_d<d_rr:
-            #     pass
-            # else:
-            #     templ[0] = 4.5
-            #     templ[1] = 0
+                else:
+                    templ[0] = 3
+                    templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -506,11 +504,9 @@ class ApfMotion(object):
                         coeff_alpha = -1*coeff_alpha
                     templ[1] = (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
-            # elif self.obst_prec_d<d_ro:
-            #     pass
-            # else:
-            #     templ[0] = 2.0
-            #     templ[1] = 0
+                else:
+                    templ[0] = 2.0
+                    templ[1] = 0
             
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
