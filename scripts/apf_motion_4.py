@@ -223,7 +223,7 @@ class ApfMotion(object):
 
     def detect_group(self):
         stop_flag_0 = False
-        self.obs_ind = self.obs_ind_main[:]
+        # self.obs_ind = self.obs_ind_main[:]
 
         groups = []
         robots_inds = []
@@ -268,7 +268,7 @@ class ApfMotion(object):
                 dx = (robots_x[p] - robots_x[ind_j])
                 dy = (robots_y[p] - robots_y[ind_j])
                 dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
-                if dist<self.robot_prec_d*3/2:     ##### robot_start_d robot_prec_d
+                if dist<self.robot_prec_d*4/2:     ##### robot_start_d robot_prec_d
                     robots_inds_f[p].append(ind_j)
 
         # detect groups
@@ -287,7 +287,7 @@ class ApfMotion(object):
 
         new_robots = []
         for g in groups:
-            self.obs_ind = self.obs_ind_main[:]
+            # self.obs_ind = self.obs_ind_main[:]
             for i in g:
                 nr = NewRobots()
                 nr.x= robots_x[i]
@@ -308,10 +308,18 @@ class ApfMotion(object):
                 if len(g)>2:
                     point = Point(self.r_x, self.r_y)
                     polygon = Polygon([(robots_x[i], robots_y[i]) for i in g])
+                    pc = polygon.centroid
                     is_in = polygon.contains(point)
 
                 if is_in:
                     stop_flag_0 = True
+                    nr.x= pc.x
+                    nr.y= pc.y
+                    nr.r_prec = 1.5*self.robot_prec_d + self.robot_r + self.prec_d
+                    nr.r_start = 2*nr.r_prec
+                    nr.z = 4 * self.fix_f * nr.r_prec**4
+                    new_robots.append(nr)
+                    self.vs.robot_data(new_robots, self.ns) 
                     return stop_flag_0
                 
                 ad = [angle_diffs[i] for i in g]
@@ -349,14 +357,8 @@ class ApfMotion(object):
                     yo = self.obs_y[oi]
                     do = self.distance(xo, yo, xc, yc)
                     if rc-self.obst_prec_d<do<rc+self.obst_prec_d:
-                        try:
-                            self.obs_ind.remove(oi)
-                            ros.append(do)
-                        except:
-                            print(self.obs_ind_main)
-                            print(self.obs_ind)
-                            print(oi)
-                            raise
+                        # self.obs_ind.remove(oi)
+                        ros.append(do)
 
                 if ros!=[]:
                     do_max = max(ros)
@@ -364,7 +366,7 @@ class ApfMotion(object):
 
                 nr.x= xc
                 nr.y= yc
-                nr.r_prec = rc + 2*self.robot_r + self.prec_d
+                nr.r_prec = rc + self.robot_r + self.prec_d
                 nr.r_start = 2*nr.r_prec
                 nr.z = 4 * self.fix_f * nr.r_prec**4
                 if any(pp):
@@ -424,6 +426,7 @@ class ApfMotion(object):
 
             robot_flag = True
             f = ((nr.z * 1) * ((1 / d_rr) - (1 / nr.r_start))**2) * (1 / d_rr)**2
+            # f = min(f, self.fix_f)
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
             if (1.0*nr.r_prec<d_rr<2.0*nr.r_prec) and (abs(angle_diff2)>np.pi/2):
@@ -462,7 +465,7 @@ class ApfMotion(object):
         obst_flag = False
         self.obs_f = [0, 0]
         obs_f = [0, 0]
-        for i in self.obs_ind:
+        for i in self.obs_ind_main:
             dy = -(self.obs_y[i] - self.r_y)
             dx = -(self.obs_x[i] - self.r_x)
             d_ro = np.sqrt(dx**2 + dy**2)
