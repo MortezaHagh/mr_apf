@@ -295,7 +295,7 @@ class ApfMotion(object):
                 nr.x= robots_x[i]
                 nr.y= robots_y[i]
                 rc = self.robot_prec_d
-                # rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d)
+                rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d)
                 nr.r_prec = rc
                 nr.r_start = 2*rc
                 nr.z = 4 * self.fix_f * rc**4
@@ -394,8 +394,8 @@ class ApfMotion(object):
             xo = self.obs_x[oi]
             yo = self.obs_y[oi]
             do = self.distance(xo, yo, xc, yc)
-            if rc-self.obst_prec_d<do<rc+self.obst_prec_d:
-                ros.append(do+self.obst_prec_d)
+            if rc<do<rc+self.obst_prec_d:
+                ros.append(do)
 
         if ros!=[]:
             do_max = max(ros)
@@ -441,8 +441,11 @@ class ApfMotion(object):
             angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
             
             # check if in the circle and mowing towards it -> stop
-            if  (not nr.big) and (d_rr < 1.0*nr.r_prec) and (abs(angle_diff2) > np.pi/2):
-                self.stop_flag = True
+            if  (not nr.big) and (d_rr < 1.5*nr.r_prec) and (abs(angle_diff2) > np.pi/2):
+                if (nr.p): 
+                    self.stop_flag = True
+                elif d_rr < 1.0*nr.r_prec:
+                    self.stop_flag = True
 
             # compute force
             robot_flag = True
@@ -467,7 +470,11 @@ class ApfMotion(object):
                     templ[1] = (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
                 else:
-                    templ[0] = 0
+                    templ[0] = 3
+                    templ[1] = 0
+            else:
+                if (abs(angle_diff2)<np.pi/2):
+                    templ[0] = f+3.5
                     templ[1] = 0
 
             robot_f[0] += round(templ[0], 3)
@@ -518,7 +525,11 @@ class ApfMotion(object):
                     templ[1] = (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
                 else:
-                    templ[0] = 0.0
+                    templ[0] = f+3.5
+                    templ[1] = 0
+            else:
+                if (abs(angle_diff2)<np.pi/2):
+                    templ[0] = f+3.5
                     templ[1] = 0
             
             obs_f[0] += round(templ[0], 3)
