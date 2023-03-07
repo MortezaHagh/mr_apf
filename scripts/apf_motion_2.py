@@ -351,7 +351,3 @@ class ApfMotion(object):
         elif theta > 2 * np.pi:
             theta = theta - 2 * np.pi
         return theta
-
-
-    
-        
