@@ -38,7 +38,7 @@ class Run():
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
-        path_unit = 0.8
+        path_unit = 0.7
         self.model = CreateModel(map_id=-1, path_unit = path_unit)                # check 2 !!!!!!!!!! last
         self.count = self.model.robot_count
         self.paths = {}
