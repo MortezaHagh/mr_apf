@@ -4,12 +4,12 @@ import rospy
 import numpy as np
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-from visualization import Viusalize
+# from visualization import Viusalize
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 
-from shapely.geometry import Point
-from shapely.geometry.polygon import Polygon
+# from shapely.geometry import Point
+# from shapely.geometry.polygon import Polygon
 
 
 class NewRobots:
@@ -34,8 +34,8 @@ class ApfMotion(object):
         self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.shutdown_hook)
 
-        #
-        self.vs = Viusalize(model)
+        # # Viusalize
+        # self.vs = Viusalize(model)
 
         # preallocation
         self.phis = []    
@@ -231,8 +231,6 @@ class ApfMotion(object):
         self.is_multi = False
         self.is_robots = False
 
-        self.f_obsts_inds = self.detect_obsts()
-
         # get data
         req_poses2 = SharePoses2Request()
         req_poses2.update = False
@@ -240,7 +238,7 @@ class ApfMotion(object):
         resp_poses2 = self.pose_client(req_poses2)
         robots_x = resp_poses2.x
         robots_y = resp_poses2.y
-        robots_h = resp_poses2.h
+        robots_h = resp_poses2.heading
         robots_priority = resp_poses2.priority
 
         # get indices of robots in proximity circle
@@ -268,6 +266,7 @@ class ApfMotion(object):
                 nr.r_prec = self.robot_prec_d
                 nr.r_half = self.robot_half_d
                 nr.r_start = self.robot_start_d
+                nr.z = 4 * self.fix_f * nr.r_prec**4
                 new_robots.append(nr)
 
         # if there is none robots in proximity
@@ -331,27 +330,27 @@ class ApfMotion(object):
 
                 (abs(nr.h_t)<np.pi/2)
 
-            # adjust heading
-            if (nr.r_prec<nr.d<nr.r_half):
-                if (abs(angle_diff)<np.pi/2):
-                    coeff_alpha = np.cos(angle_diff)
-                    # goal_theta = self.mod_angle(self.goal_theta)
-                    # angle_diff4 = theta - goal_theta
-                    # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                    # if angle_diff4*angle_diff2<0:
-                    #     coeff_alpha = -1*coeff_alpha
-                    templ[1] = (f+3.0)*coeff_alpha*np.sign(angle_diff)
+                # adjust heading
+                if (nr.r_prec<nr.d<nr.r_half):
+                    if (abs(angle_diff)<np.pi/2):
+                        coeff_alpha = np.cos(angle_diff)
+                        # goal_theta = self.mod_angle(self.goal_theta)
+                        # angle_diff4 = theta - goal_theta
+                        # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                        # if angle_diff4*angle_diff2<0:
+                        #     coeff_alpha = -1*coeff_alpha
+                        templ[1] = (f+3.0)*coeff_alpha*np.sign(angle_diff)
 
-            #     else:
-            #         templ[0] = 3
-            #         templ[1] = 0
-            # else:
-            #     if (abs(angle_diff2)<np.pi/2):
-            #         templ[0] = f+3.5
-            #         templ[1] = 0
+                #     else:
+                #         templ[0] = 3
+                #         templ[1] = 0
+                # else:
+                #     if (abs(angle_diff2)<np.pi/2):
+                #         templ[0] = f+3.5
+                #         templ[1] = 0
 
-            robot_f[0] += round(templ[0], 3)
-            robot_f[1] += round(templ[1], 3)
+                robot_f[0] += round(templ[0], 3)
+                robot_f[1] += round(templ[1], 3)
 
         coeff_f = 1
         if robot_flag:
@@ -386,7 +385,7 @@ class ApfMotion(object):
                 if (abs(angle_diff2)>np.pi/2):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)
-                    goal_theta = self.mod_angle(self.goal_theta)
+                    # goal_theta = self.mod_angle(self.goal_theta)
                     # angle_diff4 = theta - goal_theta
                     # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
                     # if angle_diff4*angle_diff2<0:
