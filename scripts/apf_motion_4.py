@@ -485,10 +485,6 @@ class ApfMotion(object):
 
         coeff_f = 1
         if robot_flag:
-            abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
-            # if abst_f>0:
-            #     coeff_f = min(abst_f, self.fix_f2) / abst_f
-
             self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
             self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
 
@@ -540,10 +536,6 @@ class ApfMotion(object):
 
         coeff_f = 1
         if obst_flag:
-            # abst_f = np.sqrt((obs_f[0]**2 + obs_f[1]**2))
-            # if abst_f>0:
-            #     coeff_f = min(abst_f, self.fix_f2) / abst_f
-
             self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
             self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
 

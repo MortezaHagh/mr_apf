@@ -340,7 +340,7 @@ class ApfMotion(object):
                     # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
                     # if angle_diff4*angle_diff2<0:
                     #     coeff_alpha = -1*coeff_alpha
-                    templ[1] = (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
+                    templ[1] = (f+3.0)*coeff_alpha*np.sign(angle_diff)
 
             #     else:
             #         templ[0] = 3
@@ -355,10 +355,6 @@ class ApfMotion(object):
 
         coeff_f = 1
         if robot_flag:
-            abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
-            # if abst_f>0:
-            #     coeff_f = min(abst_f, self.fix_f2) / abst_f
-
             self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
             self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
 

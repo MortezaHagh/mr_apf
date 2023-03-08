@@ -253,7 +253,7 @@ class ApfMotion(object):
 
         coeff_f = 1
         if robot_flag:
-            abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
+            # abst_f = np.sqrt((robot_f[0]**2 + robot_f[1]**2))
             # if abst_f>0:
             #     coeff_f = min(abst_f, self.fix_f2) / abst_f
 
