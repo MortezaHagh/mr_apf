@@ -249,17 +249,18 @@ class ApfMotion(object):
             dx = (robots_x[i] - self.r_x)
             dy = (robots_y[i] - self.r_y)
             d_rr = np.sqrt(dx**2 + dy**2)
-            if d_rr < 1 * self.robot_start_d:   #####
+            if d_rr < 2 * self.robot_start_d:   #####
                 theta = np.arctan2(dy, dx)
                 angle_diff_r = self.r_theta - theta 
-                angle_diff_r = np.arctan2(np.sin(angle_diff_r), np.cos(angle_diff_r))
+                angle_diff_r = abs(np.arctan2(np.sin(angle_diff_r), np.cos(angle_diff_r)))
                 angle_diff_rr = (robots_h[i] - (theta-np.pi))
-                angle_diff_rr = -np.arctan2(np.sin(angle_diff_rr), np.cos(angle_diff_rr))
-                if (not is_rs_reached[i]) and (abs(angle_diff_r)<np.pi/2 and abs(angle_diff_rr)<np.pi/2) and abs(angle_diff_r + angle_diff_rr)<np.pi/2: ##############
+                angle_diff_rr = abs(np.arctan2(np.sin(angle_diff_rr), np.cos(angle_diff_rr)))
+                if (not is_rs_reached[i]) and (angle_diff_r<np.pi/2 and angle_diff_rr<np.pi/2) and abs(angle_diff_r + angle_diff_rr)<np.pi/2: ##############
                     robots_theta.append(theta)
                     robots_inds.append(i)
                     polys.append((robots_x[i], robots_y[i]))
-                
+            
+            if d_rr < 1 * self.robot_start_d:
                 nr = NewRobots()
                 nr.d = d_rr
                 nr.x = robots_x[i]
