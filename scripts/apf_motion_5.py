@@ -317,6 +317,14 @@ class ApfMotion(object):
         if new_robots==[]:
             return
 
+        if self.is_multi:
+            f = 4
+            angle_diff = self.multi_theta - self.r_theta
+            angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+            templ = [f * -np.cos(angle_diff), f * np.sin(angle_diff)]
+            robot_f[0] += round(templ[0], 3)
+            robot_f[1] += round(templ[1], 3)
+
         # ------------------
         for nr in new_robots:
             if (nr.d< nr.r_half):
