@@ -50,10 +50,10 @@ class ApfMotion(object):
         self.robot = robot
 
         # parameters
+        self.goal_theta = 0
+        self.goal_distance = 1000
         self.topic_type = Odometry
         self.prioriy = robot.priority
-        self.goal_distance = 1000
-        self.goal_theta = 0
 
         # params 
         self.ind = init_params.id
@@ -67,7 +67,7 @@ class ApfMotion(object):
         self.w = 0
         self.v_max = 0.2        # init_params.linear_max_speed
         self.v_min = 0.0        # init_params.linear_min_speed
-        self.w_min = 0          # init_params.angular_min_speed
+        self.w_min = 0.0        # init_params.angular_min_speed
         self.w_max = 1.0        # init_params.angular_max_speed
         self.v_min_2 = 0.04     # init_params.linear_min_speed_2
 
@@ -465,7 +465,7 @@ class ApfMotion(object):
                 if (abs(angle_diff2)>np.pi/2):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)
-                    goal_theta = self.mod_angle(self.goal_theta)
+                    # goal_theta = self.mod_angle(self.goal_theta)
                     # angle_diff4 = theta - goal_theta
                     # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
                     # if angle_diff4*angle_diff2<0:
@@ -520,7 +520,7 @@ class ApfMotion(object):
                 if (abs(angle_diff2)>np.pi/2):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)
-                    goal_theta = self.mod_angle(self.goal_theta)
+                    # goal_theta = self.mod_angle(self.goal_theta)
                     # angle_diff4 = theta - goal_theta
                     # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
                     # if angle_diff4*angle_diff2<0:
@@ -548,6 +548,7 @@ class ApfMotion(object):
             self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
 
     # ------------------------- check_topic -- get_odom  ------------------------------------#
+    
     def check_topic(self):
         self.topic_msg = None
         rospy.loginfo(self.ns + " apf_motion, checking topic ...")

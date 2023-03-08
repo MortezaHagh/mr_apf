@@ -317,33 +317,25 @@ class ApfMotion(object):
         if new_robots==[]:
             return
 
+        # ------------------
         for nr in new_robots:
-            
-            if nr.d< nr.r_half:
-                angle_diff = nr.h_t
-            
-            if  (not nr.big) and (d_rr < 1.9*nr.r_prec) and (abs(angle_diff2) > np.pi/2):
-                if (nr.p): 
-                    self.stop_flag = True
-                elif d_rr < 1.0*nr.r_prec:
+            if (nr.d< nr.r_half):
+                robot_flag = True
+                if (nr.d< nr.r_prec):
                     self.stop_flag = True
 
-            # compute force
-            robot_flag = True
-            f = ((nr.z * 1) * ((1 / d_rr) - (1 / nr.r_start))**2) * (1 / d_rr)**2
-            
-            # # if in the new robot circles
-            # if nr.big:
-            #     f = min(f, self.fix_f)
-            
-            templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
+                # compute force
+                angle_diff = nr.h_t
+                f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
+                templ = [f * -np.cos(angle_diff), f * np.sin(angle_diff)]
+
+                (abs(nr.h_t)<np.pi/2)
 
             # adjust heading
-            if (1.0*nr.r_prec<d_rr<2.0*nr.r_prec):
-                if (abs(angle_diff2)>np.pi/2):
-                    angle_diff3 = np.pi - abs(angle_diff2)
-                    coeff_alpha = np.cos(angle_diff3)
-                    goal_theta = self.mod_angle(self.goal_theta)
+            if (nr.r_prec<nr.d<nr.r_half):
+                if (abs(angle_diff)<np.pi/2):
+                    coeff_alpha = np.cos(angle_diff)
+                    # goal_theta = self.mod_angle(self.goal_theta)
                     # angle_diff4 = theta - goal_theta
                     # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
                     # if angle_diff4*angle_diff2<0:
@@ -426,6 +418,7 @@ class ApfMotion(object):
             self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
 
     # ------------------------- check_topic -- get_odom  ------------------------------------#
+
     def check_topic(self):
         self.topic_msg = None
         rospy.loginfo(self.ns + " apf_motion, checking topic ...")

@@ -37,7 +37,7 @@ class ApfMotion(object):
         self.topic_type = Odometry
         self.prioriy = robot.priority
 
-        # params 
+        # params
         self.ind = init_params.id
         self.ns = init_params.name_space
         self.topic = init_params.lis_topic
@@ -47,32 +47,32 @@ class ApfMotion(object):
         # parameters vel
         self.v = 0
         self.w = 0
-        self.v_max = 0.2        # init_params.linear_max_speed
-        self.v_min = 0.0        # init_params.linear_min_speed
-        self.w_min = 0.0        # init_params.angular_min_speed
-        self.w_max = 1.0        # init_params.angular_max_speed
-        self.v_min_2 = 0.02     # init_params.linear_min_speed_2
+        self.v_max = 0.2         # init_params.linear_max_speed
+        self.v_min = 0.0         # init_params.linear_min_speed
+        self.w_min = 0.0         # init_params.angular_min_speed
+        self.w_max = 1.0         # init_params.angular_max_speed
+        self.v_min_2 = 0.02      # init_params.linear_min_speed_2
 
         # settings
-        self.zeta = 1                     
+        self.zeta = 1
         self.fix_f = 4
         self.fix_f2 = 10
         self.obst_r = 0.11
         self.prec_d = 0.06
-        self.robot_r = 0.22             
-        
+        self.robot_r = 0.22
+
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
-        self.obst_start_d = 2*self.obst_prec_d
-        self.obst_z = 4*self.fix_f*self.obst_prec_d**4
+        self.obst_start_d = 2 * self.obst_prec_d
+        self.obst_z = 4 * self.fix_f * self.obst_prec_d**4
 
-        self.robot_prec_d = 2*self.robot_r + self.prec_d  # 0.64
-        self.robot_start_d = 2*self.robot_prec_d
+        self.robot_prec_d = 2 * self.robot_r + self.prec_d  # 0.64
+        self.robot_start_d = 2 * self.robot_prec_d
         self.robot_stop_d = self.robot_prec_d
-        self.robot_z = 4 * self.fix_f*self.robot_prec_d**4
+        self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
 
-        self.w_coeff = 1                        # init_params.w_coeff      # angular velocity coeff
-        self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
-        self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
+        self.w_coeff = 1                            # init_params.w_coeff      # angular velocity coeff
+        self.dis_tresh = init_params.dis_tresh      # distance thresh to finish
+        self.theta_thresh = 30 * np.pi / 180        # init_params.theta_thresh  # for velocity calculation
 
         # map: target and obstacles coordinates
         self.map()
@@ -174,7 +174,7 @@ class ApfMotion(object):
         # self.force_ot.append(self.obs_f[1])
         # self.force_tr.append(self.target_f[0])
         # self.force_tt.append(self.target_f[1])
-        
+
         return [f_r, f_theta, phi, self.stop_flag]
 
     def f_target(self):
@@ -260,6 +260,7 @@ class ApfMotion(object):
             self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
 
     # ------------------------- check_topic -- get_odom  ------------------------------------#
+    
     def check_topic(self):
         self.topic_msg = None
         rospy.loginfo(self.ns + " apf_motion, checking topic ...")
