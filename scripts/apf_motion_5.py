@@ -125,36 +125,36 @@ class ApfMotion(object):
             # detect and group
             stop_flag_0 = self.detect_group()
             
-            if not stop_flag_0:
-                # calculate forces
-                [f_r, f_theta, phi, stop_flag] = self.forces()
+            # if not stop_flag_0:
+            #     # calculate forces
+            #     [f_r, f_theta, phi, stop_flag] = self.forces()
 
-                # calculate velocities
-                self.cal_vel(f_r, f_theta, phi)
-                self.v_lin.append(self.v)
-                self.v_ang.append(self.w)
-            else:
-                self.v = 0
-                self.w = 0
+            #     # calculate velocities
+            #     self.cal_vel(f_r, f_theta, phi)
+            #     self.v_lin.append(self.v)
+            #     self.v_ang.append(self.w)
+            # else:
+            #     self.v = 0
+            #     self.w = 0
 
-            if stop_flag:
-                self.v = 0
-                # self.w = 0
+            # if stop_flag:
+            #     self.v = 0
+            #     # self.w = 0
 
-            # publish cmd
-            move_cmd = Twist()
-            move_cmd.linear.x = self.v
-            move_cmd.angular.z = self.w
-            self.cmd_vel.publish(move_cmd)
+            # # publish cmd
+            # move_cmd = Twist()
+            # move_cmd.linear.x = self.v
+            # move_cmd.angular.z = self.w
+            # self.cmd_vel.publish(move_cmd)
 
-            # result
-            self.path_x.append(round(self.r_x, 3))
-            self.path_y.append(round(self.r_y, 3))
+            # # result
+            # self.path_x.append(round(self.r_x, 3))
+            # self.path_y.append(round(self.r_y, 3))
 
-            if self.ind==1: print("f0: ", stop_flag_0, "f: ", self.stop_flag)
-            if self.ind==1: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
-            if self.ind==1: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
-            if self.ind==1: print(" ---------------------------------- ")
+            # if self.ind==1: print("f0: ", stop_flag_0, "f: ", self.stop_flag)
+            # if self.ind==1: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
+            # if self.ind==1: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
+            # if self.ind==1: print(" ---------------------------------- ")
             self.rate.sleep()
 
         req = SharePoses2Request()
@@ -333,7 +333,7 @@ class ApfMotion(object):
                     if any(pp): nr.p = True
                     new_robots.append(nr)
                     big_robots.append(nr)
-                    self.vs.robot_data(big_robots, self.ns) 
+                    self.vs.robot_data(new_robots, self.ns) 
                     return stop_flag_0
                 
                 # robot is not in the polygon, detect """triangle"""
@@ -362,7 +362,7 @@ class ApfMotion(object):
                 else:
                     xc = xx1
                     yc = yy1
-                rc = (d12/np.sqrt(3))
+                rc = d12 # /np.sqrt(3)
                 # rc = self.eval_obst(xc, yc, rc)
 
                 nr.x= xc
@@ -377,7 +377,7 @@ class ApfMotion(object):
                 new_robots.append(nr)
         
         self.new_robots = new_robots
-        self.vs.robot_data(big_robots, self.ns) 
+        self.vs.robot_data(new_robots, self.ns) 
         return stop_flag_0
 
     def detect_obsts(self):
@@ -386,7 +386,7 @@ class ApfMotion(object):
             xo = self.obs_x[oi]
             yo = self.obs_y[oi]
             do = self.distance(xo, yo, self.r_x, self.r_y)
-            if do<self.robot_start_d:
+            if do<self.obst_start_d:
                 f_obsts_inds.append(oi)
         return f_obsts_inds
 
@@ -454,9 +454,9 @@ class ApfMotion(object):
             robot_flag = True
             f = ((nr.z * 1) * ((1 / d_rr) - (1 / nr.r_start))**2) * (1 / d_rr)**2
             
-            # if in the new robot circles
-            if nr.big:
-                f = min(f, self.fix_f)
+            # # if in the new robot circles
+            # if nr.big:
+            #     f = min(f, self.fix_f)
             
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
@@ -466,10 +466,10 @@ class ApfMotion(object):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)
                     goal_theta = self.mod_angle(self.goal_theta)
-                    angle_diff4 = theta - goal_theta
-                    angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                    if angle_diff4*angle_diff2<0:
-                        coeff_alpha = -1*coeff_alpha
+                    # angle_diff4 = theta - goal_theta
+                    # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                    # if angle_diff4*angle_diff2<0:
+                    #     coeff_alpha = -1*coeff_alpha
                     templ[1] = (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
             #     else:
@@ -521,10 +521,10 @@ class ApfMotion(object):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)
                     goal_theta = self.mod_angle(self.goal_theta)
-                    angle_diff4 = theta - goal_theta
-                    angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                    if angle_diff4*angle_diff2<0:
-                        coeff_alpha = -1*coeff_alpha
+                    # angle_diff4 = theta - goal_theta
+                    # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                    # if angle_diff4*angle_diff2<0:
+                    #     coeff_alpha = -1*coeff_alpha
                     templ[1] = (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
 
             #     else:
