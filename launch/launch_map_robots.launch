@@ -2,7 +2,8 @@
 <launch>
   
   <include file="$(find init_sim)/launch/empty_world_complete.launch">
-    <arg name="world_name" value="$(find init_sim)/worlds/walls3.world"/> 
+    <arg name="world_name" value="$(find init_sim)/worlds/empty_wall.world"/> 
+    <!-- walls3 -->
     
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
@@ -16,7 +17,12 @@
   <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 odom r2/odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0 0 0 0 0 0 1 odom r3/odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link4_broadcaster" args="0 0 0 0 0 0 1 odom r4/odom 100" />
-
+  <node pkg="tf" type="static_transform_publisher" name="link5_broadcaster" args="0 0 0 0 0 0 1 odom r5/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link6_broadcaster" args="0 0 0 0 0 0 1 odom r6/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link7_broadcaster" args="0 0 0 0 0 0 1 odom r7/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link8_broadcaster" args="0 0 0 0 0 0 1 odom r8/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link9_broadcaster" args="0 0 0 0 0 0 1 odom r9/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link10_broadcaster" args="0 0 0 0 0 0 1 odom r10/odom 100" />
 
   <include file="$(find apf)/launch/launch_states_publisher.launch"/> 
 

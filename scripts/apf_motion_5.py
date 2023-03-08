@@ -4,7 +4,7 @@ import rospy
 import numpy as np
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-# from visualization import Viusalize
+from visualization import Viusalize
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 
@@ -34,8 +34,8 @@ class ApfMotion(object):
         self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.shutdown_hook)
 
-        # # Viusalize
-        # self.vs = Viusalize(model)
+        # Viusalize
+        self.vs = Viusalize(model)
 
         # preallocation
         self.phis = []    
@@ -200,9 +200,9 @@ class ApfMotion(object):
         f_r = self.target_f[0]
         f_theta = self.target_f[1]
 
-        self.f_obstacle()
-        f_r += self.obs_f[0]
-        f_theta += self.obs_f[1]
+        # self.f_obstacle()
+        # f_r += self.obs_f[0]
+        # f_theta += self.obs_f[1]
 
         self.f_robots()
         f_r += self.robot_f[0]
@@ -241,8 +241,10 @@ class ApfMotion(object):
         robots_y = resp_poses2.y
         robots_h = resp_poses2.heading
         robots_priority = resp_poses2.priority
+        is_rs_reached = resp_poses2.reached
 
         # get indices of robots in proximity circle
+        polys = []
         for i in range(resp_poses2.count):
             dx = (robots_x[i] - self.r_x)
             dy = (robots_y[i] - self.r_y)
@@ -251,11 +253,12 @@ class ApfMotion(object):
                 theta = np.arctan2(dy, dx)
                 angle_diff_r = self.r_theta - theta 
                 angle_diff_r = np.arctan2(np.sin(angle_diff_r), np.cos(angle_diff_r))
-                angle_diff_rr = -(robots_h[i] - (theta-np.pi))
-                angle_diff_rr = np.arctan2(np.sin(angle_diff_rr), np.cos(angle_diff_rr))
-                if abs(angle_diff_r + angle_diff_rr)<np.pi/2:
+                angle_diff_rr = (robots_h[i] - (theta-np.pi))
+                angle_diff_rr = -np.arctan2(np.sin(angle_diff_rr), np.cos(angle_diff_rr))
+                if (not is_rs_reached[i]) and (abs(angle_diff_r)<np.pi/2 and abs(angle_diff_rr)<np.pi/2) and abs(angle_diff_r + angle_diff_rr)<np.pi/2: ##############
                     robots_theta.append(theta)
                     robots_inds.append(i)
+                    polys.append((robots_x[i], robots_y[i]))
                 
                 nr = NewRobots()
                 nr.d = d_rr
@@ -286,6 +289,10 @@ class ApfMotion(object):
         a_max = max(robots_theta)
         a_mean = (a_min+a_max)/2.0
         self.multi_theta = a_mean-np.pi/2
+
+        # polygon = Polygon(polys)
+        polys.append((self.r_x, self.r_y))
+        self.vs.robot_poly(polys, self.ns) 
 
     # -----------------------  f_target  ----------------------------#
 
@@ -318,10 +325,10 @@ class ApfMotion(object):
             return
 
         if self.is_multi:
-            f = 4
+            f = 8
             angle_diff = self.multi_theta - self.r_theta
             angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-            templ = [f * -np.cos(angle_diff), f * np.sin(angle_diff)]
+            templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
 
@@ -385,7 +392,7 @@ class ApfMotion(object):
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * -np.cos(angle_diff), f * np.sin(angle_diff)]
 
-            if (self.obst_prec_d<d_ro<self.obst_half_d):
+            if (self.obst_prec_d<d_ro<self.obst_start_d):  #obst_half_d
                 if (abs(angle_diff)<np.pi/2):
                     coeff_alpha = np.cos(angle_diff)
                     goal_theta = self.mod_angle(self.goal_theta)
@@ -396,7 +403,7 @@ class ApfMotion(object):
                     templ[1] = (f+3)*coeff_alpha*np.sign(angle_diff)
                 else:
                     templ[0] = f+3
-                    templ[1] = 0
+                    # templ[1] = 0
             # elif d_ro>self.obst_half_d:
             #     if (abs(angle_diff)>np.pi/2):
             #         templ[0] = 0

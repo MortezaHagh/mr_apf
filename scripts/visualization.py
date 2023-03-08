@@ -2,7 +2,7 @@
 
 import rospy
 import numpy as np
-from geometry_msgs.msg import Point32
+from geometry_msgs.msg import Point32, Polygon, PolygonStamped
 from sensor_msgs.msg import PointCloud, ChannelFloat32
 from visualization_msgs.msg import Marker, MarkerArray
 
@@ -45,6 +45,7 @@ class Viusalize:
         self.robots_text_pub = rospy.Publisher("/robots_texts", MarkerArray, queue_size=10)
 
         self.robots_pubs = {}
+        self.robots_poly_pubs = {}
         self.add_robot(model)
         # self.robot_data_pub = rospy.Publisher("/robot_data", PointCloud, queue_size=10)
 
@@ -59,6 +60,7 @@ class Viusalize:
     def add_robot(self, model):
         for ns in model.robots_i.ns:
             self.robots_pubs[ns] = (rospy.Publisher(ns+"/robot_data", PointCloud, queue_size=10))
+            self.robots_poly_pubs[ns] = (rospy.Publisher(ns+"/robot_poly", PolygonStamped, queue_size=10))
 
     def robots_circles(self, xy):
         self.robots_prec_circles(xy)
@@ -270,4 +272,19 @@ class Viusalize:
                 self.rate.sleep()
 
     
-    
+    def robot_poly(self, pols, ns):
+        pol_stamp = PolygonStamped()
+        pol_stamp.header.frame_id = "map"
+
+        polygon = Polygon()
+        for p in pols:
+            point = Point32()
+            point.x = p[0]
+            point.y = p[1]
+            point.z = 0
+            polygon.points.append(point)
+
+        pol_stamp.polygon = polygon
+        self.robots_poly_pubs[ns].publish(pol_stamp)
+        
+

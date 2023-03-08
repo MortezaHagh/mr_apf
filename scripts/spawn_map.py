@@ -47,10 +47,8 @@ class Initialize(object):
 
 # --------------------------------------------------------------------------------------------
 
-def Spawning(model):
-    # settings
-    path_unit = 0.5
-
+def Spawning(model, path_unit=0.8):
+    
     # get data
     init_obj = Initialize(model, path_unit)
     robots_initial = init_obj.robots_initial

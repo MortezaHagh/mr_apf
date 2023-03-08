@@ -28,6 +28,8 @@ class PoseService(object):
         # service
         self.srv = rospy.Service(pose_srv_name, SharePoses2, self.pose_cb)
 
+    # ------------------------------- callback
+
     def pose_cb(self, req):
         req_i = req.ind
         resp = SharePoses2Response()
@@ -44,20 +46,23 @@ class PoseService(object):
         xy = {}
         for i in self.ids:
             x,y, h = self.get_odom(self.topics[i])
-            xy[i] = [x, y]
-            self.xy[i] = xy[i]
             self.h[i] = h
+            self.xy[i] = [x, y]
 
             if i==req_i:
                 continue
             resp.x.append(x)
             resp.y.append(y)
             resp.heading.append(h)
+            resp.reached.append(self.reached[i])
         
-        priorities = self.cal_priorities(xy, req_i)
+        priorities = self.cal_priorities(self.xy, req_i)
         resp.priority = priorities
         resp.count = self.count-1
+        
         return resp
+    
+        # -----------------------------------------------
     
     def cal_priorities(self, xy, req_i):
         priorities = []
