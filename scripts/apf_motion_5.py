@@ -38,7 +38,7 @@ class ApfMotion(object):
         self.vs = Viusalize(model)
 
         # preallocation
-        self.phis = []    
+        self.phis = []
         self.v_lin = []
         self.v_ang = []
         self.path_x = []
@@ -59,7 +59,7 @@ class ApfMotion(object):
         self.topic_type = Odometry
         self.prioriy = robot.priority
 
-        # params 
+        # params
         self.ind = init_params.id
         self.ns = init_params.name_space
         self.topic = init_params.lis_topic
@@ -76,13 +76,13 @@ class ApfMotion(object):
         self.v_min_2 = 0.04     # init_params.linear_min_speed_2
 
         # settings
-        self.zeta = 1                     
+        self.zeta = 1
         self.fix_f = 4
         self.fix_f2 = 10
         self.obst_r = 0.11
         self.prec_d = 0.06
-        self.robot_r = 0.22             
-        
+        self.robot_r = 0.22
+
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
         self.obst_half_d = 1.5*self.obst_prec_d
         self.obst_start_d = 2*self.obst_prec_d
@@ -127,7 +127,7 @@ class ApfMotion(object):
 
     def go_to_goal(self):
         while self.goal_distance > self.dis_tresh and not rospy.is_shutdown():
-            
+
             # detect and group
             self.detect_group()
 
@@ -225,18 +225,18 @@ class ApfMotion(object):
         # self.force_ot.append(self.obs_f[1])
         # self.force_tr.append(self.target_f[0])
         # self.force_tt.append(self.target_f[1])
-        
+
         return [f_r, f_theta, phi, self.stop_flag]
-    
+
     # -----------------------  detect_group  ----------------------------#
 
     def detect_group(self):
-        
+
         robots_inds = []
         robots_theta = []
         new_robots = []
         self.new_robots = []
-        
+
         self.is_multi = False
         self.is_robots = False
         self.stop_flag_0 = False
@@ -250,8 +250,9 @@ class ApfMotion(object):
         robots_x = resp_poses2.x
         robots_y = resp_poses2.y
         robots_h = resp_poses2.heading
+        robots_stopped = resp_poses2.stopp
+        robots_reached = resp_poses2.reached
         robots_priority = resp_poses2.priority
-        is_rs_reached = resp_poses2.reached
 
         # get indices of robots in proximity circle
         polys = []
@@ -262,16 +263,17 @@ class ApfMotion(object):
             d_rr = np.sqrt(dx**2 + dy**2)
             if d_rr < 2 * self.robot_start_d:   #####
                 theta = np.arctan2(dy, dx)
-                angle_diff_r = self.r_theta - theta 
+                angle_diff_r = self.r_theta - theta
                 angle_diff_r0 = (np.arctan2(np.sin(angle_diff_r), np.cos(angle_diff_r)))
                 angle_diff_r = abs(angle_diff_r0)
-                angle_diff_rr = (robots_h[i] - (theta-np.pi))
+                angle_diff_rr = (robots_h[i] - (theta - np.pi))
                 angle_diff_rr = abs(np.arctan2(np.sin(angle_diff_rr), np.cos(angle_diff_rr)))
-                if (not is_rs_reached[i]) and (angle_diff_r<np.pi/2 and angle_diff_rr<np.pi/2) and abs(angle_diff_r + angle_diff_rr)<np.pi/2: ##############
+                if (not robots_reached[i]) and (not robots_stopped[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2) and abs(angle_diff_r + angle_diff_rr) < np.pi / 2:  ##############
                     robots_theta.append(theta)
                     robots_inds.append(i)
                     polys.append((robots_x[i], robots_y[i]))
-                polys0.append((robots_x[i], robots_y[i]))
+                if (not robots_stopped[i]):
+                    polys0.append((robots_x[i], robots_y[i]))
 
             if d_rr < 1 * self.robot_start_d:
                 nr = NewRobots()
@@ -290,12 +292,12 @@ class ApfMotion(object):
         # if there is none robots in proximity
         if len(new_robots)==0:
             return
-        
+
         self.is_robots = True
         self.new_robots = new_robots
 
         if not len(robots_inds)==0:
-            # detect arc (poly) 
+            # detect arc (poly)
             self.is_multi = True
             a_min = min(robots_theta)
             a_max = max(robots_theta)
@@ -303,7 +305,7 @@ class ApfMotion(object):
             self.multi_theta = a_mean-np.pi/2
             polys.append((self.r_x, self.r_y))
 
-        if len(polys0)>0:
+        if len(polys0)>2:
             polygon = Polygon(polys0)
             point = Point(self.r_x, self.r_y)
             is_in = polygon.contains(point)
@@ -311,7 +313,7 @@ class ApfMotion(object):
                 self.stop_flag_0 = True
             polys0.append((self.r_x, self.r_y))
 
-        self.vs.robot_poly([polys, polys0], self.ns) 
+        self.vs.robot_poly([polys, polys0], self.ns)
 
     # -----------------------  f_target  ----------------------------#
 
@@ -333,7 +335,7 @@ class ApfMotion(object):
     # -----------------------  f_robots  ----------------------------#
 
     def f_robots(self):
-        
+
         robot_flag = False
         self.stop_flag = False
         robot_f = [0, 0]
@@ -377,13 +379,13 @@ class ApfMotion(object):
                 robot_f[1] += round(templ[1], 3)
 
         if (not robot_flag) and self.is_multi:
-            f = 8
+            f = 4
             angle_diff = self.multi_theta - self.r_theta
             angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
-        
+
         coeff_f = 1
         self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
         self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
@@ -401,7 +403,7 @@ class ApfMotion(object):
 
             if d_ro > self.obst_start_d:
                 continue
-            
+
             obst_flag = True
             theta = np.arctan2(dy, dx)
             angle_diff = self.r_theta - theta
@@ -426,7 +428,7 @@ class ApfMotion(object):
             #     if (abs(angle_diff)>np.pi/2):
             #         templ[0] = 0
             #         templ[1] = 0
-            
+
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
 

@@ -46,6 +46,7 @@ class Viusalize:
 
         self.robots_pubs = {}
         self.robots_poly_pubs = {}
+        self.robots_poly_pubs_2 = {}
         self.add_robot(model)
         # self.robot_data_pub = rospy.Publisher("/robot_data", PointCloud, queue_size=10)
 
@@ -61,6 +62,7 @@ class Viusalize:
         for ns in model.robots_i.ns:
             self.robots_pubs[ns] = (rospy.Publisher(ns+"/robot_data", PointCloud, queue_size=10))
             self.robots_poly_pubs[ns] = (rospy.Publisher(ns+"/robot_poly", PolygonStamped, queue_size=10))
+            self.robots_poly_pubs_2[ns] = (rospy.Publisher(ns+"/robot_poly_2", PolygonStamped, queue_size=10))
 
     def robots_circles(self, xy):
         self.robots_prec_circles(xy)
@@ -273,7 +275,9 @@ class Viusalize:
 
     
     def robot_poly(self, pols, ns):
+        i = -1
         for po in pols:
+            i= i+1
             if len(po)==0:
                 continue
             
@@ -289,6 +293,8 @@ class Viusalize:
                 polygon.points.append(point)
 
             pol_stamp.polygon = polygon
-            self.robots_poly_pubs[ns].publish(pol_stamp)
-        
+            if i==0:
+                self.robots_poly_pubs[ns].publish(pol_stamp)
+            else:
+                self.robots_poly_pubs_2[ns].publish(pol_stamp)
 
