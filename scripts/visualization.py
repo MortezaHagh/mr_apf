@@ -273,18 +273,22 @@ class Viusalize:
 
     
     def robot_poly(self, pols, ns):
-        pol_stamp = PolygonStamped()
-        pol_stamp.header.frame_id = "map"
+        for po in pols:
+            if len(po)==0:
+                continue
+            
+            pol_stamp = PolygonStamped()
+            pol_stamp.header.frame_id = "map"
 
-        polygon = Polygon()
-        for p in pols:
-            point = Point32()
-            point.x = p[0]
-            point.y = p[1]
-            point.z = 0
-            polygon.points.append(point)
+            polygon = Polygon()
+            for p in po:
+                point = Point32()
+                point.x = p[0]
+                point.y = p[1]
+                point.z = 0
+                polygon.points.append(point)
 
-        pol_stamp.polygon = polygon
-        self.robots_poly_pubs[ns].publish(pol_stamp)
+            pol_stamp.polygon = polygon
+            self.robots_poly_pubs[ns].publish(pol_stamp)
         
 

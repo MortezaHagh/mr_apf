@@ -78,6 +78,7 @@ class InitRobotService(object):
         self.pose_srv.xt[id] = 0
         self.pose_srv.yt[id] = 0
         self.pose_srv.ids.append(id)
+        self.pose_srv.stop[id] = False
         self.pose_srv.reached[id] = False
         self.pose_srv.priorities[id] = robot.priority
         self.pose_srv.topics[id] = action_params.lis_topic

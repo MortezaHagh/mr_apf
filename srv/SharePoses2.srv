@@ -3,6 +3,7 @@ float32 xt
 float32 yt
 bool update
 bool reached
+bool stopped
 ---
 int32 count
 float32[] x
@@ -10,3 +11,4 @@ float32[] y
 float32[] heading
 int32[] priority
 bool[] reached
+bool[] stopp

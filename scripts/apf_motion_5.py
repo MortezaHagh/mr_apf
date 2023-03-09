@@ -8,8 +8,8 @@ from visualization import Viusalize
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 
-# from shapely.geometry import Point
-# from shapely.geometry.polygon import Polygon
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
 
 
 class NewRobots:
@@ -130,18 +130,26 @@ class ApfMotion(object):
             
             # detect and group
             self.detect_group()
-            
-            # calculate forces
-            [f_r, f_theta, phi, stop_flag] = self.forces()
 
-            # calculate velocities
-            self.cal_vel(f_r, f_theta, phi)
-            self.v_lin.append(self.v)
-            self.v_ang.append(self.w)
-
-            if stop_flag:
+            if  self.stop_flag_0:
                 self.v = 0
-                # self.w = 0
+                self.w = 0
+                req = SharePoses2Request()
+                req.ind = self.ind
+                req.stopped = True
+                self.pose_client(req)
+            else:
+                # calculate forces
+                [f_r, f_theta, phi, stop_flag] = self.forces()
+
+                # calculate velocities
+                self.cal_vel(f_r, f_theta, phi)
+                self.v_lin.append(self.v)
+                self.v_ang.append(self.w)
+
+                if stop_flag:
+                    self.v = 0
+                    # self.w = 0
 
             # publish cmd
             move_cmd = Twist()
@@ -231,11 +239,13 @@ class ApfMotion(object):
         
         self.is_multi = False
         self.is_robots = False
+        self.stop_flag_0 = False
 
         # get data
         req_poses2 = SharePoses2Request()
         req_poses2.update = False
         req_poses2.ind = self.ind
+        req_poses2.stopped = False
         resp_poses2 = self.pose_client(req_poses2)
         robots_x = resp_poses2.x
         robots_y = resp_poses2.y
@@ -245,6 +255,7 @@ class ApfMotion(object):
 
         # get indices of robots in proximity circle
         polys = []
+        polys0 = []
         for i in range(resp_poses2.count):
             dx = (robots_x[i] - self.r_x)
             dy = (robots_y[i] - self.r_y)
@@ -252,21 +263,23 @@ class ApfMotion(object):
             if d_rr < 2 * self.robot_start_d:   #####
                 theta = np.arctan2(dy, dx)
                 angle_diff_r = self.r_theta - theta 
-                angle_diff_r = abs(np.arctan2(np.sin(angle_diff_r), np.cos(angle_diff_r)))
+                angle_diff_r0 = (np.arctan2(np.sin(angle_diff_r), np.cos(angle_diff_r)))
+                angle_diff_r = abs(angle_diff_r0)
                 angle_diff_rr = (robots_h[i] - (theta-np.pi))
                 angle_diff_rr = abs(np.arctan2(np.sin(angle_diff_rr), np.cos(angle_diff_rr)))
                 if (not is_rs_reached[i]) and (angle_diff_r<np.pi/2 and angle_diff_rr<np.pi/2) and abs(angle_diff_r + angle_diff_rr)<np.pi/2: ##############
                     robots_theta.append(theta)
                     robots_inds.append(i)
                     polys.append((robots_x[i], robots_y[i]))
-            
+                polys0.append((robots_x[i], robots_y[i]))
+
             if d_rr < 1 * self.robot_start_d:
                 nr = NewRobots()
                 nr.d = d_rr
                 nr.x = robots_x[i]
                 nr.y = robots_y[i]
                 nr.t = robots_h[i]
-                nr.h_t = angle_diff_r
+                nr.h_t = angle_diff_r0
                 nr.p = robots_priority[i]
                 nr.r_prec = self.robot_prec_d
                 nr.r_half = self.robot_half_d
@@ -281,19 +294,24 @@ class ApfMotion(object):
         self.is_robots = True
         self.new_robots = new_robots
 
-        if len(robots_inds)==0:
-            return
-        
-        # detect arc (poly) 
-        self.is_multi = True
-        a_min = min(robots_theta)
-        a_max = max(robots_theta)
-        a_mean = (a_min+a_max)/2.0
-        self.multi_theta = a_mean-np.pi/2
+        if not len(robots_inds)==0:
+            # detect arc (poly) 
+            self.is_multi = True
+            a_min = min(robots_theta)
+            a_max = max(robots_theta)
+            a_mean = (a_min+a_max)/2.0
+            self.multi_theta = a_mean-np.pi/2
+            polys.append((self.r_x, self.r_y))
 
-        # polygon = Polygon(polys)
-        polys.append((self.r_x, self.r_y))
-        self.vs.robot_poly(polys, self.ns) 
+        if len(polys0)>0:
+            polygon = Polygon(polys0)
+            point = Point(self.r_x, self.r_y)
+            is_in = polygon.contains(point)
+            if is_in:
+                self.stop_flag_0 = True
+            polys0.append((self.r_x, self.r_y))
+
+        self.vs.robot_poly([polys, polys0], self.ns) 
 
     # -----------------------  f_target  ----------------------------#
 
@@ -322,16 +340,8 @@ class ApfMotion(object):
         self.robot_f = [0,0]
         new_robots = self.new_robots
 
-        if new_robots==[]:
-            return
-
-        if self.is_multi:
-            f = 8
-            angle_diff = self.multi_theta - self.r_theta
-            angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-            templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
-            robot_f[0] += round(templ[0], 3)
-            robot_f[1] += round(templ[1], 3)
+        # if new_robots==[]:
+        #     return
 
         # ------------------
         for nr in new_robots:
@@ -366,10 +376,17 @@ class ApfMotion(object):
                 robot_f[0] += round(templ[0], 3)
                 robot_f[1] += round(templ[1], 3)
 
+        if (not robot_flag) and self.is_multi:
+            f = 8
+            angle_diff = self.multi_theta - self.r_theta
+            angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+            templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
+            robot_f[0] += round(templ[0], 3)
+            robot_f[1] += round(templ[1], 3)
+        
         coeff_f = 1
-        if robot_flag:
-            self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
-            self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
+        self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
+        self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
 
     # -----------------------  f_obstacle  ----------------------------#
 

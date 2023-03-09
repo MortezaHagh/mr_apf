@@ -24,6 +24,7 @@ class PoseService(object):
         self.reached = {}
         self.xy = {}
         self.h = {}
+        self.stop = {}
 
         # service
         self.srv = rospy.Service(pose_srv_name, SharePoses2, self.pose_cb)
@@ -42,6 +43,10 @@ class PoseService(object):
             self.reached[req_i] = True
             print("PoseService: ", req_i, "reached")
             return resp
+        
+        if req.stopped:
+            self.stop[req_i] = True
+            return resp
 
         xy = {}
         for i in self.ids:
@@ -55,6 +60,7 @@ class PoseService(object):
             resp.y.append(y)
             resp.heading.append(h)
             resp.reached.append(self.reached[i])
+            resp.stopp.append(self.stop[i])
         
         priorities = self.cal_priorities(self.xy, req_i)
         resp.priority = priorities
