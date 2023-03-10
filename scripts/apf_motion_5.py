@@ -239,14 +239,15 @@ class ApfMotion(object):
 
     def detect_group(self):
 
+        mp_bound = []
+        new_robots = []
         robots_inds = []
         robots_theta = []
-        new_robots = []
         self.new_robots = []
 
-        mp_bound = []
         is_in_t = False
-
+        goal_flag = True
+        self.is_in_t = False
         self.is_multi = False
         self.is_robots = False
         self.stop_flag_0 = False
@@ -264,6 +265,10 @@ class ApfMotion(object):
         robots_reached = resp_poses2.reached
         robots_priority = resp_poses2.priority
 
+        goal_distance = self.distance(self.r_x, self.goal_x ,self.r_y, self.goal_y)
+        if goal_distance < self.robot_start_d:
+            goal_flag = False
+
         # get indices of robots in proximity circle
         polys = []
         polys0 = []
@@ -273,6 +278,7 @@ class ApfMotion(object):
             dx = (robots_x[i] - self.r_x)
             dy = (robots_y[i] - self.r_y)
             d_rr = np.sqrt(dx**2 + dy**2)
+             
             if d_rr < 2 * self.robot_start_d:   #####
                 theta = np.arctan2(dy, dx)
                 angle_diff_r = self.r_theta - theta
@@ -282,9 +288,9 @@ class ApfMotion(object):
                 angle_diff_rr = abs(np.arctan2(np.sin(angle_diff_rr), np.cos(angle_diff_rr)))
 
                 # and (not robots_stopped[i])
-                if (not robots_reached[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2): #and abs(angle_diff_r + angle_diff_rr) < np.pi / 2:  ##############
+                if (goal_flag) and (not robots_reached[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2):
                     flag_1 = True
-                if (not robots_reached[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2):
+                if (goal_flag) and (not robots_reached[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2):
                     flag_2 = True
 
                 if flag_1:
@@ -328,6 +334,7 @@ class ApfMotion(object):
                 self.stop_flag_0 = True
 
         self.is_robots = True
+        self.is_in_t = is_in_t
         self.new_robots = new_robots
 
         polys_i = []
