@@ -599,6 +599,14 @@ Visualization Manager:
       Topic: /r8/robot_poly
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Class: rviz/Polygon
+      Color: 25; 255; 0
+      Enabled: true
+      Name: Polygon
+      Topic: /r8/robot_poly_2
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -627,16 +635,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.524102210998535
+      Distance: 3.403291702270508
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 3.709059715270996
-        Y: 2.296102523803711
-        Z: 4.558866024017334
+        X: 3.2445244789123535
+        Y: 1.8235739469528198
+        Z: 4.400335311889648
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

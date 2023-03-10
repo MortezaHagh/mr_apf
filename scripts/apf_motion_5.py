@@ -8,8 +8,8 @@ from visualization import Viusalize
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 
-from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
+from shapely.geometry import Point, shape, MultiPoint
 
 
 class NewRobots:
@@ -272,7 +272,7 @@ class ApfMotion(object):
                     robots_theta.append(theta)
                     robots_inds.append(i)
                     polys.append((robots_x[i], robots_y[i]))
-                if (not robots_stopped[i]):
+                if (not robots_reached[i]) and (not robots_stopped[i]):
                     polys0.append((robots_x[i], robots_y[i]))
 
             if d_rr < 1 * self.robot_start_d:
@@ -296,6 +296,7 @@ class ApfMotion(object):
         self.is_robots = True
         self.new_robots = new_robots
 
+        polys_i = []
         if not len(robots_inds)==0:
             # detect arc (poly)
             self.is_multi = True
@@ -303,17 +304,24 @@ class ApfMotion(object):
             a_max = max(robots_theta)
             a_mean = (a_min+a_max)/2.0
             self.multi_theta = a_mean-np.pi/2
-            polys.append((self.r_x, self.r_y))
+            i_min = np.argmin(robots_theta)
+            i_max = np.argmax(robots_theta)
+            polys_i = [polys[i_min], polys[i_max]]
+            polys_i.append((self.r_x, self.r_y))
 
+        mp_bound = []
         if len(polys0)>2:
-            polygon = Polygon(polys0)
-            point = Point(self.r_x, self.r_y)
-            is_in = polygon.contains(point)
+            point_r = Point(self.r_x, self.r_y)
+            points = [Point(p) for p in  polys0]
+            mpt = MultiPoint([shape(p) for p in points])
+            mp = mpt.convex_hull
+            mp_bound = mp.boundary.coords
+            is_in = mp.contains(point_r)
             if is_in:
                 self.stop_flag_0 = True
-            polys0.append((self.r_x, self.r_y))
+            # polys0.append((self.r_x, self.r_y))
 
-        self.vs.robot_poly([polys, polys0], self.ns)
+        self.vs.robot_poly([polys_i, mp_bound], self.ns)
 
     # -----------------------  f_target  ----------------------------#
 
