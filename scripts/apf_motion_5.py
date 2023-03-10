@@ -138,13 +138,14 @@ class ApfMotion(object):
             self.detect_group()
 
             if  self.stop_flag_0:
-                self.v = 0
-                self.w = 0
                 req = SharePoses2Request()
                 req.ind = self.ind
                 req.stopped = True
                 self.pose_client(req)
+                self.v = 0
+                self.w = 0
             else:
+
                 # calculate forces
                 [f_r, f_theta, phi, stop_flag] = self.forces()
 
@@ -169,7 +170,7 @@ class ApfMotion(object):
 
             if self.ind==1: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
             if self.ind==1: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
-            if self.ind==1: print(" ---------------------------------- ")
+            if self.ind==1: print(" ------------------------------------ ")
             self.rate.sleep()
 
         req = SharePoses2Request()
