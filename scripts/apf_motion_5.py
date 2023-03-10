@@ -265,12 +265,9 @@ class ApfMotion(object):
         robots_reached = resp_poses2.reached
         robots_priority = resp_poses2.priority
 
-        if self.ind==1: print(self.r_x, self.goal_x ,self.r_y, self.goal_y)
-        if self.ind==1: print(goal_distance, self.robot_start_d)
-        goal_distance = self.distance(self.r_x, self.goal_x ,self.r_y, self.goal_y)
+        goal_distance = self.distance(self.r_x ,self.r_y, self.goal_x self.goal_y)
         if goal_distance < self.robot_start_d:
             goal_flag = False
-            print("goal_flag")
 
         # get indices of robots in proximity circle
         polys = []
