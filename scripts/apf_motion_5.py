@@ -272,7 +272,7 @@ class ApfMotion(object):
                     robots_theta.append(theta)
                     robots_inds.append(i)
                     polys.append((robots_x[i], robots_y[i]))
-                if (not robots_reached[i]) and (not robots_stopped[i]):
+                if (not robots_reached[i]) and (not robots_stopped[i]) and (angle_diff_r < np.pi / 2 or angle_diff_rr < np.pi / 2):
                     polys0.append((robots_x[i], robots_y[i]))
 
             if d_rr < 1 * self.robot_start_d:
@@ -355,7 +355,7 @@ class ApfMotion(object):
 
         # ------------------
         for nr in new_robots:
-            if (nr.d< nr.r_half):
+            if (nr.d< nr.r_start):
                 robot_flag = True
                 if (nr.d< nr.r_prec) and (abs(nr.h_t)<np.pi/2):
                     self.stop_flag = True
@@ -366,7 +366,7 @@ class ApfMotion(object):
                 templ = [f * -np.cos(angle_diff), f * np.sin(angle_diff)]
 
                 # adjust heading
-                if (nr.r_prec<nr.d<nr.r_half):
+                if (nr.r_prec<nr.d<nr.r_start):      # r_start r_half
                     if (abs(angle_diff)<np.pi/2):
                         coeff_alpha = np.cos(angle_diff)
                         # goal_theta = self.mod_angle(self.goal_theta)
@@ -378,15 +378,15 @@ class ApfMotion(object):
                     # else:
                     #     templ[0] = 3
                     #     templ[1] = 0
-                # elif nr.d>nr.r_half:
+                # elif nr.d<nr.r_prec:
                 #     if (abs(angle_diff)>np.pi/2):
-                #         templ[0] = min(f, self.fix_f)
+                #         templ[0] = f
                 #         templ[1] = 0
 
                 robot_f[0] += round(templ[0], 3)
                 robot_f[1] += round(templ[1], 3)
 
-        if (not robot_flag) and self.is_multi:
+        if self.is_multi:  # (not robot_flag) and
             f = 4
             angle_diff = self.multi_theta - self.r_theta
             angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))

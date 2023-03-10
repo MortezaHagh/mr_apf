@@ -6,7 +6,9 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-      Splitter Ratio: 0.9411764740943909
+        - /Polygon1
+        - /Polygon2
+      Splitter Ratio: 0.5058823823928833
     Tree Height: 722
   - Class: rviz/Selection
     Name: Selection
@@ -601,7 +603,7 @@ Visualization Manager:
       Value: true
     - Alpha: 1
       Class: rviz/Polygon
-      Color: 25; 255; 0
+      Color: 52; 101; 164
       Enabled: true
       Name: Polygon
       Topic: /r8/robot_poly_2
@@ -635,16 +637,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.403291702270508
+      Distance: 3.3542842864990234
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 3.2445244789123535
-        Y: 1.8235739469528198
-        Z: 4.400335311889648
+        X: 3.3402459621429443
+        Y: 1.4746625423431396
+        Z: 4.284620761871338
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
