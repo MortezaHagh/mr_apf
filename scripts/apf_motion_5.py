@@ -20,6 +20,7 @@ class NewRobots:
         self.d = 0
         self.t = 0
         self.h_t = 0
+        self.theta = 0
         self.p = False
         self.r_prec = 0
         self.r_half = 0
@@ -186,12 +187,12 @@ class ApfMotion(object):
         # if (v==0) and abs(w)<0.03:
         #     v = self.v_min_2*2
 
-        thresh_theta = np.pi/8
-        w = 4 * self.w_max * theta / (np.pi/4)
-        v = 1 * self.v_max * (np.pi-abs(theta))/(np.pi-thresh_theta)
+        thresh_theta = np.pi/3
+        w = 4 * self.w_max * theta / (np.pi/5)
+        v = 1 * self.v_max * (1-abs(theta)/thresh_theta)
 
-        # if (v<self.v_min_2) and abs(w)<0.03:
-        #     v = self.v_min_2*2
+        if (v<self.v_min_2) and abs(w)<0.03:
+            v = self.v_min_2*2
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -278,6 +279,7 @@ class ApfMotion(object):
             if d_rr < 1 * self.robot_start_d:
                 nr = NewRobots()
                 nr.d = d_rr
+                nr.theta = theta
                 nr.x = robots_x[i]
                 nr.y = robots_y[i]
                 nr.t = robots_h[i]
@@ -369,19 +371,19 @@ class ApfMotion(object):
                 if (nr.r_prec<nr.d<nr.r_start):      # r_start r_half
                     if (abs(angle_diff)<np.pi/2):
                         coeff_alpha = np.cos(angle_diff)
-                        # goal_theta = self.mod_angle(self.goal_theta)
-                        # angle_diff4 = theta - goal_theta
-                        # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                        # if angle_diff4*angle_diff2<0:
-                        #     coeff_alpha = -1*coeff_alpha
+                        goal_theta = self.mod_angle(self.goal_theta)
+                        angle_diff4 = goal_theta - nr.theta
+                        angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                        if angle_diff4*angle_diff<0:
+                            coeff_alpha = -1*(coeff_alpha+1)
                         templ[1] = (f+3.0)*coeff_alpha*np.sign(angle_diff)
                     # else:
                     #     templ[0] = 3
                     #     templ[1] = 0
-                # elif nr.d<nr.r_prec:
-                #     if (abs(angle_diff)>np.pi/2):
-                #         templ[0] = f
-                #         templ[1] = 0
+                elif nr.d<nr.r_prec:
+                    if (abs(angle_diff)>np.pi/2):
+                        templ[0] = f
+                        # templ[1] = 0
 
                 robot_f[0] += round(templ[0], 3)
                 robot_f[1] += round(templ[1], 3)
