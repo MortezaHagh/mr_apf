@@ -7,8 +7,7 @@ from geometry_msgs.msg import Twist
 from visualization import Viusalize
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
-
-from shapely.geometry.polygon import Polygon
+# from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point, shape, MultiPoint
 
 
@@ -21,10 +20,10 @@ class NewRobots:
         self.t = 0
         self.h_t = 0
         self.theta = 0
-        self.p = False
         self.r_prec = 0
         self.r_half = 0
         self.r_start = 0
+        self.p = False
         self.big = False
 
 class ApfMotion(object):
@@ -38,6 +37,29 @@ class ApfMotion(object):
         # Viusalize
         self.vs = Viusalize(model)
 
+        # preallocation and params and setting
+        self.init(model, robot, init_params)
+
+        # map: target and obstacles coordinates
+        self.map()
+
+        # /cmd_vel puplisher
+        self.cmd_vel = rospy.Publisher(self.cmd_topic, Twist, queue_size=5)
+
+        # listener
+        self.check_topic()
+        rospy.Subscriber(self.topic, self.topic_type, self.get_odom)
+
+        # pose service client
+        rospy.wait_for_service(self.pose_srv_name)
+        self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses2)
+
+        # execute goal
+        self.exec_cb()
+
+    # --------------------------  init  ---------------------------#
+
+    def init(self, model, robot, init_params):
         # preallocation
         self.phis = []
         self.v_lin = []
@@ -98,24 +120,7 @@ class ApfMotion(object):
         self.w_coeff = 1                        # init_params.w_coeff      # angular velocity coeff
         self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
-
-        # map: target and obstacles coordinates
-        self.map()
-
-        # /cmd_vel puplisher
-        self.cmd_vel = rospy.Publisher(self.cmd_topic, Twist, queue_size=5)
-
-        # listener
-        self.check_topic()
-        rospy.Subscriber(self.topic, self.topic_type, self.get_odom)
-
-        # pose service client
-        rospy.wait_for_service(self.pose_srv_name)
-        self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses2)
-
-        # execute goal
-        self.exec_cb()
-
+    
     # --------------------------  exec_cb  ---------------------------#
 
     def exec_cb(self):
