@@ -258,6 +258,8 @@ class ApfMotion(object):
         # get indices of robots in proximity circle
         polys = []
         polys0 = []
+        flag_1 = False
+        flag_2 = False
         for i in range(resp_poses2.count):
             dx = (robots_x[i] - self.r_x)
             dy = (robots_y[i] - self.r_y)
@@ -269,12 +271,20 @@ class ApfMotion(object):
                 angle_diff_r = abs(angle_diff_r0)
                 angle_diff_rr = (robots_h[i] - (theta - np.pi))
                 angle_diff_rr = abs(np.arctan2(np.sin(angle_diff_rr), np.cos(angle_diff_rr)))
+                # if d_rr < 1.2 * self.robot_start_d:
+                #     flag_1, flag_2 = True, True
                 if (not robots_reached[i]) and (not robots_stopped[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2): #and abs(angle_diff_r + angle_diff_rr) < np.pi / 2:  ##############
+                    flag_1 = True
+                if (not robots_reached[i]) and (not robots_stopped[i]) and (angle_diff_r < np.pi / 2 or angle_diff_rr < np.pi / 2):
+                    flag_2 = True
+
+                if flag_1:
                     robots_theta.append(theta)
                     robots_inds.append(i)
                     polys.append((robots_x[i], robots_y[i]))
-                if (not robots_reached[i]) and (not robots_stopped[i]) and (angle_diff_r < np.pi / 2 or angle_diff_rr < np.pi / 2):
+                if flag_2:
                     polys0.append((robots_x[i], robots_y[i]))
+                
 
             if d_rr < 1 * self.robot_start_d:
                 nr = NewRobots()
@@ -299,7 +309,7 @@ class ApfMotion(object):
         self.new_robots = new_robots
 
         polys_i = []
-        if not len(robots_inds)==0:
+        if not len(robots_inds)<2:
             # detect arc (poly)
             self.is_multi = True
             a_min = min(robots_theta)
@@ -371,11 +381,11 @@ class ApfMotion(object):
                 if (nr.r_prec<nr.d<nr.r_start):      # r_start r_half
                     if (abs(angle_diff)<np.pi/2):
                         coeff_alpha = np.cos(angle_diff)
-                        goal_theta = self.mod_angle(self.goal_theta)
-                        angle_diff4 = goal_theta - nr.theta
-                        angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                        if angle_diff4*angle_diff<0:
-                            coeff_alpha = -1*(coeff_alpha+1)
+                        # goal_theta = self.mod_angle(self.goal_theta)
+                        # angle_diff4 = goal_theta - nr.theta
+                        # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
+                        # if angle_diff4*angle_diff<0:
+                        #     coeff_alpha = -1*(coeff_alpha+1)
                         templ[1] = (f+3.0)*coeff_alpha*np.sign(angle_diff)
                     # else:
                     #     templ[0] = 3
@@ -388,8 +398,8 @@ class ApfMotion(object):
                 robot_f[0] += round(templ[0], 3)
                 robot_f[1] += round(templ[1], 3)
 
-        if self.is_multi:  # (not robot_flag) and
-            f = 8
+        if self.is_multi and (not robot_flag):  # (not robot_flag) and
+            f = 2
             angle_diff = self.multi_theta - self.r_theta
             angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
