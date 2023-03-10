@@ -265,7 +265,7 @@ class ApfMotion(object):
         robots_reached = resp_poses2.reached
         robots_priority = resp_poses2.priority
 
-        goal_distance = self.distance(self.r_x ,self.r_y, self.goal_x self.goal_y)
+        goal_distance = self.distance(self.r_x ,self.r_y, self.goal_x, self.goal_y)
         if goal_distance < self.robot_start_d:
             goal_flag = False
 
