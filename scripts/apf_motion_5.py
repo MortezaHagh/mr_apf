@@ -269,7 +269,7 @@ class ApfMotion(object):
                 angle_diff_r = abs(angle_diff_r0)
                 angle_diff_rr = (robots_h[i] - (theta - np.pi))
                 angle_diff_rr = abs(np.arctan2(np.sin(angle_diff_rr), np.cos(angle_diff_rr)))
-                if (not robots_reached[i]) and (not robots_stopped[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2) and abs(angle_diff_r + angle_diff_rr) < np.pi / 2:  ##############
+                if (not robots_reached[i]) and (not robots_stopped[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2): #and abs(angle_diff_r + angle_diff_rr) < np.pi / 2:  ##############
                     robots_theta.append(theta)
                     robots_inds.append(i)
                     polys.append((robots_x[i], robots_y[i]))
@@ -380,16 +380,16 @@ class ApfMotion(object):
                     # else:
                     #     templ[0] = 3
                     #     templ[1] = 0
-                elif nr.d<nr.r_prec:
-                    if (abs(angle_diff)>np.pi/2):
-                        templ[0] = f
+                # elif nr.d<nr.r_prec:
+                #     if (abs(angle_diff)>np.pi/2):
+                #         templ[0] = f
                         # templ[1] = 0
 
                 robot_f[0] += round(templ[0], 3)
                 robot_f[1] += round(templ[1], 3)
 
         if self.is_multi:  # (not robot_flag) and
-            f = 4
+            f = 8
             angle_diff = self.multi_theta - self.r_theta
             angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
