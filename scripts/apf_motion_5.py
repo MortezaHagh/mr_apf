@@ -288,9 +288,9 @@ class ApfMotion(object):
                 angle_diff_rr = abs(np.arctan2(np.sin(angle_diff_rr), np.cos(angle_diff_rr)))
 
                 # and (not robots_stopped[i])
-                if (goal_flag) and (not robots_reached[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2):
+                if (goal_flag) and (not robots_reached[i]) and (angle_diff_r < np.pi / 2 or angle_diff_rr < np.pi / 2):
                     flag_1 = True
-                if (goal_flag) and (not robots_reached[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2):
+                if (goal_flag) and (not robots_reached[i]) and (angle_diff_r < np.pi / 2 or angle_diff_rr < np.pi / 2):
                     flag_2 = True
 
                 if flag_1:
@@ -408,11 +408,13 @@ class ApfMotion(object):
                     #     templ[0] = self.fix_f
                     #     # templ[1] = 0
                 elif nr.r_prec <nr.d<nr.r_half:
-                    f = f + self.fix_f
+                    f = f + self.fix_f/2
                     angle_turn = nr.theta + (np.pi/2)*(np.sign(angle_diff))
                     angle_diff = angle_turn - self.r_theta
                     angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-                    templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
+                    templ2 = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
+                    templ[0] += templ2[0]
+                    templ[1] += templ2[1]
                     
                 #     if (abs(angle_diff)>np.pi/2):
                 #         templ[0] = f
