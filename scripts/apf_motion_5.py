@@ -195,7 +195,7 @@ class ApfMotion(object):
 
         thresh_theta = np.pi/3
         w = 4 * self.w_max * theta / (np.pi/5)
-        v = 1 * self.v_max * (1-abs(theta)/thresh_theta)
+        v = 2 * self.v_max * (1-abs(theta)/thresh_theta)
 
         if (v<self.v_min_2) and abs(w)<0.03:
             v = self.v_min_2*2
@@ -266,7 +266,7 @@ class ApfMotion(object):
         robots_priority = resp_poses2.priority
 
         goal_distance = self.distance(self.r_x ,self.r_y, self.goal_x, self.goal_y)
-        if goal_distance < self.robot_start_d:
+        if goal_distance < 2*self.robot_start_d:
             goal_flag = False
 
         # get indices of robots in proximity circle
@@ -320,7 +320,7 @@ class ApfMotion(object):
         if len(new_robots)==0:
             return
 
-
+        # if robot is in the polygon
         if len(polys0)>2:
             point_t = Point(self.goal_x, self.goal_y)
             point_r = Point(self.r_x, self.r_y)
@@ -336,7 +336,8 @@ class ApfMotion(object):
         self.is_robots = True
         self.is_in_t = is_in_t
         self.new_robots = new_robots
-
+        
+        # triangle
         polys_i = []
         if (not is_in_t) and (not len(robots_inds)<2):
             # detect arc (poly)
@@ -406,9 +407,9 @@ class ApfMotion(object):
                         # if angle_diff4*angle_diff<0:
                         #     coeff_alpha = -1*(coeff_alpha+1)
                         templ[1] = (f+3.0)*coeff_alpha*np.sign(angle_diff)
-                    # else:
-                    #     templ[0] = 3
-                    #     templ[1] = 0
+                    elif ((np.pi/2)<=abs(angle_diff)<(np.pi/2+np.pi/4)):
+                        templ[0] = self.fix_f
+                        # templ[1] = 0
                 # elif nr.d<nr.r_prec:
                 #     if (abs(angle_diff)>np.pi/2):
                 #         templ[0] = f
@@ -418,7 +419,7 @@ class ApfMotion(object):
                 robot_f[1] += round(templ[1], 3)
 
         if self.is_multi:  # (not robot_flag) and
-            f = 8
+            f = self.fix_f*2  # 8
             angle_diff = self.multi_theta - self.r_theta
             angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
             if angle_diff<0:
