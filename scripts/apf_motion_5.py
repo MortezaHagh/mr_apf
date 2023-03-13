@@ -395,7 +395,7 @@ class ApfMotion(object):
                 templ = [f * -np.cos(angle_diff), f * np.sin(angle_diff)]
 
                 # adjust heading
-                if (nr.r_prec<nr.d<nr.r_start):      # r_start r_half
+                if (nr.r_half<nr.d<nr.r_start):      # r_start r_half
                     if (abs(angle_diff)<np.pi/2):
                         coeff_alpha = np.cos(angle_diff)
                         # goal_theta = self.mod_angle(self.goal_theta)
@@ -404,10 +404,16 @@ class ApfMotion(object):
                         # if angle_diff4*angle_diff<0:
                         #     coeff_alpha = -1*(coeff_alpha+1)
                         templ[1] = (f+3.0)*coeff_alpha*np.sign(angle_diff)
-                    elif ((np.pi/2)<=abs(angle_diff)<(np.pi/2+np.pi/4)):
-                        templ[0] = self.fix_f
-                        # templ[1] = 0
-                # elif nr.d<nr.r_prec:
+                    # elif ((np.pi/2)<=abs(angle_diff)<(np.pi/2+np.pi/4)):
+                    #     templ[0] = self.fix_f
+                    #     # templ[1] = 0
+                elif nr.r_prec <nr.d<nr.r_half:
+                    f = f + self.fix_f
+                    angle_turn = nr.theta + (np.pi/2)*(np.sign(angle_diff))
+                    angle_diff = angle_turn - self.r_theta
+                    angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+                    templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
+                    
                 #     if (abs(angle_diff)>np.pi/2):
                 #         templ[0] = f
                         # templ[1] = 0
