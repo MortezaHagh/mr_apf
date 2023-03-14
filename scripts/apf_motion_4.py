@@ -466,6 +466,13 @@ class ApfMotion(object):
         new_robots = self.new_robots
 
         for nr in new_robots:
+            if (not nr.big):
+                if (nr.d< nr.r_start):
+                    if (nr.d< nr.r_prec) and (abs(nr.h_rR)<np.pi/2):
+                        self.stop_flag = True
+                    # compute force
+
+                    
             dx = -(nr.x - self.r_x)
             dy = -(nr.y - self.r_y)
             d_rR = np.sqrt(dx**2 + dy**2)
@@ -474,7 +481,7 @@ class ApfMotion(object):
             angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
             
             # check if in the circle and mowing towards it -> stop
-            if  (not nr.big) and (d_rR < 1.9*nr.r_prec) and (abs(angle_diff2) > np.pi/2):
+            if  (not nr.big) and (d_rR < 1.9*nr.r_prec) and (abs(angle_diff2) > np.pi/2): #****** idea
                 if (nr.p): 
                     self.stop_flag = True
                 elif d_rR < 1.0*nr.r_prec:
