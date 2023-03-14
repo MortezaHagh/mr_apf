@@ -399,19 +399,23 @@ class ApfMotion(object):
                 rc = d12 # /np.sqrt(3)
                 # rc = self.eval_obst(xc, yc, rc)
 
+                #
                 dx = xc - self.r_x
                 dy = yc - self.r_y
                 d_rR = np.sqrt(dx**2 + dy**2)
                 theta_rR = np.arctan2(dy, dx)
                 ad_h_rR = self.angle_diff(self.r_h, theta_rR)
 
-                nr.x= xc
-                nr.y= yc
+                nr.x = xc
+                nr.y = yc
+                nr.d = d_rR
+                nr.h_rR = ad_h_rR
+                nr.theta_rR = theta_rR
+                if any(P): nr.p = True
                 nr.r_prec = rc + self.robot_r + self.prec_d
                 nr.r_half = 1.5 * nr.r_prec
                 nr.r_start = 2.0 * nr.r_prec
                 nr.z = 4 * self.fix_f * nr.r_prec**4
-                if any(P): nr.p = True
                 new_robots.append(nr)
         
         self.new_robots = new_robots
@@ -482,20 +486,8 @@ class ApfMotion(object):
             #         self.stop_flag = True
 
             else:
-                templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
-
-                # adjust heading
-                if (1.0*nr.r_prec<d_rR<2.0*nr.r_prec):
-                    if (abs(angle_diff2)>np.pi/2):
-                        angle_diff3 = np.pi - abs(angle_diff2)
-                        coeff_alpha = np.cos(angle_diff3)
-                        # goal_theta = self.mod_angle(self.goal_theta)
-                        # angle_diff4 = theta - goal_theta
-                        # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                        # if angle_diff4*angle_diff2<0:
-                        #     coeff_alpha = -1*coeff_alpha
-                        templ[1] = (f+3.0)*coeff_alpha*np.sign(np.sin(angle_diff2))
-
+                f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
+                templ = [f * -np.cos(nr.ad_h_rR), f * np.sin(nr.ad_h_rR)]
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
