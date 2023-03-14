@@ -309,7 +309,7 @@ class ApfMotion(object):
                 nr.H = robots_h[i]
                 nr.h_rR = ad_h_rR_0
                 nr.theta_rR = theta_rR
-                nr.p = robots_priority[i]
+                nr.p = robots_priority[i]>0
                 nr.stop = robots_stopped[i]
                 nr.reached = robots_reached[i]
                 nr.r_prec = self.robot_prec_d
