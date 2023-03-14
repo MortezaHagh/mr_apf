@@ -380,54 +380,9 @@ class ApfMotion(object):
         new_robots = self.new_robots
 
         for nr in new_robots:
-            if (nr.d< nr.r_start):
-                if (nr.d< nr.r_prec) and (abs(nr.h_rR)<np.pi/2):
-                    self.stop_flag = True
-
-                # compute force
-                ad_h_rR = nr.h_rR
-                ad_Rr_H = (nr.theta_rR - np.pi) - nr.H
-                ad_Rr_H = np.arctan2(np.sin(ad_Rr_H), np.cos(ad_Rr_H))
-                angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H)
-                ad_C_h = angle_turn_R - self.r_h
-                ad_C_h = np.arctan2(np.sin(ad_C_h), np.cos(ad_C_h))
-                angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)
-                ad_c_h = angle_turn_r - self.r_h
-                ad_c_h = np.arctan2(np.sin(ad_c_h), np.cos(ad_c_h))
-
-                f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-
-                fl = f+2
-                templ = [fl * -np.cos(ad_h_rR), fl * np.sin(ad_h_rR)]
-
-                f2 = f + 2
-                templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
-
-                f3 = fl
-                templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
-                f3_2 = f + 2 
-                templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
-                
-
-                # adjust heading
-                if (nr.r_half<nr.d<nr.r_start):
-                    if (not nr.reached) and (not nr.stop):
-                        if (abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
-                            templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
-                    else:
-                        if (abs(ad_h_rR)<(np.pi/2)):
-                            templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
-
-                elif (nr.r_prec <nr.d<nr.r_half):
-                    if (not nr.reached) and (not nr.stop):
-                        if (abs(ad_Rr_H)<(np.pi/2)):
-                            templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
-                    else:
-                        if (abs(ad_h_rR)<(np.pi/2)):
-                            templ = [templ3_2[0]+templ[0], templ3_2[1]+templ[1]]
-
-                robot_f[0] += round(templ[0], 3)
-                robot_f[1] += round(templ[1], 3)
+            templ = self.compute_robot_force(self, nr)
+            robot_f[0] += round(templ[0], 3)
+            robot_f[1] += round(templ[1], 3)
 
         if self.is_multi:  # (not robot_flag) and
             f = self.fix_f*2  # 8
@@ -441,6 +396,63 @@ class ApfMotion(object):
         coeff_f = 1
         self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
         self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
+
+    # -----------------------  compute_robot_force  ----------------------------#
+
+    def compute_robot_force(self, nr):
+        if (nr.d< nr.r_start):
+            if (nr.d< nr.r_prec) and (abs(nr.h_rR)<np.pi/2):
+                self.stop_flag = True
+
+            #
+            templ = []
+            templ2 = []
+            templ3 = []
+            templ3_2 = []
+
+            # compute force
+            ad_h_rR = nr.h_rR
+            ad_Rr_H = (nr.theta_rR - np.pi) - nr.H
+            ad_Rr_H = np.arctan2(np.sin(ad_Rr_H), np.cos(ad_Rr_H))
+            angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H)
+            ad_C_h = angle_turn_R - self.r_h
+            ad_C_h = np.arctan2(np.sin(ad_C_h), np.cos(ad_C_h))
+            angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)
+            ad_c_h = angle_turn_r - self.r_h
+            ad_c_h = np.arctan2(np.sin(ad_c_h), np.cos(ad_c_h))
+
+            f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
+
+            fl = f+2
+            templ = [fl * -np.cos(ad_h_rR), fl * np.sin(ad_h_rR)]
+
+            f2 = f + 2
+            templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
+
+            f3 = fl
+            templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
+            f3_2 = f + 2 
+            templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
+            
+
+            # adjust heading
+            if (nr.r_half<nr.d<nr.r_start):
+                if (not nr.reached) and (not nr.stop):
+                    if (abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
+                        templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
+                else:
+                    if (abs(ad_h_rR)<(np.pi/2)):
+                        templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
+
+            elif (nr.r_prec <nr.d<nr.r_half):
+                if (not nr.reached) and (not nr.stop):
+                    if (abs(ad_Rr_H)<(np.pi/2)):
+                        templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
+                else:
+                    if (abs(ad_h_rR)<(np.pi/2)):
+                        templ = [templ3_2[0]+templ[0], templ3_2[1]+templ[1]]
+        return templ
+
 
     # -----------------------  f_obstacle  ----------------------------#
 
