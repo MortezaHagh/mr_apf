@@ -255,8 +255,8 @@ class ApfMotion(object):
 
         # get data
         req_poses = SharePoses2Request()
-        req_poses.update = False
         req_poses.ind = self.ind
+        req_poses.update = False
         req_poses.stopped = False
         resp_poses = self.pose_client(req_poses)
         robots_x = resp_poses.x
@@ -267,10 +267,10 @@ class ApfMotion(object):
         robots_priority = resp_poses.priority
 
         goal_dist = self.distance(self.r_x, self.r_y, self.goal_x, self.goal_y)
-        if goal_dist < 2*self.robot_start_d:
+        if (goal_dist < (2*self.robot_start_d)):
             is_goal_close = True
 
-        # get indices of robots in proximity circle
+        # detect polys
         polys = []
         polys0 = []
         for i in range(resp_poses.count):
@@ -280,7 +280,7 @@ class ApfMotion(object):
             dy = (robots_y[i] - self.r_y)
             d_rR = np.sqrt(dx**2 + dy**2)
              
-            if d_rR < 2 * self.robot_start_d:   #####
+            if (d_rR < (2 * self.robot_start_d)):   #####
                 theta_rR = np.arctan2(dy, dx)
                 ad_h_rR = self.r_h - theta_rR
                 ad_h_rR_0 = (np.arctan2(np.sin(ad_h_rR), np.cos(ad_h_rR)))
@@ -288,9 +288,9 @@ class ApfMotion(object):
                 ad_H_Rr = (robots_h[i] - (theta_rR - np.pi))
                 ad_H_Rr = abs(np.arctan2(np.sin(ad_H_Rr), np.cos(ad_H_Rr)))
 
-                if (not is_goal_close) and (not robots_reached[i]) and (ad_h_rR < np.pi / 2 and ad_H_Rr < np.pi / 2):
+                if (not is_goal_close) and (not robots_reached[i]) and (ad_h_rR < np.pi/2 and ad_H_Rr < np.pi/2):
                     flag_1 = True
-                if (not is_goal_close) and (not robots_reached[i]) and (ad_h_rR < np.pi / 2 and ad_H_Rr < np.pi / 2):
+                if (not is_goal_close) and (not robots_reached[i]) and (ad_h_rR < np.pi/2 and ad_H_Rr < np.pi/2):
                     flag_2 = True
 
                 if flag_1:
@@ -301,7 +301,7 @@ class ApfMotion(object):
                     polys0.append((robots_x[i], robots_y[i]))
                 
 
-            if d_rR < 1 * self.robot_start_d:
+            if (d_rR < (1 * self.robot_start_d)):
                 nr = NewRobots()
                 nr.d = d_rR
                 nr.x = robots_x[i]

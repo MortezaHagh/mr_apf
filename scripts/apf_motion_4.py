@@ -279,7 +279,7 @@ class ApfMotion(object):
                 continue
             robots_inds.append(i)
         
-        # if there is only one or none robots in proximity
+        # if there is none robots in proximity
         if len(robots_inds)==0:
             return stop_flag_multi
         
