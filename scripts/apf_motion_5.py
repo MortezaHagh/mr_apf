@@ -27,6 +27,7 @@ class NewRobots:
         self.stop = False
         self.reached = False
 
+
 class ApfMotion(object):
 
     def __init__(self, model, robot, init_params):
@@ -95,7 +96,7 @@ class ApfMotion(object):
         self.w = 0
         self.v_max = 0.2        # init_params.linear_max_speed
         self.v_min = 0.0        # init_params.linear_min_speed
-        self.w_min = 0          # init_params.angular_min_speed
+        self.w_min = 0.0        # init_params.angular_min_speed
         self.w_max = 1.0        # init_params.angular_max_speed
         self.v_min_2 = 0.04     # init_params.linear_min_speed_2
 
@@ -121,11 +122,10 @@ class ApfMotion(object):
         self.w_coeff = 1                        # init_params.w_coeff      # angular velocity coeff
         self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
-    
+
     # --------------------------  exec_cb  ---------------------------#
 
     def exec_cb(self):
-        # move
         self.go_to_goal()
         self.is_reached = True
         return
@@ -138,7 +138,7 @@ class ApfMotion(object):
             # detect and group
             self.detect_group()
 
-            if  self.stop_flag_multi:
+            if self.stop_flag_multi:
                 req = SharePoses2Request()
                 req.ind = self.ind
                 req.stopped = True
@@ -169,6 +169,7 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
+            if self.ind==1: print("f0: ", self.stop_flag_multi, "f: ", self.stop_flag)
             if self.ind==1: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
             if self.ind==1: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
             if self.ind==1: print(" ------------------------------------ ")

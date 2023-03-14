@@ -17,10 +17,18 @@ class NewRobots:
         self.x = 0
         self.y = 0
         self.z = 1
-        self.p = False
+        self.d = 0
+        self.H = 0
+        self.h_rR = 0
+        self.theta_rR = 0
         self.r_prec = 0
+        self.r_half = 0
         self.r_start = 0
+        self.p = False
+        self.stop = False
+        self.reached = False
         self.big = False
+
 
 class ApfMotion(object):
 
@@ -30,7 +38,7 @@ class ApfMotion(object):
         self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.shutdown_hook)
 
-        #
+        # Viusalize
         self.vs = Viusalize(model)
 
         # preallocation and params and setting
@@ -57,7 +65,7 @@ class ApfMotion(object):
 
     def init(self, model, robot, init_params):
         # preallocation
-        self.phis = []    
+        self.phis = []
         self.v_lin = []
         self.v_ang = []
         self.path_x = []
@@ -74,11 +82,11 @@ class ApfMotion(object):
 
         # parameters
         self.goal_theta = 0
-        self.goal_distance = 1000
+        self.goal_dist = 1000
         self.topic_type = Odometry
         self.prioriy = robot.priority
 
-        # params 
+        # params
         self.ind = init_params.id
         self.ns = init_params.name_space
         self.topic = init_params.lis_topic
@@ -95,19 +103,21 @@ class ApfMotion(object):
         self.v_min_2 = 0.04     # init_params.linear_min_speed_2
 
         # settings
-        self.zeta = 1                     
+        self.zeta = 1
         self.fix_f = 4
         self.fix_f2 = 10
         self.obst_r = 0.11
         self.prec_d = 0.06
-        self.robot_r = 0.22             
-        
+        self.robot_r = 0.22
+
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
+        self.obst_half_d = 1.5*self.obst_prec_d
         self.obst_start_d = 2*self.obst_prec_d
         self.obst_z = 4*self.fix_f*self.obst_prec_d**4
 
         self.robot_prec_d = 2*self.robot_r + self.prec_d  # 0.64
         self.robot_start_d = 2*self.robot_prec_d
+        self.robot_half_d = 1.5*self.robot_prec_d
         self.robot_stop_d = self.robot_prec_d
         self.robot_z = 4 * self.fix_f*self.robot_prec_d**4
 
@@ -118,7 +128,6 @@ class ApfMotion(object):
     # --------------------------  exec_cb  ---------------------------#
 
     def exec_cb(self):
-        # move
         self.go_to_goal()
         self.is_reached = True
         return
@@ -126,47 +135,52 @@ class ApfMotion(object):
     # --------------------------  go_to_goal  ---------------------------#
 
     def go_to_goal(self):
-        while self.goal_distance > self.dis_tresh and not rospy.is_shutdown():
-            
+        while self.goal_dist > self.dis_tresh and not rospy.is_shutdown():
+
             # detect and group
-            stop_flag_0 = self.detect_group()
-            
-            # if not stop_flag_0:
-            #     # calculate forces
-            #     [f_r, f_theta, phi, stop_flag] = self.forces()
+            self.detect_group()
 
-            #     # calculate velocities
-            #     self.cal_vel(f_r, f_theta, phi)
-            #     self.v_lin.append(self.v)
-            #     self.v_ang.append(self.w)
-            # else:
-            #     self.v = 0
-            #     self.w = 0
+            if self.stop_flag_multi:
+                req = SharePoses2Request()
+                req.ind = self.ind
+                req.stopped = True
+                self.pose_client(req)
+                self.v = 0
+                self.w = 0
+            else:
 
-            # if stop_flag:
-            #     self.v = 0
-            #     # self.w = 0
+                # calculate forces
+                [f_r, f_theta, phi, stop_flag] = self.forces()
 
-            # # publish cmd
-            # move_cmd = Twist()
-            # move_cmd.linear.x = self.v
-            # move_cmd.angular.z = self.w
-            # self.cmd_vel.publish(move_cmd)
+                # calculate velocities
+                self.cal_vel(f_r, f_theta, phi)
+                self.v_lin.append(self.v)
+                self.v_ang.append(self.w)
 
-            # # result
-            # self.path_x.append(round(self.r_x, 3))
-            # self.path_y.append(round(self.r_y, 3))
+                if stop_flag:
+                    self.v = 0
+                    # self.w = 0
 
-            # if self.ind==1: print("f0: ", stop_flag_0, "f: ", self.stop_flag)
-            # if self.ind==1: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
-            # if self.ind==1: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
-            # if self.ind==1: print(" ---------------------------------- ")
+            # publish cmd
+            move_cmd = Twist()
+            move_cmd.linear.x = self.v
+            move_cmd.angular.z = self.w
+            self.cmd_vel.publish(move_cmd)
+
+            # result
+            self.path_x.append(round(self.r_x, 3))
+            self.path_y.append(round(self.r_y, 3))
+
+            if self.ind==1: print("f0: ", self.stop_flag_multi, "f: ", self.stop_flag)
+            if self.ind==1: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
+            if self.ind==1: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
+            if self.ind==1: print(" ------------------------------------ ")
             self.rate.sleep()
 
         req = SharePoses2Request()
         req.ind = self.ind
         req.reached = True
-        resp = self.pose_client(req)
+        self.pose_client(req)
         self.stop()
 
     # -----------------------  cal_vel  ----------------------------#
@@ -183,12 +197,12 @@ class ApfMotion(object):
         # if (v==0) and abs(w)<0.03:
         #     v = self.v_min_2*2
 
-        thresh_theta = np.pi/8
-        w = 4 * self.w_max * theta / (np.pi/4)
-        v = 1 * self.v_max * (np.pi-abs(theta))/(np.pi-thresh_theta)
+        thresh_theta = np.pi/3
+        w = 4 * self.w_max * theta / (np.pi/5)
+        v = 2 * self.v_max * (1-abs(theta)/thresh_theta)
 
-        # if (v<self.v_min_2) and abs(w)<0.03:
-        #     v = self.v_min_2*2
+        if (v<self.v_min_2) and abs(w)<0.03:
+            v = self.v_min_2*2
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -205,9 +219,9 @@ class ApfMotion(object):
         f_r = self.target_f[0]
         f_theta = self.target_f[1]
 
-        self.f_obstacle()
-        f_r += self.obs_f[0]
-        f_theta += self.obs_f[1]
+        # self.f_obstacle()
+        # f_r += self.obs_f[0]
+        # f_theta += self.obs_f[1]
 
         self.f_robots()
         f_r += self.robot_f[0]
@@ -222,20 +236,20 @@ class ApfMotion(object):
         # self.force_ot.append(self.obs_f[1])
         # self.force_tr.append(self.target_f[0])
         # self.force_tt.append(self.target_f[1])
-        
+
         return [f_r, f_theta, phi, self.stop_flag]
-    
+
     # -----------------------  detect_group  ----------------------------#
 
     def detect_group(self):
-        
+
         groups = []
         robots_inds = []
         angle_diffs = []
         robots_inds_f = {}
         self.new_robots = []
         big_robots = []
-        stop_flag_0 = False
+        stop_flag_multi = False
 
         self.f_obsts_inds = self.detect_obsts()
 
@@ -263,7 +277,7 @@ class ApfMotion(object):
         
         # if there is only one or none robots in proximity
         if len(robots_inds)==0:
-            return stop_flag_0
+            return stop_flag_multi
         
         # generate robots_inds_f (neighbor robots in proximity circle)
         robots_inds_2 = robots_inds[:]
@@ -330,7 +344,7 @@ class ApfMotion(object):
                 
                 # if robot is in the polygon
                 if is_in:
-                    stop_flag_0 = True
+                    stop_flag_multi = True
                     nr.x= pc.x
                     nr.y= pc.y
                     nr.r_prec = self.robot_prec_d*2.1
@@ -340,7 +354,7 @@ class ApfMotion(object):
                     new_robots.append(nr)
                     big_robots.append(nr)
                     self.vs.robot_data(new_robots, self.ns) 
-                    return stop_flag_0
+                    return stop_flag_multi
                 
                 # robot is not in the polygon, detect """triangle"""
                 ad = [angle_diffs[i] for i in g]
@@ -384,7 +398,7 @@ class ApfMotion(object):
         
         self.new_robots = new_robots
         self.vs.robot_data(new_robots, self.ns) 
-        return stop_flag_0
+        return stop_flag_multi
 
     def detect_obsts(self):
         f_obsts_inds = []
@@ -416,14 +430,14 @@ class ApfMotion(object):
     def f_target(self):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
-        goal_distance = np.sqrt(dx**2 + dy**2)
-        # f = self.zeta * goal_distance
+        goal_dist = np.sqrt(dx**2 + dy**2)
+        # f = self.zeta * goal_dist
         f = self.fix_f
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
         self.goal_theta = theta
-        self.goal_distance = goal_distance
+        self.goal_dist = goal_dist
         fx = round(f * np.cos(angle_diff), 3)
         fy = round(f * np.sin(angle_diff), 3)
         self.target_f = [fx, fy]
