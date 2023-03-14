@@ -24,7 +24,8 @@ class NewRobots:
         self.r_half = 0
         self.r_start = 0
         self.p = False
-        self.big = False
+        self.stop = False
+        self.reached = False
 
 class ApfMotion(object):
 
@@ -287,10 +288,9 @@ class ApfMotion(object):
                 angle_diff_rr = (robots_h[i] - (theta - np.pi))
                 angle_diff_rr = abs(np.arctan2(np.sin(angle_diff_rr), np.cos(angle_diff_rr)))
 
-                # and (not robots_stopped[i])
-                if (goal_flag) and (not robots_reached[i]) and (angle_diff_r < np.pi / 2 or angle_diff_rr < np.pi / 2):
+                if (goal_flag) and (not robots_reached[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2):
                     flag_1 = True
-                if (goal_flag) and (not robots_reached[i]) and (angle_diff_r < np.pi / 2 or angle_diff_rr < np.pi / 2):
+                if (goal_flag) and (not robots_reached[i]) and (angle_diff_r < np.pi / 2 and angle_diff_rr < np.pi / 2):
                     flag_2 = True
 
                 if flag_1:
@@ -314,6 +314,8 @@ class ApfMotion(object):
                 nr.r_half = self.robot_half_d
                 nr.r_start = self.robot_start_d
                 nr.z = 4 * self.fix_f * nr.r_prec**4
+                nr.reached = robots_reached[i]
+                nr.stop = robots_stopped[i]
                 new_robots.append(nr)
 
         # if there is none robots in proximity
@@ -390,47 +392,58 @@ class ApfMotion(object):
                     self.stop_flag = True
 
                 # compute force
-                angle_diff = nr.h_t
+                angle_diff_1 = nr.h_t                       # robot - theta_ro
+                angle_diff_2 = (nr.theta - np.pi) - nr.t    # theta_ro-pi - h 
+                angle_diff_2 = np.arctan2(np.sin(angle_diff_2), np.cos(angle_diff_2))
+                angle_turn = nr.theta - (np.pi/2)*np.sign(angle_diff_2)
+                angle_diff_3 = angle_turn - self.r_theta
+                angle_diff_3 = np.arctan2(np.sin(angle_diff_3), np.cos(angle_diff_3))
+                angle_turn_2 = nr.theta + (np.pi/2)*np.sign(angle_diff_1)
+                angle_diff_4 = angle_turn_2 - self.r_theta
+                angle_diff_4 = np.arctan2(np.sin(angle_diff_4), np.cos(angle_diff_4))
+
                 f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-                templ = [f * -np.cos(angle_diff), f * np.sin(angle_diff)]
+                
+                fl = f+2
+                templ = [fl * -np.cos(angle_diff_1), fl * np.sin(angle_diff_1)]
+                
+                f3 = fl
+                templ3 = [f3 * np.cos(angle_diff_4), f3 * np.sin(angle_diff_4)]
+                f3_2 = f + 2    # self.fix_f/2
+                templ3_2 = [f3_2 * np.cos(angle_diff_4), f3_2 * np.sin(angle_diff_4)]
+
+                f2 = f + 2      # self.fix_f/2
+                templ2 = [f2 * np.cos(angle_diff_3), f2 * np.sin(angle_diff_3)]
+                
 
                 # adjust heading
-                if (nr.r_half<nr.d<nr.r_start):      # r_start r_half
-                    if (abs(angle_diff)<np.pi/2):
-                        coeff_alpha = np.cos(angle_diff)
-                        # goal_theta = self.mod_angle(self.goal_theta)
-                        # angle_diff4 = goal_theta - nr.theta
-                        # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                        # if angle_diff4*angle_diff<0:
-                        #     coeff_alpha = -1*(coeff_alpha+1)
-                        templ[1] = (f+3.0)*coeff_alpha*np.sign(angle_diff)
-                    # elif ((np.pi/2)<=abs(angle_diff)<(np.pi/2+np.pi/4)):
-                    #     templ[0] = self.fix_f
-                    #     # templ[1] = 0
-                elif nr.r_prec <nr.d<nr.r_half:
-                    f = f + self.fix_f/2
-                    angle_turn = nr.theta + (np.pi/2)*(np.sign(angle_diff))
-                    angle_diff = angle_turn - self.r_theta
-                    angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-                    templ2 = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
-                    templ[0] += templ2[0]
-                    templ[1] += templ2[1]
-                    
-                #     if (abs(angle_diff)>np.pi/2):
-                #         templ[0] = f
-                        # templ[1] = 0
+                if (nr.r_half<nr.d<nr.r_start):
+                    if (not nr.reached) and (not nr.stop):
+                        if (abs(angle_diff_1)<np.pi/2) and (abs(angle_diff_2)<(np.pi/2)):
+                            templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
+                    else:
+                        if (abs(angle_diff_1)<(np.pi/2)):
+                            templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
+
+                elif (nr.r_prec <nr.d<nr.r_half):
+                    if (not nr.reached) and (not nr.stop):
+                        if (abs(angle_diff_2)<(np.pi/2)):
+                            templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
+                    else:
+                        if (abs(angle_diff_1)<(np.pi/2)):
+                            templ = [templ3_2[0]+templ[0], templ3_2[1]+templ[1]]
 
                 robot_f[0] += round(templ[0], 3)
                 robot_f[1] += round(templ[1], 3)
 
-        if self.is_multi:  # (not robot_flag) and
-            f = self.fix_f*2  # 8
-            angle_diff = self.multi_theta - self.r_theta
-            angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-            if angle_diff<0:
-                templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
-                robot_f[0] += round(templ[0], 3)
-                robot_f[1] += round(templ[1], 3)
+        # if self.is_multi:  # (not robot_flag) and
+        #     f = self.fix_f*2  # 8
+        #     angle_diff = self.multi_theta - self.r_theta
+        #     angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+        #     if angle_diff<0:
+        #         templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
+        #         robot_f[0] += round(templ[0], 3)
+        #         robot_f[1] += round(templ[1], 3)
 
         coeff_f = 1
         self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
