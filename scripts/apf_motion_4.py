@@ -275,7 +275,7 @@ class ApfMotion(object):
             ad_h_rR = self.r_h - theta_rR
             ad_h_rR = np.arctan2(np.sin(ad_h_rR), np.cos(ad_h_rR))
             AD_h_rR.append(ad_h_rR)
-            if (d_rR > (1 * self.robot_start_d)):   #####
+            if (d_rR > (2 * self.robot_start_d)):   #####
                 continue
             robots_inds.append(i)
         
@@ -294,7 +294,7 @@ class ApfMotion(object):
                 dx = (robots_x[p] - robots_x[ind_j])
                 dy = (robots_y[p] - robots_y[ind_j])
                 dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
-                if dist<self.robot_prec_d*2.1:     ##### robot_start_d robot_prec_d
+                if (dist<(self.robot_prec_d*2.1)):     ##### robot_start_d robot_prec_d
                     robots_inds_f[p].append(ind_j)
 
         # detect groups 
@@ -314,30 +314,34 @@ class ApfMotion(object):
         # groups - new_robots -----------------------------------
         new_robots = []
         for g in groups:
-            # individual robots ---
+            # individual robots
             for i in g:
                 nr = NewRobots()
                 nr.x= robots_x[i]
                 nr.y= robots_y[i]
+                nr.H = robots_h[i]
+                nr.h_rR = AD_h_rR[i]
+                nr.theta_rR = theta_rR
+                nr.p = robots_priority[i]>0
+                nr.stop = robots_stopped[i]
+                nr.reached = robots_reached[i]
                 rc = self.robot_prec_d
-                rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d)
+                # rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d)
                 nr.r_prec = rc
-                nr.r_start = 2*rc
+                nr.r_half = 1.5 * rc
+                nr.r_start = 2.0 * rc
                 nr.z = 4 * self.fix_f * rc**4
-                if robots_priority[i]>0:
-                    nr.p = True
+
                 new_robots.append(nr)
 
             # group robots ---
-            if len(g)==1:
-                pass
-            else:
+            if len(g)>1:
                 nr = NewRobots()
                 nr.big = True
                 is_in = False
 
                 # priorities
-                pp = [robots_priority[i]>0 for i in g]
+                P = [robots_priority[i]>0 for i in g]
 
                 # polygon
                 if len(g)>2:
@@ -354,7 +358,7 @@ class ApfMotion(object):
                     nr.r_prec = self.robot_prec_d*2.1
                     nr.r_start = 2*nr.r_prec
                     nr.z = 4 * self.fix_f * nr.r_prec**4
-                    if any(pp): nr.p = True
+                    if any(P): nr.p = True
                     new_robots.append(nr)
                     big_robots.append(nr)
                     self.vs.robot_data(new_robots, self.ns) 
@@ -394,7 +398,7 @@ class ApfMotion(object):
                 nr.r_prec = rc + self.robot_r + self.prec_d
                 nr.r_start = 2*nr.r_prec
                 nr.z = 4 * self.fix_f * nr.r_prec**4
-                if any(pp):
+                if any(P):
                     nr.p = True
                 
                 big_robots.append(nr)
