@@ -282,11 +282,9 @@ class ApfMotion(object):
              
             if (d_rR < (2 * self.robot_start_d)):   #####
                 theta_rR = np.arctan2(dy, dx)
-                ad_h_rR = self.r_h - theta_rR
-                ad_h_rR_0 = (np.arctan2(np.sin(ad_h_rR), np.cos(ad_h_rR)))
+                ad_h_rR_0 = self.angle_diff(self.r_h, theta_rR)
                 ad_h_rR = abs(ad_h_rR_0)
-                ad_H_Rr = (robots_h[i] - (theta_rR - np.pi))
-                ad_H_Rr = abs(np.arctan2(np.sin(ad_H_Rr), np.cos(ad_H_Rr)))
+                ad_H_Rr = self.angle_diff(robots_h[i], (theta_rR - np.pi))
 
                 if (not is_goal_close) and (not robots_reached[i]) and (ad_h_rR < np.pi/2 and ad_H_Rr < np.pi/2):
                     flag_1 = True
@@ -362,8 +360,7 @@ class ApfMotion(object):
         # f = self.zeta * goal_dist
         f = self.fix_f
         theta_rg = np.arctan2(dy, dx)
-        ad_rg_h = theta_rg - self.r_h
-        ad_rg_h = np.arctan2(np.sin(ad_rg_h), np.cos(ad_rg_h))
+        ad_rg_h = self.angle_diff(theta_rg, self.r_h)
         self.goal_theta = theta_rg
         self.goal_dist = goal_dist
         fx = round(f * np.cos(ad_rg_h), 3)
@@ -386,8 +383,7 @@ class ApfMotion(object):
 
         if self.is_multi:  # (not robot_flag) and
             f = self.fix_f*2  # 8
-            angle_diff = self.multi_theta - self.r_h
-            angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+            angle_diff = self.angle_diff(self.multi_theta, self.r_h)
             if angle_diff<0:
                 templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
                 robot_f[0] += round(templ[0], 3)
@@ -412,14 +408,11 @@ class ApfMotion(object):
 
             # compute force
             ad_h_rR = nr.h_rR
-            ad_Rr_H = (nr.theta_rR - np.pi) - nr.H
-            ad_Rr_H = np.arctan2(np.sin(ad_Rr_H), np.cos(ad_Rr_H))
+            ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H)
-            ad_C_h = angle_turn_R - self.r_h
-            ad_C_h = np.arctan2(np.sin(ad_C_h), np.cos(ad_C_h))
+            ad_C_h = self.angle_diff(angle_turn_R, self.r_h)
             angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)
-            ad_c_h = angle_turn_r - self.r_h
-            ad_c_h = np.arctan2(np.sin(ad_c_h), np.cos(ad_c_h))
+            ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
 
             f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
 
@@ -470,8 +463,7 @@ class ApfMotion(object):
 
             obst_flag = True
             theta = np.arctan2(dy, dx)
-            angle_diff = self.r_h - theta
-            angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+            angle_diff = self.angle_diff(self.r_h, theta)
 
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * -np.cos(angle_diff), f * np.sin(angle_diff)]
@@ -572,3 +564,8 @@ class ApfMotion(object):
 
     def distance(self, x1, y1, x2, y2):
         return np.sqrt((x1-x2)**2+(y1-y2)**2)
+
+    def angle_diff(self, a1, a2):
+        ad = a1 - a2
+        ad = np.arctan2(np.sin(ad), np.cos(ad))
+        return ad
