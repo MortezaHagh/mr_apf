@@ -280,8 +280,7 @@ class ApfMotion(object):
             dy = (robots_y[i] - self.r_y)
             d_rR = np.sqrt(dx**2 + dy**2)
             theta_rR = np.arctan2(dy, dx)
-            ad_h_rR = self.r_h - theta_rR
-            ad_h_rR = np.arctan2(np.sin(ad_h_rR), np.cos(ad_h_rR))
+            ad_h_rR = self.angle_diff(self.r_h, theta_rR)
             THETA_rR.append(theta_rR)
             AD_h_rR.append(ad_h_rR)
             D_rR.append(d_rR)
@@ -345,7 +344,7 @@ class ApfMotion(object):
                     nr.z = 4 * self.fix_f * rc**4
                     new_robots.append(nr)
 
-            # group robots ---
+            # group robots
             if len(g)>1:
                 nr = NewRobots()
                 nr.big = True
@@ -399,6 +398,12 @@ class ApfMotion(object):
                     yc = yy1
                 rc = d12 # /np.sqrt(3)
                 # rc = self.eval_obst(xc, yc, rc)
+
+                dx = xc - self.r_x
+                dy = yc - self.r_y
+                d_rR = np.sqrt(dx**2 + dy**2)
+                theta_rR = np.arctan2(dy, dx)
+                ad_h_rR = self.angle_diff(self.r_h, theta_rR)
 
                 nr.x= xc
                 nr.y= yc
@@ -514,14 +519,11 @@ class ApfMotion(object):
 
             # compute force
             ad_h_rR = nr.h_rR
-            ad_Rr_H = (nr.theta_rR - np.pi) - nr.H
-            ad_Rr_H = np.arctan2(np.sin(ad_Rr_H), np.cos(ad_Rr_H))
+            ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H)
-            ad_C_h = angle_turn_R - self.r_h
-            ad_C_h = np.arctan2(np.sin(ad_C_h), np.cos(ad_C_h))
+            ad_C_h = self.angle_diff(angle_turn_R, self.r_h)
             angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)
-            ad_c_h = angle_turn_r - self.r_h
-            ad_c_h = np.arctan2(np.sin(ad_c_h), np.cos(ad_c_h))
+            ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
 
             f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
 
@@ -673,3 +675,8 @@ class ApfMotion(object):
 
     def distance(self, x1, y1, x2, y2):
         return np.sqrt((x1-x2)**2+(y1-y2)**2)
+    
+    def angle_diff(self, a1, a2):
+        ad = a1 - a2
+        ad = np.arctan2(np.sin(ad), np.cos(ad))
+        return ad

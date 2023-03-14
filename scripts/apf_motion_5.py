@@ -446,7 +446,6 @@ class ApfMotion(object):
                         templ = [templ3_2[0]+templ[0], templ3_2[1]+templ[1]]
         return templ
 
-
     # -----------------------  f_obstacle  ----------------------------#
 
     def f_obstacle(self):
