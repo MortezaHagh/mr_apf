@@ -20,7 +20,9 @@ points = [Point(p) for p in  polys]
 mpt = MultiPoint([shape(p) for p in points])
 mp = mpt.convex_hull
 mp_bound = mp.boundary.coords
+mpc = mp.centroid
 print("mp", mp)
+print("mpc", mpc.coords[0])
 
 ##-----------------------------------------------
 # print(point.coords[0])

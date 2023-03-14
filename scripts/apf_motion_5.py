@@ -379,7 +379,6 @@ class ApfMotion(object):
         self.stop_flag = False
         new_robots = self.new_robots
 
-        # ------------------
         for nr in new_robots:
             if (nr.d< nr.r_start):
                 if (nr.d< nr.r_prec) and (abs(nr.h_rR)<np.pi/2):
