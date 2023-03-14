@@ -380,7 +380,7 @@ class ApfMotion(object):
         new_robots = self.new_robots
 
         for nr in new_robots:
-            templ = self.compute_robot_force(self, nr)
+            templ = self.compute_robot_force(nr)
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
 
