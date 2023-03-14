@@ -245,7 +245,7 @@ class ApfMotion(object):
 
         groups = []
         robots_inds = []
-        angle_diffs = []
+        AD_h_rR = []
         robots_inds_f = {}
         self.new_robots = []
         big_robots = []
@@ -254,24 +254,28 @@ class ApfMotion(object):
         self.f_obsts_inds = self.detect_obsts()
 
         # get data
-        req_poses2 = SharePoses2Request()
-        req_poses2.update = False
-        req_poses2.ind = self.ind
-        resp_poses2 = self.pose_client(req_poses2)
-        robots_x = resp_poses2.x
-        robots_y = resp_poses2.y
-        robots_priority = resp_poses2.priority
+        req_poses = SharePoses2Request()
+        req_poses.ind = self.ind
+        req_poses.update = False
+        req_poses.stopped = False
+        resp_poses = self.pose_client(req_poses)
+        robots_x = resp_poses.x
+        robots_y = resp_poses.y
+        robots_h = resp_poses.heading
+        robots_stopped = resp_poses.stopp
+        robots_reached = resp_poses.reached
+        robots_priority = resp_poses.priority
 
         # get indices of robots in proximity circle
-        for i in range(resp_poses2.count):
+        for i in range(resp_poses.count):
             dx = (robots_x[i] - self.r_x)
             dy = (robots_y[i] - self.r_y)
-            d_rr = np.sqrt(dx**2 + dy**2)
-            theta = np.arctan2(dy, dx)
-            angle_diff = theta - self.r_theta
-            angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-            angle_diffs.append(angle_diff2)
-            if d_rr > 1 * self.robot_start_d:   #####
+            d_rR = np.sqrt(dx**2 + dy**2)
+            theta_rR = np.arctan2(dy, dx)
+            ad_h_rR = self.r_h - theta_rR
+            ad_h_rR = np.arctan2(np.sin(ad_h_rR), np.cos(ad_h_rR))
+            AD_h_rR.append(ad_h_rR)
+            if (d_rR > (1 * self.robot_start_d)):   #####
                 continue
             robots_inds.append(i)
         
@@ -357,7 +361,7 @@ class ApfMotion(object):
                     return stop_flag_multi
                 
                 # robot is not in the polygon, detect """triangle"""
-                ad = [angle_diffs[i] for i in g]
+                ad = [AD_h_rR[i] for i in g]
                 a_min = g[np.argmin(ad)]
                 a_max = g[np.argmax(ad)]
 
@@ -434,7 +438,7 @@ class ApfMotion(object):
         # f = self.zeta * goal_dist
         f = self.fix_f
         theta = np.arctan2(dy, dx)
-        angle_diff = theta - self.r_theta
+        angle_diff = theta - self.r_h
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
         self.goal_theta = theta
         self.goal_dist = goal_dist
@@ -458,21 +462,21 @@ class ApfMotion(object):
         for nr in new_robots:
             dx = -(nr.x - self.r_x)
             dy = -(nr.y - self.r_y)
-            d_rr = np.sqrt(dx**2 + dy**2)
+            d_rR = np.sqrt(dx**2 + dy**2)
             theta = np.arctan2(dy, dx)
-            angle_diff = theta - self.r_theta
+            angle_diff = theta - self.r_h
             angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
             
             # check if in the circle and mowing towards it -> stop
-            if  (not nr.big) and (d_rr < 1.9*nr.r_prec) and (abs(angle_diff2) > np.pi/2):
+            if  (not nr.big) and (d_rR < 1.9*nr.r_prec) and (abs(angle_diff2) > np.pi/2):
                 if (nr.p): 
                     self.stop_flag = True
-                elif d_rr < 1.0*nr.r_prec:
+                elif d_rR < 1.0*nr.r_prec:
                     self.stop_flag = True
 
             # compute force
             robot_flag = True
-            f = ((nr.z * 1) * ((1 / d_rr) - (1 / nr.r_start))**2) * (1 / d_rr)**2
+            f = ((nr.z * 1) * ((1 / d_rR) - (1 / nr.r_start))**2) * (1 / d_rR)**2
             
             # # if in the new robot circles
             # if nr.big:
@@ -481,7 +485,7 @@ class ApfMotion(object):
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
 
             # adjust heading
-            if (1.0*nr.r_prec<d_rr<2.0*nr.r_prec):
+            if (1.0*nr.r_prec<d_rR<2.0*nr.r_prec):
                 if (abs(angle_diff2)>np.pi/2):
                     angle_diff3 = np.pi - abs(angle_diff2)
                     coeff_alpha = np.cos(angle_diff3)
@@ -525,7 +529,7 @@ class ApfMotion(object):
             obst_flag = True
             theta = np.arctan2(dy, dx)
             theta = self.mod_angle(theta)
-            r_theta = self.mod_angle(self.r_theta)
+            r_theta = self.mod_angle(self.r_h)
             angle_diff = theta - r_theta
             angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
 
@@ -576,7 +580,7 @@ class ApfMotion(object):
         orientation = euler_from_quaternion([quaternion.x, quaternion.y, quaternion.z, quaternion.w])
         self.r_x = position.x
         self.r_y = position.y
-        self.r_theta = orientation[2]
+        self.r_h = orientation[2]
         return self.topic_msg
 
     def get_odom(self, odom):
@@ -585,7 +589,7 @@ class ApfMotion(object):
         orientation = euler_from_quaternion([quaternion.x, quaternion.y, quaternion.z, quaternion.w])
         self.r_x = position.x
         self.r_y = position.y
-        self.r_theta = orientation[2]
+        self.r_h = orientation[2]
 
     # ----------------  get_robot -- map -- modify_angle -- shutdown_hook -------------------#
 
