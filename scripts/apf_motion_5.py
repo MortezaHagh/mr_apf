@@ -419,7 +419,7 @@ class ApfMotion(object):
             f2 = f + 2
             templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
 
-            f3 = fl
+            f3 = f+2
             templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
             f3_2 = f + 2 
             templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]

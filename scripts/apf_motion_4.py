@@ -288,7 +288,7 @@ class ApfMotion(object):
             if (d_rR > (2 * self.robot_start_d)):   ##################
                 continue
             
-            if (not robots_reached[i]):
+            if (not robots_reached[i]) or (d_rR < (1 * self.robot_start_d)):
                 robots_inds.append(i)
             
             # individual robots
@@ -324,11 +324,12 @@ class ApfMotion(object):
                 if len(robots_inds_2)==0:
                     break
                 for ind_j in robots_inds_2:
-                    dx = (robots_x[p] - robots_x[ind_j])
-                    dy = (robots_y[p] - robots_y[ind_j])
-                    dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
-                    if (dist<(self.robot_prec_d*2.5)):     ##### robot_start_d robot_prec_d
-                        robots_inds_f[p].append(ind_j)
+                    if not (robots_reached[p] and robots_reached[ind_j]):
+                        dx = (robots_x[p] - robots_x[ind_j])
+                        dy = (robots_y[p] - robots_y[ind_j])
+                        dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
+                        if (dist<(self.robot_prec_d*2.5)):     ##### robot_start_d robot_prec_d
+                            robots_inds_f[p].append(ind_j)
 
             # detect groups 
             robots_inds_3 = robots_inds[:]
@@ -359,14 +360,15 @@ class ApfMotion(object):
                 if len(g)>2:
                     point_robot = Point(self.r_x, self.r_y)
                     point_target = Point(self.goal_x, self.goal_y)
-                    polys_points = [Point(robots_x[i], robots_y[i]) for i in g]
-                    mpt = MultiPoint([shape(p) for p in polys_points])
-                    mp = mpt.convex_hull
-                    mp_bound = mp.boundary.coords
-                    mpc = mp.centroid.coords[0]
-                    is_robot_in = mp.contains(point_robot)
-                    is_target_in = mp.contains(point_target)
-                    self.vs.robot_poly([[], mp_bound], self.ns)
+                    polys_points = [Point(robots_x[i], robots_y[i]) for i in g if (not robots_reached[i])]
+                    if (len(polys_points)>2):
+                        mpt = MultiPoint([shape(p) for p in polys_points])
+                        mp = mpt.convex_hull
+                        mp_bound = mp.boundary.coords
+                        mpc = mp.centroid.coords[0]
+                        is_robot_in = mp.contains(point_robot)
+                        is_target_in = mp.contains(point_target)
+                        self.vs.robot_poly([[], mp_bound], self.ns)
 
                 
                 # if robot is in the polygon
@@ -482,18 +484,17 @@ class ApfMotion(object):
         for nr in new_robots:
             if (not nr.big):
                 templ = self.compute_robot_force(nr)
-            
-            # # check if in the circle and mowing towards it -> stop
-            # if  (not nr.big) and (d_rR < 1.9*nr.r_prec) and (abs(angle_diff2) > np.pi/2): #****** idea
-            #     if (nr.p): 
-            #         self.stop_flag = True
-            #     elif d_rR < 1.0*nr.r_prec:
-            #         self.stop_flag = True
 
             else:
                 f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-                f = f + 2
+                f = f # + 1
                 templ = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
+
+                angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(nr.h_rR)
+                ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
+                f3 = f + 1
+                templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
+                templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -531,7 +532,7 @@ class ApfMotion(object):
             f2 = f + 2
             templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
 
-            f3 = fl
+            f3 = f+2
             templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
             f3_2 = f + 2 
             templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]

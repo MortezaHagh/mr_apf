@@ -6,8 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /Polygon1
-        - /Polygon2
       Splitter Ratio: 0.5058823823928833
     Tree Height: 722
   - Class: rviz/Selection
