@@ -247,6 +247,8 @@ class ApfMotion(object):
         D_rR = []
         AD_h_rR = []
         THETA_rR = []
+        new_robots = []
+        multi_robots = []
         robots_inds = []
         robots_inds_f = {}
         self.new_robots = []
@@ -321,7 +323,6 @@ class ApfMotion(object):
             groups[-1] = list(gset)
 
         # groups - new_robots -----------------------------------
-        new_robots = []
         for g in groups:
             # individual robots
             for i in g:
@@ -417,9 +418,10 @@ class ApfMotion(object):
                 nr.r_start = 2.0 * nr.r_prec
                 nr.z = 4 * self.fix_f * nr.r_prec**4
                 new_robots.append(nr)
+                multi_robots.append(nr)
         
         self.new_robots = new_robots
-        self.vs.robot_data(new_robots, self.ns) 
+        self.vs.robot_data(multi_robots, self.ns) 
         return
 
 
