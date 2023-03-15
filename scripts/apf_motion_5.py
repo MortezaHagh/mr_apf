@@ -63,6 +63,10 @@ class ApfMotion(object):
 
     def init(self, model, robot, init_params):
         # preallocation
+        self.r_x = 0
+        self.r_y = 0
+        self.r_h = 0
+        self.ad_rg_h = 0
         self.phis = []
         self.v_lin = []
         self.v_ang = []
@@ -359,8 +363,9 @@ class ApfMotion(object):
         f = self.fix_f
         theta_rg = np.arctan2(dy, dx)
         ad_rg_h = self.angle_diff(theta_rg, self.r_h)
-        self.goal_theta = theta_rg
+        self.ad_rg_h = ad_rg_h
         self.goal_dist = goal_dist
+        self.goal_theta = theta_rg
         fx = round(f * np.cos(ad_rg_h), 3)
         fy = round(f * np.sin(ad_rg_h), 3)
         self.target_f = [fx, fy]
