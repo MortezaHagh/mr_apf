@@ -248,9 +248,9 @@ class ApfMotion(object):
     def detect_group(self):
 
         groups = []
-        D_rR = []
+        # D_rR = []
         AD_h_rR = []
-        THETA_rR = []
+        # THETA_rR = []
         new_robots = []
         multi_robots = []
         robots_inds = []
@@ -287,14 +287,18 @@ class ApfMotion(object):
             theta_rR = np.arctan2(dy, dx)
             ad_h_rR = self.angle_diff(self.r_h, theta_rR)
             ad_h_rR_abs = abs(ad_h_rR)
-            THETA_rR.append(theta_rR)
+            ad_H_Rr = self.angle_diff(robots_h[i], (theta_rR - np.pi))
+            ad_H_Rr = abs(ad_H_Rr)
+            # THETA_rR.append(theta_rR)
             AD_h_rR.append(ad_h_rR)
-            D_rR.append(d_rR)
+            # D_rR.append(d_rR)
+
             if (d_rR > (2 * self.robot_start_d)):   ##################
                 continue
             
-            if (not robots_reached[i]) or (d_rR < (1 * self.robot_start_d)):
+            if (d_rR < (1 * self.robot_start_d)) or ((not robots_reached[i]) or (ad_h_rR < np.pi/2 or ad_H_Rr < np.pi/2)):                
                 robots_inds.append(i)
+
             
             # individual robots
             if (d_rR<(1 * self.robot_start_d)):
@@ -491,15 +495,21 @@ class ApfMotion(object):
                 templ = self.compute_robot_force(nr)
 
             else:
+                coeff = 1
                 f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
                 f = f # + 1
                 templ = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
-                angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(nr.h_rR)
+                if (abs(nr.h_rR)<(20*np.pi/180)):
+                    coeff = np.sign(self.ad_h_rg*nr.h_rR)
+                angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(nr.h_rR)*coeff
                 ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
                 f3 = f + 1
                 templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
-                templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
+
+                if (nr.r_half<nr.d<nr.r_start):
+                    if (abs(nr.h_rR)<(np.pi/2)):
+                        templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -540,7 +550,7 @@ class ApfMotion(object):
             f2 = f + 2
             templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
 
-            f3 = f+2
+            f3 = f+1
             templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
             f3_2 = f + 2 
             templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
