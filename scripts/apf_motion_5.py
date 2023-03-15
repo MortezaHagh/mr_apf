@@ -288,6 +288,7 @@ class ApfMotion(object):
                 ad_h_rR_0 = self.angle_diff(self.r_h, theta_rR)
                 ad_h_rR = abs(ad_h_rR_0)
                 ad_H_Rr = self.angle_diff(robots_h[i], (theta_rR - np.pi))
+                ad_H_Rr = abs(ad_H_Rr)
 
                 if (not is_goal_close) and (not robots_reached[i]) and (ad_h_rR < np.pi/2 and ad_H_Rr < np.pi/2):
                     flag_1 = True

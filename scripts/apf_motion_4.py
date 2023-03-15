@@ -286,6 +286,7 @@ class ApfMotion(object):
             d_rR = np.sqrt(dx**2 + dy**2)
             theta_rR = np.arctan2(dy, dx)
             ad_h_rR = self.angle_diff(self.r_h, theta_rR)
+            ad_h_rR_abs = abs(ad_h_rR)
             THETA_rR.append(theta_rR)
             AD_h_rR.append(ad_h_rR)
             D_rR.append(d_rR)
