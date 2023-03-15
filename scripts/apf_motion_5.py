@@ -247,6 +247,7 @@ class ApfMotion(object):
         robots_rR = []
         self.new_robots = []
 
+        is_target_in = False
         is_goal_close = False
         self.is_multi = False
         self.stop_flag_multi = False
@@ -379,7 +380,7 @@ class ApfMotion(object):
             robot_f[1] += round(templ[1], 3)
 
         if self.is_multi:  # (not robot_flag) and
-            f = self.fix_f*2  # 8
+            f = self.fix_f*2.5  # 8
             angle_diff = self.angle_diff(self.multi_theta, self.r_h)
             if angle_diff<0:
                 templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
