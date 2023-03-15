@@ -249,8 +249,6 @@ class ApfMotion(object):
 
         is_goal_close = False
         self.is_multi = False
-        is_target_in = False
-        self.is_target_in = False
         self.stop_flag_multi = False
 
         # get data
@@ -334,7 +332,6 @@ class ApfMotion(object):
                 self.stop_flag_multi = True
 
         self.new_robots = new_robots
-        self.is_target_in = is_target_in
         
         # triangle
         polys_min_max = []

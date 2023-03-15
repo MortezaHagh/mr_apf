@@ -8,8 +8,8 @@ from visualization import Viusalize
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 
-from shapely.geometry import Point
-from shapely.geometry.polygon import Polygon, shape, MultiPoint
+from shapely.geometry.polygon import Polygon
+from shapely.geometry import Point, shape, MultiPoint
 
 
 class NewRobots:
@@ -254,7 +254,6 @@ class ApfMotion(object):
         self.new_robots = []
 
         is_goal_close = False
-        self.is_target_in = False
         self.stop_flag_multi = False
 
         self.f_obsts_inds = self.detect_obsts()
@@ -289,6 +288,26 @@ class ApfMotion(object):
             if (d_rR > (2 * self.robot_start_d)):   ##################
                 continue
             robots_inds.append(i)
+            
+            # individual robots
+            if (d_rR<(1 * self.robot_start_d)):
+                    nr = NewRobots()
+                    nr.d = d_rR
+                    nr.x= robots_x[i]
+                    nr.y= robots_y[i]
+                    nr.H = robots_h[i]
+                    nr.h_rR = ad_h_rR
+                    nr.theta_rR = theta_rR
+                    nr.p = robots_priority[i]>0
+                    nr.stop = robots_stopped[i]
+                    nr.reached = robots_reached[i]
+                    rc = self.robot_prec_d
+                    # rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d)
+                    nr.r_prec = rc
+                    nr.r_half = 1.5 * rc
+                    nr.r_start = 2.0 * rc
+                    nr.z = 4 * self.fix_f * rc**4
+                    new_robots.append(nr)
         
         # if there is none robots in proximity
         if len(robots_inds)==0:
@@ -324,32 +343,11 @@ class ApfMotion(object):
 
         # groups - new_robots -----------------------------------
         for g in groups:
-            # individual robots
-            for i in g:
-                if (D_rR[i]<(1 * self.robot_start_d)):
-                    nr = NewRobots()
-                    nr.d = D_rR[i]
-                    nr.x= robots_x[i]
-                    nr.y= robots_y[i]
-                    nr.H = robots_h[i]
-                    nr.h_rR = AD_h_rR[i]
-                    nr.theta_rR = THETA_rR[i]
-                    nr.p = robots_priority[i]>0
-                    nr.stop = robots_stopped[i]
-                    nr.reached = robots_reached[i]
-                    rc = self.robot_prec_d
-                    # rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d)
-                    nr.r_prec = rc
-                    nr.r_half = 1.5 * rc
-                    nr.r_start = 2.0 * rc
-                    nr.z = 4 * self.fix_f * rc**4
-                    new_robots.append(nr)
-
-            # group robots
             if len(g)>1:
                 nr = NewRobots()
                 nr.big = True
                 is_robot_in = False
+                is_target_in = False
 
                 # priorities
                 P = [robots_priority[i]>0 for i in g]
@@ -365,6 +363,8 @@ class ApfMotion(object):
                     mpc = mp.centroid.coords[0]
                     is_robot_in = mp.contains(point_robot)
                     is_target_in = mp.contains(point_target)
+                    self.vs.robot_poly([[], mp_bound], self.ns)
+
                 
                 # if robot is in the polygon
                 if (not is_target_in) and is_robot_in:
@@ -389,15 +389,15 @@ class ApfMotion(object):
                 yy1 = y1 + (d12/np.sqrt(3)) * np.sin(theta+np.pi/6)
                 xx2 = x1 + (d12/np.sqrt(3)) * np.cos(theta-np.pi/6) 
                 yy2 = y1 + (d12/np.sqrt(3)) * np.sin(theta-np.pi/6)
-                dd1 = self.distance(xx1, self.r_x, yy1, self.r_y) 
-                dd2 = self.distance(xx2, self.r_x, yy2, self.r_y)
+                dd1 = self.distance(xx1, yy1, self.r_x, self.r_y) 
+                dd2 = self.distance(xx2, yy2, self.r_x, self.r_y)
                 if (dd1<dd2):
                     xc = xx2
                     yc = yy2
                 else:
                     xc = xx1
                     yc = yy1
-                rc = d12 # /np.sqrt(3)
+                rc = d12/np.sqrt(3) # /np.sqrt(3) d12
                 # rc = self.eval_obst(xc, yc, rc)
 
                 #
@@ -421,7 +421,7 @@ class ApfMotion(object):
                 multi_robots.append(nr)
         
         self.new_robots = new_robots
-        self.vs.robot_data(multi_robots, self.ns) 
+        self.vs.robot_data(multi_robots, self.ns)
         return
 
 
@@ -489,7 +489,8 @@ class ApfMotion(object):
 
             else:
                 f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-                templ = [f * -np.cos(nr.ad_h_rR), f * np.sin(nr.ad_h_rR)]
+                f = f + 2
+                templ = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
