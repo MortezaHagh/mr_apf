@@ -68,7 +68,7 @@ class ApfMotion(object):
         self.r_x = 0
         self.r_y = 0
         self.r_h = 0
-        self.ad_rg_h = 0
+        self.ad_h_rg = 0
         self.phis = []
         self.v_lin = []
         self.v_ang = []
@@ -469,7 +469,7 @@ class ApfMotion(object):
         f = self.fix_f
         theta_rg = np.arctan2(dy, dx)
         ad_rg_h = self.angle_diff(theta_rg, self.r_h)
-        self.ad_rg_h = ad_rg_h
+        self.ad_h_rg = ad_rg_h - np.pi
         self.goal_dist = goal_dist
         self.goal_theta = theta_rg
         fx = round(f * np.cos(ad_rg_h), 3)
@@ -515,6 +515,7 @@ class ApfMotion(object):
                 self.stop_flag = True
 
             #
+            coeff = 1
             templ = []
             templ2 = []
             templ3 = []
@@ -522,10 +523,12 @@ class ApfMotion(object):
 
             # compute force
             ad_h_rR = nr.h_rR
+            if (abs(ad_h_rR)<(10*np.pi/180)):
+                coeff = np.sign(self.ad_h_rg*ad_h_rR)
             ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H)
             ad_C_h = self.angle_diff(angle_turn_R, self.r_h)
-            angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)
+            angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)*coeff
             ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
 
             f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
