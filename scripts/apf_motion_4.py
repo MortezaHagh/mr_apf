@@ -287,7 +287,9 @@ class ApfMotion(object):
             D_rR.append(d_rR)
             if (d_rR > (2 * self.robot_start_d)):   ##################
                 continue
-            robots_inds.append(i)
+            
+            if (not robots_reached[i]):
+                robots_inds.append(i)
             
             # individual robots
             if (d_rR<(1 * self.robot_start_d)):
@@ -314,32 +316,33 @@ class ApfMotion(object):
             return
         
         # generate robots_inds_f (neighbor robots in proximity circle)
-        robots_inds_2 = robots_inds[:]
-        while (len(robots_inds_2)>0):
-            p = robots_inds_2.pop(0)
-            robots_inds_f[p] = [p]
-            if len(robots_inds_2)==0:
-                break
-            for ind_j in robots_inds_2:
-                dx = (robots_x[p] - robots_x[ind_j])
-                dy = (robots_y[p] - robots_y[ind_j])
-                dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
-                if (dist<(self.robot_prec_d*2.5)):     ##### robot_start_d robot_prec_d
-                    robots_inds_f[p].append(ind_j)
+        if (not is_goal_close):
+            robots_inds_2 = robots_inds[:]
+            while (len(robots_inds_2)>0):
+                p = robots_inds_2.pop(0)
+                robots_inds_f[p] = [p]
+                if len(robots_inds_2)==0:
+                    break
+                for ind_j in robots_inds_2:
+                    dx = (robots_x[p] - robots_x[ind_j])
+                    dy = (robots_y[p] - robots_y[ind_j])
+                    dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
+                    if (dist<(self.robot_prec_d*2.5)):     ##### robot_start_d robot_prec_d
+                        robots_inds_f[p].append(ind_j)
 
-        # detect groups 
-        robots_inds_3 = robots_inds[:]
-        while len(robots_inds_3)>0:
-            groups.append([])
-            p = robots_inds_3.pop(0)
-            gset = set(robots_inds_f[p])
-            robots_inds_4 = robots_inds_3[:]
-            for ind_j in robots_inds_4:
-                nset = set(robots_inds_f[ind_j])
-                if len(gset.intersection(nset))>0:
-                    gset = gset.union(nset)
-                    robots_inds_3.remove(ind_j)
-            groups[-1] = list(gset)
+            # detect groups 
+            robots_inds_3 = robots_inds[:]
+            while len(robots_inds_3)>0:
+                groups.append([])
+                p = robots_inds_3.pop(0)
+                gset = set(robots_inds_f[p])
+                robots_inds_4 = robots_inds_3[:]
+                for ind_j in robots_inds_4:
+                    nset = set(robots_inds_f[ind_j])
+                    if len(gset.intersection(nset))>0:
+                        gset = gset.union(nset)
+                        robots_inds_3.remove(ind_j)
+                groups[-1] = list(gset)
 
         # groups - new_robots -----------------------------------
         for g in groups:
