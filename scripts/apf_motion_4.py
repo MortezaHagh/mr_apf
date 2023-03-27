@@ -79,6 +79,7 @@ class ApfMotion(object):
         self.force_or = []
         self.force_ot = []
         self.stop_flag = False
+        self.stop_flag_2 = False
 
         # data
         self.model = model
@@ -164,6 +165,14 @@ class ApfMotion(object):
                 if stop_flag:
                     self.v = 0
                     # self.w = 0
+                
+                if self.stop_flag_2:
+                    req = SharePoses2Request()
+                    req.ind = self.ind
+                    req.stopped = True
+                    self.pose_client(req)
+                    self.v = 0
+                    self.w = 0
 
             # publish cmd
             move_cmd = Twist()
@@ -490,6 +499,7 @@ class ApfMotion(object):
         robot_f = [0, 0]
         self.robot_f = [0,0]
         self.stop_flag = False
+        self.stop_flag_2 = False
         new_robots = self.new_robots
 
         for nr in new_robots:
@@ -497,9 +507,12 @@ class ApfMotion(object):
                 templ = self.compute_robot_force(nr)
 
             else:
+                if (nr.d<nr.r_prec):
+                    self.stop_flag_2 = True
+                    return
+                
                 coeff = 1
                 f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-                # f = f
                 f = min(f, self.fix_f)
                 templ = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
@@ -507,10 +520,10 @@ class ApfMotion(object):
                     coeff = np.sign(self.ad_h_rg*nr.h_rR)
                 angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(nr.h_rR)*coeff
                 ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
-                f3 = f + 1
+                f3 = f + 2
                 templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
-                if (nr.r_half<nr.d<nr.r_start):
+                if (0.8*nr.r_prec<nr.d<nr.r_start):
                     if (abs(nr.h_rR)<(np.pi/2)):
                         templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
 
