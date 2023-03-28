@@ -507,7 +507,7 @@ class ApfMotion(object):
                 templ = self.compute_robot_force(nr)
 
             else:
-                if (nr.d<nr.r_prec):
+                if (nr.d<nr.r_prec/2):
                     self.stop_flag_2 = True
                     return
                 
@@ -523,7 +523,9 @@ class ApfMotion(object):
                 f3 = f + 2
                 templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
-                if (0.8*nr.r_prec<nr.d<nr.r_start):
+                if (nr.r_prec<nr.d):
+                    templ = templ3
+                elif (0.8*nr.r_prec<nr.d<nr.r_start):
                     if (abs(nr.h_rR)<(np.pi/2)):
                         templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
 
