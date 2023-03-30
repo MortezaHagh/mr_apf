@@ -566,11 +566,13 @@ class ApfMotion(object):
             templ = [fl * -np.cos(ad_h_rR), fl * np.sin(ad_h_rR)]
 
             f2 = f + 2
+            f2_2 = f + 4
             templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
+            templ2_2 = [f2_2 * np.cos(ad_C_h), f2_2 * np.sin(ad_C_h)]
 
             f3 = f+1
-            templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
             f3_2 = f + 2 
+            templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
             templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
             
 
@@ -586,7 +588,7 @@ class ApfMotion(object):
             elif (nr.r_prec <nr.d<nr.r_half):
                 if (not nr.reached) and (not nr.stop):
                     if (abs(ad_Rr_H)<(np.pi/2)):
-                        templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
+                        templ = [templ2_2[0]+templ[0], templ2_2[1]+templ[1]]
                 else:
                     if (abs(ad_h_rR)<(np.pi/2)):
                         templ = [templ3_2[0]+templ[0], templ3_2[1]+templ[1]]
