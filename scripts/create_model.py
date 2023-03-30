@@ -4,11 +4,11 @@ from model_inputs import ModelInputs
 
 
 class RobotI(object):
-    def __init__(self, inputs):
-        self.xs = inputs.xs 
-        self.ys = inputs.ys
-        self.xt = inputs.xt
-        self.yt = inputs.yt
+    def __init__(self, inputs, path_unit):
+        self.xs = [x*path_unit/0.5 for x in inputs.xs] 
+        self.ys = [y*path_unit for y in inputs.ys]
+        self.xt = [x*path_unit for x in inputs.xt]
+        self.yt = [y*path_unit for y in inputs.yt]
         self.ids = inputs.ids
         self.ns = ["/r"+str(id) for id in inputs.ids]
         self.robot_count = len(inputs.ids)
@@ -69,7 +69,7 @@ class CreateModel(object):
             self.robots.append(Robot(xs[i], ys[i], xt[i], yt[i], heading[i], i, path_unit))
 
         # robot I
-        self.robots_i = RobotI(inputs)
+        self.robots_i = RobotI(inputs, path_unit)
 
 # -------------------------------- __main__  -----------------------------------
 
