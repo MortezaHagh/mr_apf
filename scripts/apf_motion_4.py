@@ -349,7 +349,7 @@ class ApfMotion(object):
                         dx = (robots_x[p] - robots_x[ind_j])
                         dy = (robots_y[p] - robots_y[ind_j])
                         dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
-                        if (dist<(self.robot_prec_d*2.5)):     ##### robot_start_d robot_prec_d
+                        if (dist<(self.robot_prec_d*2.1)):     ##### robot_start_d robot_prec_d
                             robots_inds_f[p].append(ind_j)
 
             # detect groups 
