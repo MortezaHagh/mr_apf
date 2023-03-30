@@ -305,7 +305,8 @@ class ApfMotion(object):
             if (d_rR > (2 * self.robot_start_d)):
                 continue
             
-            # if (d_rR < (1 * self.robot_start_d)) or ((not robots_reached[i]) or (ad_h_rR < np.pi/2 or ad_H_Rr < np.pi/2)):                
+            # if (not robots_reached[i]) or (d_rR < (1 * self.robot_start_d)):                
+            # if (d_rR < (1 * self.robot_start_d)) or ((not robots_reached[i]) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr < np.pi/2)):                
             
             if (not robots_reached[i]) or (d_rR < (1 * self.robot_start_d)):                
                 robots_inds.append(i)
