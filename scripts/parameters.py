@@ -44,4 +44,4 @@ class Params(object):
         self.dis_tresh = 0.05 #0.2
         self.theta_thresh = 90*np.pi/180
 
-        self.path_unit = 0.5
+        self.path_unit = 1.0

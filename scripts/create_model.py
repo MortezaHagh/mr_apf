@@ -5,7 +5,7 @@ from model_inputs import ModelInputs
 
 class RobotI(object):
     def __init__(self, inputs, path_unit):
-        self.xs = [x*path_unit/0.5 for x in inputs.xs] 
+        self.xs = [x*path_unit for x in inputs.xs] 
         self.ys = [y*path_unit for y in inputs.ys]
         self.xt = [x*path_unit for x in inputs.xt]
         self.yt = [y*path_unit for y in inputs.yt]
@@ -39,15 +39,16 @@ class Obstacles(object):
 
 # ---------------------------- CreateModel ----------------------------------
 class CreateModel(object):
-    def __init__(self, map_id=-1, path_unit=0.8):
+    def __init__(self, map_id=-1, path_unit=1.0):
 
         print('Create Base Model')
         
         # model inputs
-        inputs = ModelInputs(map_id)
+        inputs = ModelInputs(map_id, path_unit)
 
         #
         self.path_unit = path_unit
+        path_unit = 1.0
 
         # Map
         map = Map(inputs, path_unit)

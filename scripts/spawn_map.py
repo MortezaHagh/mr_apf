@@ -8,7 +8,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 
 class Initialize(object):
 
-    def __init__(self, model, path_unit=0.5):
+    def __init__(self, model, path_unit=1.0):
 
         self.model = model
         self.obsts = {'x': [], 'y': '', 'count': 0}
@@ -47,7 +47,7 @@ class Initialize(object):
 
 # --------------------------------------------------------------------------------------------
 
-def Spawning(model, path_unit=0.8):
+def Spawning(model, path_unit=1.0):
     
     # get data
     init_obj = Initialize(model, path_unit)

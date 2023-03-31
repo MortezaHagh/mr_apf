@@ -1,13 +1,30 @@
 
 
 class ModelInputs():
-    def __init__(self, map_id=-1):
+    def __init__(self, map_id=-1, path_unit=1.0):
         print("Inputs for creating model")
 
         if map_id == 1:
             self.map1()
         elif map_id == -1:
             self.map_10()
+
+        self.apply_path_unit(path_unit)
+
+    def apply_path_unit(self, path_unit):
+        self.lim = self.lim * path_unit
+        self.x_min = self.x_min * path_unit
+        self.y_min = self.y_min * path_unit
+        self.x_max = self.x_max * path_unit
+        self.y_max = self.y_max * path_unit
+
+        self.x_obst = [x * path_unit for x in self.x_obst]
+        self.y_obst = [y * path_unit for y in self.y_obst]
+
+        self.xs = [x * path_unit for x in self.xs]
+        self.ys = [y * path_unit for y in self.ys]
+        self.xt = [x * path_unit for x in self.xt]
+        self.yt = [y * path_unit for y in self.yt]
 
 
     def map0(self):
