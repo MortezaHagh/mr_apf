@@ -112,7 +112,7 @@ class ApfMotion(object):
         self.fix_f = 4
         self.fix_f2 = 10
         self.obst_r = 0.11
-        self.prec_d = 0.06
+        self.prec_d = 0.07
         self.robot_r = 0.22
 
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
@@ -127,7 +127,7 @@ class ApfMotion(object):
         self.robot_z = 4 * self.fix_f*self.robot_prec_d**4
 
         self.w_coeff = 1                        # init_params.w_coeff      # angular velocity coeff
-        self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
+        self.dis_tresh = 0.07                   # init_params.dis_tresh  # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
     # --------------------------  exec_cb  ---------------------------#
@@ -544,7 +544,7 @@ class ApfMotion(object):
         self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
         self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
 
-# -----------------------  compute_robot_force  ----------------------------#
+    # -----------------------  compute_robot_force  ----------------------------#
 
     def compute_robot_force(self, nr):
         if (nr.d< nr.r_start):
@@ -578,7 +578,7 @@ class ApfMotion(object):
             templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
             templ2_2 = [f2_2 * np.cos(ad_C_h), f2_2 * np.sin(ad_C_h)]
 
-            f3 = f+1
+            f3 = f + 1
             f3_2 = f + 2 
             templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
             templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
