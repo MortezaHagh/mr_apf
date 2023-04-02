@@ -38,7 +38,7 @@ class Run():
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
-        path_unit = 0.5
+        path_unit = 0.7
         self.model = CreateModel(map_id=-1, path_unit = path_unit)                # check 2 !!!!!!!!!! last
         self.count = self.model.robot_count
         self.paths = {}
@@ -50,7 +50,8 @@ class Run():
 
         # visualize
         visualize = Viusalize(self.model)
-        visualize.init_obsts()
+        # visualize.init_obsts()
+        # visualize.init_obsts_prec()
 
         # # init_robot service server ------------------------------------------------------
         print("Initializing Central Service Server (init_apf_srv) for adding robots ... ")

@@ -109,7 +109,7 @@ class ApfMotion(object):
         self.fix_f = 4
         self.fix_f2 = 10
         self.obst_r = 0.11
-        self.prec_d = 0.06
+        self.prec_d = 0.07
         self.robot_r = 0.22
 
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
@@ -244,7 +244,8 @@ class ApfMotion(object):
     # -----------------------  detect_group  ----------------------------#
 
     def detect_group(self):
-
+        
+        c_r = 2.5
         mp_0_bound = []
         new_robots = []
         robots_inds = []
@@ -270,7 +271,7 @@ class ApfMotion(object):
         robots_priority = resp_poses.priority
 
         goal_dist = self.distance(self.r_x, self.r_y, self.goal_x, self.goal_y)
-        if (goal_dist < (2*self.robot_start_d)):
+        if (goal_dist < (c_r*self.robot_start_d)):
             is_goal_close = True
 
         # detect polys
@@ -283,7 +284,7 @@ class ApfMotion(object):
             dy = (robots_y[i] - self.r_y)
             d_rR = np.sqrt(dx**2 + dy**2)
              
-            if (d_rR < (2.5 * self.robot_start_d)):   #####
+            if (d_rR < (c_r * self.robot_start_d)):   #####
                 theta_rR = np.arctan2(dy, dx)
                 ad_h_rR_0 = self.angle_diff(self.r_h, theta_rR)
                 ad_h_rR = abs(ad_h_rR_0)
@@ -395,9 +396,9 @@ class ApfMotion(object):
                 robot_f_multi[0] += round(templ[0], 3)
                 robot_f_multi[1] += round(templ[1], 3)
 
-        if not self.near_robot:
-            robot_f[0] += robot_f_multi[0]
-            robot_f[1] += robot_f_multi[1]
+        # if not self.near_robot:
+        robot_f[0] += robot_f_multi[0]
+        robot_f[1] += robot_f_multi[1]
 
         coeff_f = 1
         self.robot_f[0] += round(robot_f[0] * coeff_f, 3)

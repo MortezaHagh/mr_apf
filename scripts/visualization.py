@@ -51,9 +51,9 @@ class Viusalize:
         # self.robot_data_pub = rospy.Publisher("/robot_data", PointCloud, queue_size=10)
 
         # initialize obst markers and publish
-        # self.init_obsts()
-        # self.init_obsts_prec()
-        # self.init_obsts_start()
+        self.init_obsts()
+        self.init_obsts_prec()
+        self.init_obsts_start()
 
         self.thetas = np.linspace(0, np.pi*2, 180)
         print("Viusalize init done.")
@@ -264,14 +264,15 @@ class Viusalize:
 
 
     def publish_once(self, publisher, data, notife): 
-        while not rospy.is_shutdown():
-            connections = publisher.get_num_connections() 
-            if connections > 0: 
-                publisher.publish(data) 
-                break 
-            else: 
-                print(notife) 
-                self.rate.sleep()
+        publisher.publish(data) 
+        # while not rospy.is_shutdown():
+        #     connections = publisher.get_num_connections() 
+        #     if connections > 0: 
+        #         publisher.publish(data) 
+        #         break 
+        #     else: 
+        #         print(notife) 
+        #         self.rate.sleep()
 
     
     def robot_poly(self, pols, ns):
