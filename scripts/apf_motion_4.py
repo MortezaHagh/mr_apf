@@ -423,7 +423,7 @@ class ApfMotion(object):
                 else:
                     xc = xx1
                     yc = yy1
-                rc = d12/np.sqrt(3) # /np.sqrt(3) d12
+                rc = d12 # /np.sqrt(3) d12
                 # rc = self.eval_obst(xc, yc, rc)
 
                 #
@@ -513,22 +513,24 @@ class ApfMotion(object):
                     return
                 
                 coeff = 1
-                f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-                f = min(f, self.fix_f)
+                f1 = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
+                # f = min(f, self.fix_f)
+                f = f1 + 4
                 templ = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
-                if (abs(nr.h_rR)<(20*np.pi/180)):
+                if (abs(nr.h_rR)<(45*np.pi/180)):
                     coeff = np.sign(self.ad_h_rg*nr.h_rR)
                 angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(nr.h_rR)*coeff
                 ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
-                f3 = f + 2
+                f3 = f1 + 5
                 templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
                 if (nr.r_prec<nr.d):
                     templ = templ3
-                elif (0.8*nr.r_prec<nr.d<nr.r_start):
-                    if (abs(nr.h_rR)<(np.pi/2)):
-                        templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
+                elif (0.8*nr.r_prec<nr.d<nr.r_prec):
+                    templ = templ3
+                    # if (abs(nr.h_rR)<(np.pi/2)):
+                    #     templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
