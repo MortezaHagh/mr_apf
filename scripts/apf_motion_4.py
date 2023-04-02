@@ -423,7 +423,7 @@ class ApfMotion(object):
                 else:
                     xc = xx1
                     yc = yy1
-                rc = d12 # /np.sqrt(3) d12
+                rc = d12/np.sqrt(2) # /np.sqrt(3) d12
                 # rc = self.eval_obst(xc, yc, rc)
 
                 # 
