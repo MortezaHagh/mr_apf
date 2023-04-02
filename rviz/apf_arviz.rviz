@@ -586,7 +586,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.019999999552965164
       Style: Flat Squares
-      Topic: /r1/robot_data
+      Topic: /r4/robot_data
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -635,7 +635,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.528704643249512
+      Distance: 4.447683811187744
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1

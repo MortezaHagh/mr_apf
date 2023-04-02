@@ -283,9 +283,10 @@ class ApfMotion(object):
         robots_stopped = resp_poses.stopp
         robots_reached = resp_poses.reached
         robots_priority = resp_poses.priority
-
+        
+        c_r = 2.5
         goal_dist = self.distance(self.r_x, self.r_y, self.goal_x, self.goal_y)
-        if (goal_dist < (2*self.robot_start_d)):
+        if (goal_dist < (c_r*self.robot_start_d)):
             is_goal_close = True
 
         # get indices of robots in proximity circle
@@ -302,7 +303,7 @@ class ApfMotion(object):
             # THETA_rR.append(theta_rR)
             # D_rR.append(d_rR)
 
-            if (d_rR > (2 * self.robot_start_d)):
+            if (d_rR > (c_r * self.robot_start_d)):
                 continue
             
             # if (not robots_reached[i]) or (d_rR < (1 * self.robot_start_d)):                
@@ -349,7 +350,7 @@ class ApfMotion(object):
                         dx = (robots_x[p] - robots_x[ind_j])
                         dy = (robots_y[p] - robots_y[ind_j])
                         dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
-                        if (dist<(self.robot_prec_d*2.1)):     ##### robot_start_d robot_prec_d
+                        if (dist<(self.robot_prec_d*2.2)):     ##### robot_start_d robot_prec_d
                             robots_inds_f[p].append(ind_j)
 
             # detect groups 
@@ -578,8 +579,8 @@ class ApfMotion(object):
             templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
             templ2_2 = [f2_2 * np.cos(ad_C_h), f2_2 * np.sin(ad_C_h)]
 
-            f3 = f + 1
-            f3_2 = f + 2 
+            f3 = f + 2
+            f3_2 = f + 4 
             templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
             templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
             
