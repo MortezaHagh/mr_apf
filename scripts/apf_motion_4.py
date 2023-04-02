@@ -68,7 +68,7 @@ class ApfMotion(object):
         self.r_x = 0
         self.r_y = 0
         self.r_h = 0
-        self.ad_h_rg = 0
+        self.theta_rg = 0
         self.phis = []
         self.v_lin = []
         self.v_ang = []
@@ -492,8 +492,9 @@ class ApfMotion(object):
         # f = self.zeta * goal_dist
         f = self.fix_f
         theta_rg = np.arctan2(dy, dx)
+        self.theta_rg = theta_rg
         ad_rg_h = self.angle_diff(theta_rg, self.r_h)
-        self.ad_h_rg = ad_rg_h - np.pi
+        # self.ad_h_rg = ad_rg_h - np.pi
         self.goal_dist = goal_dist
         self.goal_theta = theta_rg
         fx = round(f * np.cos(ad_rg_h), 3)
@@ -525,7 +526,8 @@ class ApfMotion(object):
                 templ = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
                 if (abs(nr.h_rR)<(45*np.pi/180)):
-                    coeff = np.sign(self.ad_h_rg*nr.h_rR)
+                    ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
+                    coeff = np.sign(ad_rg_rR*nr.h_rR)
                 angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.h_rR)*coeff
                 ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
                 f3 = f1 + 5
@@ -562,7 +564,8 @@ class ApfMotion(object):
             # compute force
             ad_h_rR = nr.h_rR
             if (abs(ad_h_rR)<(10*np.pi/180)):
-                coeff = np.sign(self.ad_h_rg*ad_h_rR)
+                ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
+                coeff = np.sign(ad_rg_rR*nr.h_rR)
             ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H)
             ad_C_h = self.angle_diff(angle_turn_R, self.r_h)
@@ -606,23 +609,20 @@ class ApfMotion(object):
     # -----------------------  f_obstacle  ----------------------------#
 
     def f_obstacle(self):
-        obst_flag = False
-        self.obs_f = [0, 0]
         obs_f = [0, 0]
+        self.obs_f = [0, 0]
+        
         for i in self.obs_ind_main:
-            dy = -(self.obs_y[i] - self.r_y)
-            dx = -(self.obs_x[i] - self.r_x)
+            dy = (self.obs_y[i] - self.r_y)
+            dx = (self.obs_x[i] - self.r_x)
             d_ro = np.sqrt(dx**2 + dy**2)
 
             if d_ro > self.obst_start_d:
                 continue
             
-            obst_flag = True
-            theta = np.arctan2(dy, dx)
-            theta = self.mod_angle(theta)
-            r_theta = self.mod_angle(self.r_h)
-            angle_diff = theta - r_theta
-            angle_diff2 = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+            theta_ro = np.arctan2(dy, dx)
+            ad_h_ro = self.angle_diff(self.r_h, theta_ro)
+            angle_diff2 = ad_h_ro
 
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff2), f * np.sin(angle_diff2)]
@@ -650,9 +650,8 @@ class ApfMotion(object):
             obs_f[1] += round(templ[1], 3)
 
         coeff_f = 1
-        if obst_flag:
-            self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
-            self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
+        self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
+        self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
 
     # ------------------------- check_topic -- get_odom  ------------------------------------#
 
