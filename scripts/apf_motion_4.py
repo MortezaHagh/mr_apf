@@ -587,7 +587,7 @@ class ApfMotion(object):
             # adjust heading
             if (nr.r_half<nr.d<nr.r_start):
                 if (not nr.reached) and (not nr.stop):
-                    if (abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
+                    if (abs(ad_h_rR)<np.pi/2) or (abs(ad_Rr_H)<(np.pi/2)):
                         templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
                 else:
                     if (abs(ad_h_rR)<(np.pi/2)):
