@@ -189,22 +189,22 @@ class ApfMotion(object):
 
     def cal_vel(self, f_r, f_theta, theta):
 
-        # if f_r < 0:
-        #     v = 0
-        # else:
-        #     v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
+        if f_r < 0:
+            v = 0
+        else:
+            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
 
-        # w = 1 * self.w_max * f_theta / self.fix_f
+        w = 1 * self.w_max * f_theta / self.fix_f
 
-        # if (v==0) and abs(w)<0.03:
-        #     v = self.v_min_2*2
-
-        thresh_theta = np.pi/3
-        w = 4 * self.w_max * theta / (np.pi/5)
-        v = 2 * self.v_max * (1-abs(theta)/thresh_theta)
-
-        if (v<self.v_min_2) and abs(w)<0.03:
+        if (v==0) and abs(w)<0.03:
             v = self.v_min_2*2
+
+        # thresh_theta = np.pi/3
+        # w = 4 * self.w_max * theta / (np.pi/5)
+        # v = 2 * self.v_max * (1-abs(theta)/thresh_theta)
+
+        # if (v<self.v_min_2) and abs(w)<0.03:
+        #     v = self.v_min_2*2
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
