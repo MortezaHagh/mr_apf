@@ -124,7 +124,7 @@ class ApfMotion(object):
         self.robot_z = 4 * self.fix_f*self.robot_prec_d**4
 
         self.w_coeff = 1                        # init_params.w_coeff      # angular velocity coeff
-        self.dis_tresh = init_params.dis_tresh  # distance thresh to finish
+        self.dis_tresh = 0.07                   # init_params.dis_tresh  # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
     # --------------------------  exec_cb  ---------------------------#
@@ -283,16 +283,16 @@ class ApfMotion(object):
             dy = (robots_y[i] - self.r_y)
             d_rR = np.sqrt(dx**2 + dy**2)
              
-            if (d_rR < (2 * self.robot_start_d)):   #####
+            if (d_rR < (2.5 * self.robot_start_d)):   #####
                 theta_rR = np.arctan2(dy, dx)
                 ad_h_rR_0 = self.angle_diff(self.r_h, theta_rR)
                 ad_h_rR = abs(ad_h_rR_0)
                 ad_H_Rr = self.angle_diff(robots_h[i], (theta_rR - np.pi))
                 ad_H_Rr = abs(ad_H_Rr)
 
-                if (not is_goal_close) and (not robots_reached[i]) and (ad_h_rR < np.pi/2 or ad_H_Rr < np.pi/2):
+                if (not is_goal_close) and (not robots_reached[i]) and (ad_h_rR < np.pi/2 and ad_H_Rr < np.pi/2):
                     flag_1 = True
-                if (not is_goal_close) and (not robots_reached[i]) and (ad_h_rR < np.pi/2 or ad_H_Rr < np.pi/2):
+                if (not is_goal_close) and (not robots_reached[i]) and (ad_h_rR < np.pi/2 and ad_H_Rr < np.pi/2):
                     flag_2 = True
 
                 if flag_1:
@@ -376,8 +376,10 @@ class ApfMotion(object):
     def f_robots(self):
 
         robot_f = [0, 0]
+        robot_f_multi = [0, 0]
         self.robot_f = [0,0]
         self.stop_flag = False
+        self.near_robot = False
         new_robots = self.new_robots
 
         for nr in new_robots:
@@ -386,12 +388,16 @@ class ApfMotion(object):
             robot_f[1] += round(templ[1], 3)
 
         if self.is_multi:  # (not robot_flag) and
-            f = self.fix_f*1.5  # 8
+            f = self.fix_f*2  # 8
             angle_diff = self.angle_diff(self.multi_theta, self.r_h)
             if angle_diff<0:
                 templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
-                robot_f[0] += round(templ[0], 3)
-                robot_f[1] += round(templ[1], 3)
+                robot_f_multi[0] += round(templ[0], 3)
+                robot_f_multi[1] += round(templ[1], 3)
+
+        if not self.near_robot:
+            robot_f[0] += robot_f_multi[0]
+            robot_f[1] += robot_f_multi[1]
 
         coeff_f = 1
         self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
@@ -402,6 +408,7 @@ class ApfMotion(object):
     def compute_robot_force(self, nr):
         if (nr.d< nr.r_start):
             if (nr.d< nr.r_prec) and (abs(nr.h_rR)<np.pi/2):
+                self.near_robot = True
                 self.stop_flag = True
 
             #
@@ -427,11 +434,13 @@ class ApfMotion(object):
             templ = [fl * -np.cos(ad_h_rR), fl * np.sin(ad_h_rR)]
 
             f2 = f + 2
+            f2_2 = f + 3
             templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
+            templ2_2 = [f2_2 * np.cos(ad_C_h), f2_2 * np.sin(ad_C_h)]
 
-            f3 = f+2
+            f3 = f + 2
+            f3_2 = f + 3 
             templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
-            f3_2 = f + 2 
             templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
             
 
@@ -445,9 +454,10 @@ class ApfMotion(object):
                         templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
 
             elif (nr.r_prec <nr.d<nr.r_half):
+                self.near_robot = True
                 if (not nr.reached) and (not nr.stop):
                     if (abs(ad_Rr_H)<(np.pi/2)):
-                        templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
+                        templ = [templ2_2[0]+templ[0], templ2_2[1]+templ[1]]
                 else:
                     if (abs(ad_h_rR)<(np.pi/2)):
                         templ = [templ3_2[0]+templ[0], templ3_2[1]+templ[1]]
