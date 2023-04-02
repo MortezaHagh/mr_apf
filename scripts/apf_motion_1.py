@@ -145,9 +145,16 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        # if (f_r<0) and abs(w)<3*np.pi/180:
-        #     v = self.v_min_2
+        if (f_r<0) and abs(w)<3*np.pi/180:
+            v = self.v_min_2
 
+        # thresh_theta = np.pi/3
+        # w = 4 * self.w_max * theta / (np.pi/6)
+        # v = 3 * self.v_max * (1-abs(theta)/thresh_theta)
+
+        if (v<self.v_min_2) and abs(w)<0.03:
+            v = self.v_min_2*2
+            
         v = min(v, self.v_max)
         v = max(v, self.v_min)
         wa = min(abs(w), self.w_max)

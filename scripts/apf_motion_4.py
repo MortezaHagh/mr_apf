@@ -200,22 +200,22 @@ class ApfMotion(object):
 
     def cal_vel(self, f_r, f_theta, theta):
 
-        # if f_r < 0:
-        #     v = 0
-        # else:
-        #     v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
+        if f_r < 0:
+            v = 0
+        else:
+            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
 
-        # w = 1 * self.w_max * f_theta / self.fix_f
+        w = 1 * self.w_max * f_theta / self.fix_f
 
-        # if (v==0) and abs(w)<0.03:
+        if (v==0) and abs(w)<0.03:
+            v = self.v_min_2*4
+
+        # thresh_theta = np.pi/3
+        # w = 4 * self.w_max * theta / (np.pi/6)
+        # v = 3 * self.v_max * (1-abs(theta)/thresh_theta)
+
+        # if (v<self.v_min_2) and abs(w)<0.03:
         #     v = self.v_min_2*2
-
-        thresh_theta = np.pi/3
-        w = 4 * self.w_max * theta / (np.pi/5)
-        v = 2 * self.v_max * (1-abs(theta)/thresh_theta)
-
-        if (v<self.v_min_2) and abs(w)<0.03:
-            v = self.v_min_2*2
 
         v = min(v, self.v_max)
         v = max(v, self.v_min)
@@ -426,6 +426,12 @@ class ApfMotion(object):
                 rc = d12 # /np.sqrt(3) d12
                 # rc = self.eval_obst(xc, yc, rc)
 
+                # 
+                d_tc = self.distance(self.goal_x, self.goal_y, xc, yc)
+                if (d_tc<rc):
+                    is_target_in = True
+                    continue
+
                 #
                 dx = xc - self.r_x
                 dy = yc - self.r_y
@@ -514,13 +520,12 @@ class ApfMotion(object):
                 
                 coeff = 1
                 f1 = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-                # f = min(f, self.fix_f)
                 f = f1 + 4
                 templ = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
                 if (abs(nr.h_rR)<(45*np.pi/180)):
                     coeff = np.sign(self.ad_h_rg*nr.h_rR)
-                angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(nr.h_rR)*coeff
+                angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.h_rR)*coeff
                 ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
                 f3 = f1 + 5
                 templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
@@ -543,7 +548,7 @@ class ApfMotion(object):
 
     def compute_robot_force(self, nr):
         if (nr.d< nr.r_start):
-            if (nr.d< nr.r_prec) and (abs(nr.h_rR)<np.pi/2):
+            if (nr.d< nr.r_prec) and (abs(nr.h_rR)<(np.pi/2+np.pi/10)):
                 self.stop_flag = True
 
             #
