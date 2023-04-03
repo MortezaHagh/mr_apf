@@ -87,26 +87,26 @@ def Spawning(model, path_unit=1.0):
     print("spawning done!")
     # --------------------------------------------------------------------------------------------
 
-    # spawn obstacles
-    # spawn_sdf_model sercice
-    print("Waiting for gazebo spawn_sdf_model services for obstacles...")
-    rospy.wait_for_service("gazebo/spawn_sdf_model")
-    spawn_obst = rospy.ServiceProxy("gazebo/spawn_sdf_model", SpawnModel)
+    # # spawn obstacles
+    # # spawn_sdf_model sercice
+    # print("Waiting for gazebo spawn_sdf_model services for obstacles...")
+    # rospy.wait_for_service("gazebo/spawn_sdf_model")
+    # spawn_obst = rospy.ServiceProxy("gazebo/spawn_sdf_model", SpawnModel)
 
-    # model file
-    with open(pkg_path+'/models/cylinder1/model2.sdf', 'r') as file2:
-        model_file = file2.read()
+    # # model file
+    # with open(pkg_path+'/models/cylinder1/model2.sdf', 'r') as file2:
+    #     model_file = file2.read()
 
-    # spawn models
-    name = 'cylinder'
-    model_namespace = ''
-    reference_frame = 'world'
+    # # spawn models
+    # name = 'cylinder'
+    # model_namespace = ''
+    # reference_frame = 'world'
 
-    for i in range(obstacles['count']):
-        pose = Point(x=obstacles['x'][i], y=obstacles['y'][i], z=0)
-        init_pose = Pose(pose, Quaternion())
-        model_name = name+str(i)
-        spawn_obst(model_name, model_file, model_namespace,
-                init_pose, reference_frame)
-        rospy.sleep(0.2)
+    # for i in range(obstacles['count']):
+    #     pose = Point(x=obstacles['x'][i], y=obstacles['y'][i], z=0)
+    #     init_pose = Pose(pose, Quaternion())
+    #     model_name = name+str(i)
+    #     spawn_obst(model_name, model_file, model_namespace,
+    #             init_pose, reference_frame)
+    #     rospy.sleep(0.2)
 
