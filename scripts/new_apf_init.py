@@ -11,7 +11,7 @@ from  send_goals import SendGoal
 from plot_model import plot_model
 from visualization import Viusalize
 # from broadcaster import BroadCast
-# from plot_forces import plot_forces
+from plot_forces import plot_forces
 from create_model import CreateModel
 from call_apf_service import call_apf_service
 from apf_central_service import InitRobotService
@@ -21,7 +21,7 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test_id = 1                              # check 2 !!!!!!!!!!
+        self.test_id = 7                              # check 2 !!!!!!!!!!
         self.test = "T" + str(self.test_id)
         # rospack = rospkg.RosPack()
         # pkg_path = "rospack.get_path('apf')"

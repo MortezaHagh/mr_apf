@@ -14,7 +14,7 @@
 
   <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 odom r1/odom 100" />
-  <!-- <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 odom r2/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 odom r2/odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0 0 0 0 0 0 1 odom r3/odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link4_broadcaster" args="0 0 0 0 0 0 1 odom r4/odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link5_broadcaster" args="0 0 0 0 0 0 1 odom r5/odom 100" />
@@ -22,7 +22,7 @@
   <node pkg="tf" type="static_transform_publisher" name="link7_broadcaster" args="0 0 0 0 0 0 1 odom r7/odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link8_broadcaster" args="0 0 0 0 0 0 1 odom r8/odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link9_broadcaster" args="0 0 0 0 0 0 1 odom r9/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link10_broadcaster" args="0 0 0 0 0 0 1 odom r10/odom 100" /> -->
+  <node pkg="tf" type="static_transform_publisher" name="link10_broadcaster" args="0 0 0 0 0 0 1 odom r10/odom 100" />
 
   <include file="$(find apf)/launch/launch_states_publisher.launch"/> 
 

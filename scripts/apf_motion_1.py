@@ -83,7 +83,7 @@ class ApfMotion(object):
         self.v_min = 0.0        # init_params.linear_min_speed
         self.w_min = 0.0        # init_params.angular_min_speed
         self.w_max = 1.0        # init_params.angular_max_speed
-        self.v_min_2 = 0.02     # init_params.linear_min_speed_2
+        self.v_min_2 = 0.05     # init_params.linear_min_speed_2
 
         # settings
         self.zeta = 1
@@ -139,7 +139,18 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
+            n = 3
+            if self.ind==n: print("f: ", self.stop_flag)
+            if self.ind==n: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
+            if self.ind==n: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
+            if self.ind==n: print(" ------------------------------------ ")
             self.rate.sleep()
+        
+        req = SharePoses2Request()
+        req.ind = self.ind
+        req.reached = True
+        self.pose_client(req)
+        self.stop()
 
         self.stop()
 
@@ -154,8 +165,8 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        if (v==0) and abs(w)<0.03:
-            v = self.v_min_2
+        if (v==0) and abs(w)<0.3:
+            v = self.v_min_2*4
 
         # thresh_theta = np.pi/3
         # w = 4 * self.w_max * theta / (np.pi/6)
@@ -235,7 +246,7 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
 
-            if d_ro < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff) > np.pi/2:
+            if (not resp.reached) and d_ro < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff) > np.pi/2:
                 self.stop_flag = True
                 break
 
