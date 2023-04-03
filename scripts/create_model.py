@@ -39,12 +39,12 @@ class Obstacles(object):
 
 # ---------------------------- CreateModel ----------------------------------
 class CreateModel(object):
-    def __init__(self, map_id=-1, path_unit=1.0):
+    def __init__(self, map_id=-1, path_unit=1.0, robot_count = 1):
 
         print('Create Base Model')
         
         # model inputs
-        inputs = ModelInputs(map_id, path_unit)
+        inputs = ModelInputs(map_id, path_unit, robot_count)
 
         #
         self.path_unit = path_unit

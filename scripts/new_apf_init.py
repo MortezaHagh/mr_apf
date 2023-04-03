@@ -21,7 +21,7 @@ class Run():
     def __init__(self):
 
         # # results
-        self.test_id = 10                              # check 2 !!!!!!!!!!
+        self.test_id = 1                              # check 2 !!!!!!!!!!
         self.test = "T" + str(self.test_id)
         # rospack = rospkg.RosPack()
         # pkg_path = "rospack.get_path('apf')"
@@ -39,7 +39,8 @@ class Run():
 
         # model
         path_unit = 0.7
-        self.model = CreateModel(map_id=-1, path_unit = path_unit)                # check 2 !!!!!!!!!! last
+        robot_count = self.test_id
+        self.model = CreateModel(map_id=-1, path_unit = path_unit, robot_count=robot_count)
         self.count = self.model.robot_count
         self.paths = {}
         self.times = {}
