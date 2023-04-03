@@ -611,7 +611,7 @@ class ApfMotion(object):
         obs_f = [0, 0]
         self.obs_f = [0, 0]
         
-        for i in self.obs_ind_main:
+        for i in self.f_obsts_inds:
             dy = (self.obs_y[i] - self.r_y)
             dx = (self.obs_x[i] - self.r_x)
             d_ro = np.sqrt(dx**2 + dy**2)
@@ -622,6 +622,7 @@ class ApfMotion(object):
             if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
                 self.stop_flag = True
 
+            coeff = 1
             if (abs(ad_h_ro)<(10*np.pi/180)):
                 ad_rg_ro = self.angle_diff(self.theta_rg,  theta_ro)
                 coeff = np.sign(ad_rg_ro*ad_h_ro)
@@ -632,14 +633,13 @@ class ApfMotion(object):
 
 
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
-            templ = [f * np.cos(ad_h_ro), f * np.sin(ad_h_ro)]
+            templ = [f * -np.cos(ad_h_ro), f * np.sin(ad_h_ro)]
 
             # fo = f + 2
             # templo = [fo * np.cos(ad_c_o), fo * np.sin(ad_c_o)]
             
             ft = f + 2
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
-
 
             if (self.obst_prec_d<d_ro):
                 if (abs(ad_h_ro)<np.pi/2):
