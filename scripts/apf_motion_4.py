@@ -645,7 +645,6 @@ class ApfMotion(object):
                 if (abs(ad_h_ro)<np.pi/2):
                         templ = [templt[0]+templ[0], templt[1]+templ[1]]
 
-
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
 
