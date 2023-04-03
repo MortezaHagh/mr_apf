@@ -53,7 +53,7 @@ class Viusalize:
         # initialize obst markers and publish
         self.init_obsts()
         self.init_obsts_prec()
-        self.init_obsts_start()
+        # self.init_obsts_start()
 
         self.thetas = np.linspace(0, np.pi*2, 180)
         print("Viusalize init done.")

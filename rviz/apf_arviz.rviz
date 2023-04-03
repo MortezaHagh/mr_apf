@@ -77,10 +77,6 @@ Visualization Manager:
           Value: false
         r1/wheel_right_link:
           Value: false
-        r10/base_footprint:
-          Value: true
-        r10/odom:
-          Value: true
         r2/base_footprint:
           Value: true
         r2/base_link:
@@ -90,12 +86,6 @@ Visualization Manager:
         r2/caster_back_right_link:
           Value: false
         r2/imu_link:
-          Value: false
-        r2/odom:
-          Value: true
-        r2/wheel_left_link:
-          Value: false
-        r2/wheel_right_link:
           Value: false
         r3/base_footprint:
           Value: true
@@ -107,12 +97,6 @@ Visualization Manager:
           Value: false
         r3/imu_link:
           Value: false
-        r3/odom:
-          Value: true
-        r3/wheel_left_link:
-          Value: false
-        r3/wheel_right_link:
-          Value: false
         r4/base_footprint:
           Value: true
         r4/base_link:
@@ -123,32 +107,6 @@ Visualization Manager:
           Value: false
         r4/imu_link:
           Value: false
-        r4/odom:
-          Value: true
-        r4/wheel_left_link:
-          Value: false
-        r4/wheel_right_link:
-          Value: false
-        r5/base_footprint:
-          Value: true
-        r5/odom:
-          Value: true
-        r6/base_footprint:
-          Value: true
-        r6/odom:
-          Value: true
-        r7/base_footprint:
-          Value: true
-        r7/odom:
-          Value: true
-        r8/base_footprint:
-          Value: true
-        r8/odom:
-          Value: true
-        r9/base_footprint:
-          Value: true
-        r9/odom:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: false
@@ -170,63 +128,6 @@ Visualization Manager:
                     {}
                   r1/wheel_right_link:
                     {}
-            r10/odom:
-              r10/base_footprint:
-                {}
-            r2/odom:
-              r2/base_footprint:
-                r2/base_link:
-                  r2/caster_back_left_link:
-                    {}
-                  r2/caster_back_right_link:
-                    {}
-                  r2/imu_link:
-                    {}
-                  r2/wheel_left_link:
-                    {}
-                  r2/wheel_right_link:
-                    {}
-            r3/odom:
-              r3/base_footprint:
-                r3/base_link:
-                  r3/caster_back_left_link:
-                    {}
-                  r3/caster_back_right_link:
-                    {}
-                  r3/imu_link:
-                    {}
-                  r3/wheel_left_link:
-                    {}
-                  r3/wheel_right_link:
-                    {}
-            r4/odom:
-              r4/base_footprint:
-                r4/base_link:
-                  r4/caster_back_left_link:
-                    {}
-                  r4/caster_back_right_link:
-                    {}
-                  r4/imu_link:
-                    {}
-                  r4/wheel_left_link:
-                    {}
-                  r4/wheel_right_link:
-                    {}
-            r5/odom:
-              r5/base_footprint:
-                {}
-            r6/odom:
-              r6/base_footprint:
-                {}
-            r7/odom:
-              r7/base_footprint:
-                {}
-            r8/odom:
-              r8/base_footprint:
-                {}
-            r9/odom:
-              r9/base_footprint:
-                {}
       Update Interval: 0
       Value: true
     - Alpha: 0.699999988079071
@@ -299,149 +200,50 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_back_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_back_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wheel_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel2
       Robot Description: /r2/robot_description
       TF Prefix: /r2
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_back_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_back_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wheel_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel3
       Robot Description: /r3/robot_description
       TF Prefix: /r3
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_back_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_back_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wheel_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel4
       Robot Description: /r4/robot_description
       TF Prefix: /r4
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 0.699999988079071
       Autocompute Intensity Bounds: true
@@ -635,7 +437,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.536074638366699
+      Distance: 5.564082622528076
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1

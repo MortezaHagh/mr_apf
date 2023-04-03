@@ -114,18 +114,18 @@ class ApfMotion(object):
         self.robot_r = 0.22
 
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
-        self.obst_half_d = 1.5*self.obst_prec_d
-        self.obst_start_d = 2*self.obst_prec_d
-        self.obst_z = 4*self.fix_f*self.obst_prec_d**4
+        self.obst_half_d = 1.5 * self.obst_prec_d
+        self.obst_start_d = 2 * self.obst_prec_d
+        self.obst_z = 4 * self.fix_f * self.obst_prec_d**4
 
-        self.robot_prec_d = 2*self.robot_r + self.prec_d  # 0.64
-        self.robot_start_d = 2*self.robot_prec_d
-        self.robot_half_d = 1.5*self.robot_prec_d
+        self.robot_prec_d = 2 * self.robot_r + self.prec_d  # 0.64
+        self.robot_start_d = 2 * self.robot_prec_d
+        self.robot_half_d = 1.5 * self.robot_prec_d
         self.robot_stop_d = self.robot_prec_d
-        self.robot_z = 4 * self.fix_f*self.robot_prec_d**4
+        self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
 
-        self.w_coeff = 1                        # init_params.w_coeff      # angular velocity coeff
-        self.dis_tresh = 0.07                   # init_params.dis_tresh  # distance thresh to finish
+        self.w_coeff = 1                        # init_params.w_coeff       # angular velocity coeff
+        self.dis_tresh = 0.07                   # init_params.dis_tresh     # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
     # --------------------------  exec_cb  ---------------------------#
@@ -453,7 +453,7 @@ class ApfMotion(object):
             # adjust heading
             if (nr.r_half<nr.d<nr.r_start):
                 if (not nr.reached) and (not nr.stop):
-                    if (abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
+                    if (abs(ad_h_rR)<np.pi/2) or (abs(ad_Rr_H)<(np.pi/2)):
                         templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
                 else:
                     if (abs(ad_h_rR)<(np.pi/2)):
@@ -505,7 +505,7 @@ class ApfMotion(object):
             # fo = f + 2
             # templo = [fo * np.cos(ad_c_o), fo * np.sin(ad_c_o)]
             
-            ft = f + 3
+            ft = f + 2
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
 
             if (self.obst_prec_d<d_ro):

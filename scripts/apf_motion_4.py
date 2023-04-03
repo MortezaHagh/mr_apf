@@ -614,12 +614,12 @@ class ApfMotion(object):
     def f_obstacle(self):
         obs_f = [0, 0]
         self.obs_f = [0, 0]
-        
+
         for i in self.f_obsts_inds:
             dy = (self.obs_y[i] - self.r_y)
             dx = (self.obs_x[i] - self.r_x)
             d_ro = np.sqrt(dx**2 + dy**2)
-            
+
             theta_ro = np.arctan2(dy, dx)
             ad_h_ro = self.angle_diff(self.r_h, theta_ro)
             
@@ -723,8 +723,12 @@ class ApfMotion(object):
 
     def distance(self, x1, y1, x2, y2):
         return np.sqrt((x1-x2)**2+(y1-y2)**2)
-    
+
     def angle_diff(self, a1, a2):
         ad = a1 - a2
         ad = np.arctan2(np.sin(ad), np.cos(ad))
         return ad
+
+
+# # to do:
+# near_obstacles
