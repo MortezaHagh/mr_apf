@@ -232,9 +232,9 @@ class ApfMotion(object):
         f_r = self.target_f[0]
         f_theta = self.target_f[1]
 
-        # self.f_obstacle()
-        # f_r += self.obs_f[0]
-        # f_theta += self.obs_f[1]
+        self.f_obstacle()
+        f_r += self.obs_f[0]
+        f_theta += self.obs_f[1]
 
         self.f_robots()
         f_r += self.robot_f[0]
@@ -494,7 +494,6 @@ class ApfMotion(object):
         theta_rg = np.arctan2(dy, dx)
         self.theta_rg = theta_rg
         ad_rg_h = self.angle_diff(theta_rg, self.r_h)
-        # self.ad_h_rg = ad_rg_h - np.pi
         self.goal_dist = goal_dist
         self.goal_theta = theta_rg
         fx = round(f * np.cos(ad_rg_h), 3)
@@ -616,36 +615,37 @@ class ApfMotion(object):
             dy = (self.obs_y[i] - self.r_y)
             dx = (self.obs_x[i] - self.r_x)
             d_ro = np.sqrt(dx**2 + dy**2)
-
-            if d_ro > self.obst_start_d:
-                continue
             
             theta_ro = np.arctan2(dy, dx)
             ad_h_ro = self.angle_diff(self.r_h, theta_ro)
-            angle_diff2 = ad_h_ro
+            
+            if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
+                self.stop_flag = True
+
+            if (abs(ad_h_ro)<(10*np.pi/180)):
+                ad_rg_ro = self.angle_diff(self.theta_rg,  theta_ro)
+                coeff = np.sign(ad_rg_ro*ad_h_ro)
+            # angle_turn_o = theta_ro + (np.pi/2)*np.sign(ad_h_ro)
+            # ad_c_o = self.angle_diff(angle_turn_o, self.r_h)
+            angle_turn_t = theta_ro + (np.pi/2)*np.sign(ad_h_ro)*coeff
+            ad_c_t = self.angle_diff(angle_turn_t, self.r_h)
+
 
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
-            templ = [f * np.cos(angle_diff2), f * np.sin(angle_diff2)]
+            templ = [f * np.cos(ad_h_ro), f * np.sin(ad_h_ro)]
 
-            if (1.0*self.obst_prec_d<d_ro<2.0*self.obst_prec_d):
-                if (abs(angle_diff2)>np.pi/2):
-                    angle_diff3 = np.pi - abs(angle_diff2)
-                    coeff_alpha = np.cos(angle_diff3)
-                    # goal_theta = self.mod_angle(self.goal_theta)
-                    # angle_diff4 = theta - goal_theta
-                    # angle_diff4 = np.arctan2(np.sin(angle_diff4), np.cos(angle_diff4))
-                    # if angle_diff4*angle_diff2<0:
-                    #     coeff_alpha = -1*coeff_alpha
-                    templ[1] = (f+3.2)*coeff_alpha*np.sign(np.sin(angle_diff2))
-
-            #     else:
-            #         templ[0] = f+3.5
-            #         templ[1] = 0
-            # else:
-            #     if (abs(angle_diff2)<np.pi/2):
-            #         templ[0] = f+3.5
-            #         templ[1] = 0
+            # fo = f + 2
+            # templo = [fo * np.cos(ad_c_o), fo * np.sin(ad_c_o)]
             
+            ft = f + 2
+            templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
+
+
+            if (self.obst_prec_d<d_ro):
+                if (abs(ad_h_ro)<np.pi/2):
+                        templ = [templt[0]+templ[0], templt[1]+templ[1]]
+
+
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
 
