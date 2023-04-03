@@ -116,18 +116,18 @@ class ApfMotion(object):
         self.robot_r = 0.22
 
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
-        self.obst_half_d = 1.5*self.obst_prec_d
-        self.obst_start_d = 2*self.obst_prec_d
-        self.obst_z = 4*self.fix_f*self.obst_prec_d**4
+        self.obst_half_d = 1.5 * self.obst_prec_d
+        self.obst_start_d = 2 * self.obst_prec_d
+        self.obst_z = 4 * self.fix_f * self.obst_prec_d**4
 
-        self.robot_prec_d = 2*self.robot_r + self.prec_d  # 0.64
-        self.robot_start_d = 2*self.robot_prec_d
-        self.robot_half_d = 1.5*self.robot_prec_d
+        self.robot_prec_d = 2 * self.robot_r + self.prec_d  # 0.64
+        self.robot_start_d = 2 * self.robot_prec_d
+        self.robot_half_d = 1.5 * self.robot_prec_d
         self.robot_stop_d = self.robot_prec_d
-        self.robot_z = 4 * self.fix_f*self.robot_prec_d**4
+        self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
 
-        self.w_coeff = 1                        # init_params.w_coeff      # angular velocity coeff
-        self.dis_tresh = 0.07                   # init_params.dis_tresh  # distance thresh to finish
+        self.w_coeff = 1                        # init_params.w_coeff       # angular velocity coeff
+        self.dis_tresh = 0.07                   # init_params.dis_tresh     # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
     # --------------------------  exec_cb  ---------------------------#
@@ -513,6 +513,8 @@ class ApfMotion(object):
         for nr in new_robots:
             if (not nr.big):
                 templ = self.compute_robot_force(nr)
+                if self.stop_flag_2:
+                    return
 
             else:
                 if (nr.d<nr.r_prec/2):
@@ -552,6 +554,8 @@ class ApfMotion(object):
         if (nr.d< nr.r_start):
             if (nr.d< nr.r_prec) and (abs(nr.h_rR)<(np.pi/2+np.pi/10)):
                 self.stop_flag = True
+                if nr.p:
+                    self.stop_flag_2 = True
 
             #
             coeff = 1

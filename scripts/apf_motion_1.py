@@ -4,6 +4,7 @@ import rospy
 import numpy as np
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
+from visualization import Viusalize
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 
@@ -16,8 +17,11 @@ class ApfMotion(object):
         self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.shutdown_hook)
 
+        # Viusalize
+        self.vs = Viusalize(model)
+
         # preallocation and params and setting
-        self.init(model, robot, init_params)        
+        self.init(model, robot, init_params)
 
         # map: target and obstacles coordinates
         self.map()
@@ -37,9 +41,13 @@ class ApfMotion(object):
         self.exec_cb()
 
     # --------------------------  init  ---------------------------#
-    
+
     def init(self, model, robot, init_params):
         # preallocation
+        self.r_x = 0
+        self.r_y = 0
+        self.r_h = 0
+        self.theta_rg = 0
         self.phis = []
         self.v_lin = []
         self.v_ang = []
@@ -56,7 +64,8 @@ class ApfMotion(object):
         self.robot = robot
 
         # parameters
-        self.goal_distance = 1000
+        self.goal_theta = 0
+        self.goal_dist = 1000
         self.topic_type = Odometry
         self.prioriy = robot.priority
 
@@ -70,18 +79,18 @@ class ApfMotion(object):
         # parameters vel
         self.v = 0
         self.w = 0
-        self.v_max = 0.2         # init_params.linear_max_speed
-        self.v_min = 0.0         # init_params.linear_min_speed
-        self.w_min = 0.0         # init_params.angular_min_speed
-        self.w_max = 1.0         # init_params.angular_max_speed
-        self.v_min_2 = 0.02      # init_params.linear_min_speed_2
+        self.v_max = 0.2        # init_params.linear_max_speed
+        self.v_min = 0.0        # init_params.linear_min_speed
+        self.w_min = 0.0        # init_params.angular_min_speed
+        self.w_max = 1.0        # init_params.angular_max_speed
+        self.v_min_2 = 0.02     # init_params.linear_min_speed_2
 
         # settings
         self.zeta = 1
         self.fix_f = 4
         self.fix_f2 = 10
         self.obst_r = 0.11
-        self.prec_d = 0.06
+        self.prec_d = 0.07
         self.robot_r = 0.22
 
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
@@ -93,9 +102,9 @@ class ApfMotion(object):
         self.robot_stop_d = self.robot_prec_d
         self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
 
-        self.w_coeff = 1                            # init_params.w_coeff      # angular velocity coeff
-        self.dis_tresh = init_params.dis_tresh      # distance thresh to finish
-        self.theta_thresh = 30 * np.pi / 180        # init_params.theta_thresh  # for velocity calculation
+        self.w_coeff = 1                        # init_params.w_coeff       # angular velocity coeff
+        self.dis_tresh = 0.07                   # init_params.dis_tresh     # distance thresh to finish
+        self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
     # --------------------------  exec_cb  ---------------------------#
 
@@ -107,7 +116,7 @@ class ApfMotion(object):
     # --------------------------  go_to_goal  ---------------------------#
 
     def go_to_goal(self):
-        while self.goal_distance > self.dis_tresh and not rospy.is_shutdown():
+        while self.goal_dist > self.dis_tresh and not rospy.is_shutdown():
             # calculate forces
             [f_r, f_theta, phi, stop_flag] = self.forces()
 
@@ -145,16 +154,16 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        if (f_r<0) and abs(w)<3*np.pi/180:
+        if (v==0) and abs(w)<0.03:
             v = self.v_min_2
 
         # thresh_theta = np.pi/3
         # w = 4 * self.w_max * theta / (np.pi/6)
         # v = 3 * self.v_max * (1-abs(theta)/thresh_theta)
 
-        if (v<self.v_min_2) and abs(w)<0.03:
-            v = self.v_min_2*2
-            
+        # if (v<self.v_min_2) and abs(w)<0.03:
+        #     v = self.v_min_2*2
+
         v = min(v, self.v_max)
         v = max(v, self.v_min)
         wa = min(abs(w), self.w_max)
@@ -193,13 +202,13 @@ class ApfMotion(object):
     def f_target(self):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
-        goal_distance = np.sqrt(dx**2 + dy**2)
-        # f = self.zeta * goal_distance
+        goal_dist = np.sqrt(dx**2 + dy**2)
+        # f = self.zeta * goal_dist
         f = self.fix_f
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
-        self.goal_distance = goal_distance
+        self.goal_dist = goal_dist
         fx = round(f * np.cos(angle_diff), 3)
         fy = round(f * np.sin(angle_diff), 3)
         self.target_f = [fx, fy]

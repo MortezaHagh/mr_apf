@@ -1,11 +1,11 @@
 
 
 class ModelInputs():
-    def __init__(self, map_id=-1, path_unit=1.0, robot_count = 1):
+    def __init__(self, map_id=1, path_unit=1.0, robot_count = 1):
         print("Inputs for creating model")
 
-        if map_id == -1:
-            self.map_0()
+        if map_id == 1:
+            self.map_0(robot_count)
 
         self.apply_path_unit(path_unit)
 
@@ -26,7 +26,7 @@ class ModelInputs():
 
 
 
-    def map_0(self):
+    def map_0(self, robot_n):
         # area
         lim = 13
         self.lim = lim
@@ -46,7 +46,7 @@ class ModelInputs():
         self.y_obst = yc2
 
         # robots
-        self.robot_count = 1
+        self.robot_count = robot_n
 
         # robots
         xs = [1, 12, 10, 4, 12, 1, 6, 1, 10,1, 8, 3, 4, 6] 
@@ -54,7 +54,7 @@ class ModelInputs():
         xt = [10, 4, 4, 10, 3, 10, 6, 7, 1, 5, 2, 10, 5, 8]
         yt = [10, 4, 10, 4, 8, 7, 5, 7, 7, 8, 1, 13, 7, 7]
         
-        robot_count = 1
+        robot_count = robot_n
         self.ids = list(range(1,robot_count+1))
         self.heading = [0.0 for i in range(robot_count)]
         self.xs = [xs[i] for i in range(robot_count)]

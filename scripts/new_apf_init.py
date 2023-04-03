@@ -40,7 +40,7 @@ class Run():
         # model
         path_unit = 0.7
         robot_count = self.test_id
-        self.model = CreateModel(map_id=-1, path_unit = path_unit, robot_count=robot_count)
+        self.model = CreateModel(map_id=1, path_unit = path_unit, robot_count=robot_count)
         self.count = self.model.robot_count
         self.paths = {}
         self.times = {}
@@ -51,8 +51,6 @@ class Run():
 
         # visualize
         visualize = Viusalize(self.model)
-        # visualize.init_obsts()
-        # visualize.init_obsts_prec()
 
         # # init_robot service server ------------------------------------------------------
         print("Initializing Central Service Server (init_apf_srv) for adding robots ... ")

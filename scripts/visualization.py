@@ -264,15 +264,15 @@ class Viusalize:
 
 
     def publish_once(self, publisher, data, notife): 
-        publisher.publish(data) 
-        # while not rospy.is_shutdown():
-        #     connections = publisher.get_num_connections() 
-        #     if connections > 0: 
-        #         publisher.publish(data) 
-        #         break 
-        #     else: 
-        #         print(notife) 
-        #         self.rate.sleep()
+        # publisher.publish(data) 
+        while not rospy.is_shutdown():
+            connections = publisher.get_num_connections() 
+            if connections > 0: 
+                publisher.publish(data) 
+                break 
+            else: 
+                print(notife) 
+                self.rate.sleep()
 
     
     def robot_poly(self, pols, ns):
