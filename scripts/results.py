@@ -5,7 +5,7 @@ import rospkg
 import numpy as np
 
 class Results:
-    def __init__(self, paths, times, path_unit, test_id, save_path):
+    def __init__(self, paths, times, path_unit, test_s, save_path):
         self.paths = paths
         self.times = times
         self.lens = []
@@ -19,7 +19,7 @@ class Results:
         self.headings = []
         self.total_headings = 0
         self.path_unit = 1
-        self.test_name = "res_" + str(test_id) + ".json"
+        self.test_name = "res_" + test_s + ".json"
 
         #
         for k, v in paths.items():

@@ -24,7 +24,7 @@ class Run():
         # # results
         version = 2
         self.test_id = 6  # check
-        self.test = "T" + str(self.test_id)
+        self.test = "T" + str(self.test_id) + "_v" + str(version)
         # rospack = rospkg.RosPack()
         # pkg_path = "rospack.get_path('apf')"
         self.pred = "/home/piotr/Documents/Morteza/CurrentAPF/"
@@ -32,7 +32,7 @@ class Run():
         self.dir_t = self.pred + self.test + "/apf_times.json"
         self.dir_f = self.pred + self.test + "/apf_paths"
         self.dir_force = self.pred + self.test + "/apf_forces"
-        res_pred = "res_" + str(self.test_id) + "_v" + str(version)+ ".json"
+        res_pred = "res_" + str(self.test_id) + "_v" + str(version) + ".json"
         self.result_path = "/home/piotr/Documents/Morteza/CurrentAPF" + '/result_apf/' + res_pred
 
         # ros
@@ -91,7 +91,7 @@ class Run():
             self.paths[i] = [ac.result.path_x, ac.result.path_y]
             self.times[i] = ac.time
 
-        Results(self.paths, self.times, self.model.path_unit, self.test_id,
+        Results(self.paths, self.times, self.model.path_unit, self.test,
                 self.result_path)
         self.data()
         self.plotting()
