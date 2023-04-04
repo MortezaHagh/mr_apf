@@ -562,6 +562,7 @@ class ApfMotion(object):
 
             #
             coeff = 1
+            coeff_0 = 1
             templ = []
             templ2 = []
             templ3 = []
@@ -569,12 +570,16 @@ class ApfMotion(object):
 
             # compute force
             ad_h_rR = nr.h_rR
+            ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
+            if (abs(ad_h_rR)<(45*np.pi/180)):
+                coeff_0 = np.sign(ad_rg_rR*nr.h_rR)
             if (abs(ad_h_rR)<(10*np.pi/180)):
-                ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
                 coeff = np.sign(ad_rg_rR*nr.h_rR)
             ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H)
             ad_C_h = self.angle_diff(angle_turn_R, self.r_h)
+            angle_turn_r_0 = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)*coeff_0
+            ad_c_h_0 = self.angle_diff(angle_turn_r_0, self.r_h)
             angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)*coeff
             ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
 
@@ -590,8 +595,8 @@ class ApfMotion(object):
 
             f3 = f + 2
             f3_2 = f + 4 
-            templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
-            templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
+            templ3 = [f3 * np.cos(ad_c_h_0), f3 * np.sin(ad_c_h_0)]
+            templ3_2 = [f3_2 * np.cos(ad_c_h_0), f3_2 * np.sin(ad_c_h_0)]
             
 
             # adjust heading
