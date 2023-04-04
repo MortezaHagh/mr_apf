@@ -57,7 +57,7 @@ class ModelInputs():
         robot_count = robot_n
         self.ids = list(range(1,robot_count+1))
         self.heading = [0.0 for i in range(robot_count)]
-        # self.heading[2] = 3.14/2
+        self.heading[2] = 3.14/2
         self.xs = [xs[i] for i in range(robot_count)]
         self.ys = [ys[i] for i in range(robot_count)]
         self.xt = [xt[i] for i in range(robot_count)]

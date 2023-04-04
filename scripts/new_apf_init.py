@@ -22,8 +22,8 @@ class Run():
     def __init__(self):
 
         # # results
-        version = 5
-        self.test_id = 0  # check
+        version = 1
+        self.test_id = 11  # check
         self.test = "T" + str(self.test_id) + "_v" + str(version)
         # rospack = rospkg.RosPack()
         # pkg_path = "rospack.get_path('apf')"
@@ -41,7 +41,7 @@ class Run():
 
         # model
         path_unit = 0.7
-        robot_count = 1 #self.test_id
+        robot_count = self.test_id
         self.model = CreateModel(map_id=1,
                                  path_unit=path_unit,
                                  robot_count=robot_count)

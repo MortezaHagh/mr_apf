@@ -58,11 +58,11 @@ class ApfMotion(object):
         rospy.wait_for_service(self.pose_srv_name)
         self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses2)
 
-        # # execute goal
-        # self.exec_cb()
+        # execute goal
+        self.exec_cb()
 
-        # tensor force
-        self.tensor_force()
+        # # tensor force
+        # self.tensor_force()
 
     # --------------------------  init  ---------------------------#
 
@@ -737,34 +737,43 @@ class ApfMotion(object):
 
         # Define the center coordinates and radius of the circle
         center_x, center_y = self.obs_x[0], self.obs_y[0]
-        # radius = self.obst_prec_d/2
+        radius = self.obst_prec_d/5
+        radius2 = self.obst_prec_d+0.1
 
         # # Define the range of x and y values
-        x_min, x_max = self.model.map.x_min, self.model.map.x_max
-        y_min, y_max = self.model.map.y_min, self.model.map.y_max
-        # x_step, y_step = 0.1, 0.1
+        x_min, x_max = self.obs_x[0]-1, self.obs_x[0]+1    # self.model.map.x_min, self.model.map.x_max
+        y_min, y_max = self.obs_y[0]-1, self.obs_y[0]+1    # self.model.map.y_min, self.model.map.y_max
+        x_step, y_step = 0.02, 0.02
 
-        # # Create the grid of x and y values
-        # x = np.arange(x_min, x_max + x_step, x_step)
-        # y = np.arange(y_min, y_max + y_step, y_step)
-        # X, Y = np.meshgrid(x, y, indexing='ij')
+        # Create the grid of x and y values
+        x = np.arange(x_min, x_max + x_step, x_step)
+        y = np.arange(y_min, y_max + y_step, y_step)
+        X, Y = np.meshgrid(x, y, indexing='ij')
 
-        # # Compute the distance of each point from the center of the circle
-        # dist = np.sqrt((X - center_x)**2 + (Y - center_y)**2)
+        # Compute the distance of each point from the center of the circle
+        dist = np.sqrt((X - center_x)**2 + (Y - center_y)**2)
 
-        # # Create a Boolean mask indicating whether each point is outside the circle
-        # outside_circle = dist > radius
+        # Create a Boolean mask indicating whether each point is outside the circle
+        outside_circle1 = radius < dist
+        outside_circle2 = dist < radius2
+        outside_circle = np.logical_and(outside_circle1, outside_circle2)
+
+        X[outside_circle == False] = np.nan
+        Y[outside_circle == False] = np.nan
+
+        X_outside = X
+        Y_outside = Y
 
         # 
-        r_min, r_max = self.obst_prec_d/2, self.obst_prec_d+0.01 + 2
-        t_min, t_max = 0, np.pi*2
-        r_n, t_n = 10, 100
-        r = np.linspace(r_min, r_max, r_n)
-        t = np.linspace(t_min, t_max, t_n)
+        # r_min, r_max = self.obst_prec_d/2, self.obst_prec_d+0.01 + 2
+        # t_min, t_max = 0, np.pi*2
+        # r_n, t_n = 10, 100
+        # r = np.linspace(r_min, r_max, r_n)
+        # t = np.linspace(t_min, t_max, t_n)
 
-        R, T = np.meshgrid(r, t, indexing='ij')
-        X_outside = center_x + R*np.cos(T)
-        Y_outside = center_y + R*np.sin(T)
+        # R, T = np.meshgrid(r, t, indexing='ij')
+        # X_outside = center_x + R*np.cos(T)
+        # Y_outside = center_y + R*np.sin(T)
 
         Fx = np.zeros(X_outside.shape)
         Fy = np.zeros(Y_outside.shape)
@@ -772,7 +781,10 @@ class ApfMotion(object):
         
         for i in range(X_outside.shape[0]):
             for j in range(X_outside.shape[1]):
-                Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j])
+                if X_outside[i,j]==np.nan or Y_outside[i,j]==np.nan:
+                    Fx[i,j], Fy[i,j] =  np.nan, np.nan
+                else:
+                    Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j])
 
         # # Compute the force components (Fx and Fy) based on the partial derivatives of f(x, y)
         # Fx, Fy = self.f_obstacle_tensor(x, y)
@@ -789,8 +801,8 @@ class ApfMotion(object):
         # Plot the force vectors using the quiver function with color based on the magnitude
         plt.quiver(X_outside,
                 Y_outside,
-                normalized_force_tensor[..., 0],
-                normalized_force_tensor[..., 1],
+                force_tensor[..., 0],
+                force_tensor[..., 1],
                 force_magnitude,
                 cmap="coolwarm")
         plt.colorbar()
