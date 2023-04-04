@@ -22,7 +22,7 @@ class Run():
     def __init__(self):
 
         # # results
-        version = 2
+        version = 3
         self.test_id = 6  # check
         self.test = "T" + str(self.test_id) + "_v" + str(version)
         # rospack = rospkg.RosPack()
