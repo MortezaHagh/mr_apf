@@ -127,7 +127,7 @@ class ApfMotion(object):
         self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
 
         self.w_coeff = 1                        # init_params.w_coeff       # angular velocity coeff
-        self.dis_tresh = 0.07                   # init_params.dis_tresh     # distance thresh to finish
+        self.dis_tresh = 0.08                   # init_params.dis_tresh     # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
     # --------------------------  exec_cb  ---------------------------#

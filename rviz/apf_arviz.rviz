@@ -136,6 +136,8 @@ Visualization Manager:
           Value: true
         r6/odom:
           Value: true
+        r7/base_footprint:
+          Value: true
         r7/odom:
           Value: true
         r8/odom:
@@ -211,7 +213,8 @@ Visualization Manager:
               r6/base_footprint:
                 {}
             r7/odom:
-              {}
+              r7/base_footprint:
+                {}
             r8/odom:
               {}
             r9/odom:
@@ -443,7 +446,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.019999999552965164
       Style: Flat Squares
-      Topic: /r3/robot_data
+      Topic: /r1/robot_data
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
