@@ -53,13 +53,14 @@ class Results:
         # rospack = rospkg.RosPack()
         # pkg_path = rospack.get_path('apf')
         # save_path = "/home/piotr/Documents/Morteza/CurrentAPF" + '/result_apf/' + self.test_name
+        all_data = [final_data, hwading_data, robot_count]
         with open(save_path, "w") as outfile:
-            json.dump(final_data, outfile, indent=2)
+            json.dump(all_data, outfile, indent=2)
             outfile.write("\n")
-        with open(save_path, "a") as outfile:
-            json.dump(hwading_data, outfile, indent=2)
-            outfile.write("\n")
-            json.dump(robot_count, outfile, indent=2)
+        # with open(save_path, "a") as outfile:
+        #     json.dump(hwading_data, outfile, indent=2)
+        #     outfile.write("\n")
+        #     json.dump(robot_count, outfile, indent=2)
 
 
     def cal_len(self, p):

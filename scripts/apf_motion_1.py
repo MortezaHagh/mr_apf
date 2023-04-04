@@ -165,7 +165,7 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
-        if (v==0) and abs(w)<0.3:
+        if (v==0) and abs(w)<0.03:
             v = self.v_min_2*4
 
         # thresh_theta = np.pi/3
