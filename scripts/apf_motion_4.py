@@ -523,7 +523,7 @@ class ApfMotion(object):
                 
                 coeff = 1
                 f1 = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-                f = f1 + 4
+                f = f1 + 3
                 templ = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
                 if (abs(nr.h_rR)<(45*np.pi/180)):
@@ -531,7 +531,7 @@ class ApfMotion(object):
                     coeff = np.sign(ad_rg_rR*nr.h_rR)
                 angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.h_rR)*coeff
                 ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
-                f3 = f1 + 5
+                f3 = f1 + 4
                 templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
                 if (nr.r_prec<nr.d):
