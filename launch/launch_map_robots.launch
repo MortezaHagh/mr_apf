@@ -7,7 +7,7 @@
     
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
-    <arg name="gui" value="false"/>
+    <arg name="gui" value="true"/>
     <arg name="recording" value="false"/>
     <arg name="debug" value="false"/>
   </include>
@@ -23,6 +23,11 @@
   <node pkg="tf" type="static_transform_publisher" name="link8_broadcaster" args="0 0 0 0 0 0 1 odom r8/odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link9_broadcaster" args="0 0 0 0 0 0 1 odom r9/odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="link10_broadcaster" args="0 0 0 0 0 0 1 odom r10/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link11_broadcaster" args="0 0 0 0 0 0 1 odom r11/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link12_broadcaster" args="0 0 0 0 0 0 1 odom r12/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link13_broadcaster" args="0 0 0 0 0 0 1 odom r13/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link14_broadcaster" args="0 0 0 0 0 0 1 odom r14/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link15_broadcaster" args="0 0 0 0 0 0 1 odom r15/odom 100" />
 
   <include file="$(find apf)/launch/launch_states_publisher.launch"/> 
 
