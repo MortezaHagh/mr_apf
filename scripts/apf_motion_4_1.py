@@ -123,7 +123,7 @@ class ApfMotion(object):
         self.obst_start_d = 2 * self.obst_prec_d
         self.obst_z = 4 * self.fix_f * self.obst_prec_d**4
 
-        self.robot_prec_d = 2 * self.robot_r + self.prec_d  # 0.64
+        self.robot_prec_d = 2 * self.robot_r + 0.05  # 0.64
         self.robot_start_d = 2 * self.robot_prec_d
         self.robot_half_d = 1.5 * self.robot_prec_d
         self.robot_stop_d = self.robot_prec_d
@@ -287,7 +287,7 @@ class ApfMotion(object):
         robots_reached = resp_poses.reached
         robots_priority = resp_poses.priority
         
-        c_r = 2.2
+        c_r = 1.5
         goal_dist = self.distance(self.r_x, self.r_y, self.goal_x, self.goal_y)
         if (goal_dist < (c_r*self.robot_start_d)):
             is_goal_close = True
