@@ -4,7 +4,7 @@
 
 import rospy
 import actionlib
-from apf_motion_4 import ApfMotion # apf_motion_1 apf_motion_4 apf_motion_4_1 apf_motion_5
+from apf_motion_4_1 import ApfMotion # apf_motion_1 apf_motion_4 apf_motion_4_1 apf_motion_5
 from nav_msgs.msg import Odometry
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
