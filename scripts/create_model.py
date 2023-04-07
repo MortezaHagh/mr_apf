@@ -9,6 +9,7 @@ class RobotI(object):
         self.ys = [y*path_unit for y in inputs.ys]
         self.xt = [x*path_unit for x in inputs.xt]
         self.yt = [y*path_unit for y in inputs.yt]
+        self.heading = [h for h in inputs.heading]
         self.ids = inputs.ids
         self.ns = ["/r"+str(id) for id in inputs.ids]
         self.robot_count = len(inputs.ids)

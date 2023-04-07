@@ -210,8 +210,10 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
+        if  f_r < -1 and abs(w)<0.05:
+            w = 1*np.sign(w)
         if (v==0) and abs(w)<0.03:
-            v = self.v_min_2*4
+            v = self.v_min_2*1
 
         # thresh_theta = np.pi/3
         # w = 4 * self.w_max * theta / (np.pi/6)

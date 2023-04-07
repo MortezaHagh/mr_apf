@@ -210,8 +210,10 @@ class ApfMotion(object):
 
         w = 1 * self.w_max * f_theta / self.fix_f
 
+        if  f_r < -1 and abs(w)<0.05:
+            w = 1*np.sign(w)
         if (v==0) and abs(w)<0.03:
-            v = self.v_min_2*4
+            v = self.v_min_2*1
 
         # thresh_theta = np.pi/3
         # w = 4 * self.w_max * theta / (np.pi/6)
@@ -290,7 +292,7 @@ class ApfMotion(object):
         robots_reached = resp_poses.reached
         robots_priority = resp_poses.priority
         
-        c_r = 2.5
+        c_r = 2.1
         goal_dist = self.distance(self.r_x, self.r_y, self.goal_x, self.goal_y)
         if (goal_dist < (c_r*self.robot_start_d)):
             is_goal_close = True

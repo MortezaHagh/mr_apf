@@ -31,7 +31,7 @@ class Initialize(object):
         self.robots_count = robots_count
         xx = [x*self.path_unit for x in self.model.robots_i.xs]
         yy = [y*self.path_unit for y in self.model.robots_i.ys]
-        YY = [0 for t in self.model.robots_i.xs]
+        YY = [yaw for yaw in self.model.robots_i.heading]
         self.id = self.model.robots_i.ids
         self.robots_initial = self.robots_initialize(robots_count, xx, yy, YY)
 
