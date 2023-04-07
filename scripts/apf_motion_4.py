@@ -231,6 +231,9 @@ class ApfMotion(object):
     # -----------------------  forces  ----------------------------#
 
     def forces(self):
+        self.stop_flag = False
+        self.stop_flag_2 = False
+    
         self.f_target()
         f_r = self.target_f[0]
         f_theta = self.target_f[1]
@@ -509,8 +512,6 @@ class ApfMotion(object):
         
         robot_f = [0, 0]
         self.robot_f = [0,0]
-        self.stop_flag = False
-        self.stop_flag_2 = False
         new_robots = self.new_robots
 
         for nr in new_robots:
@@ -854,3 +855,5 @@ class ApfMotion(object):
 
 # # to do:
 # near_obstacles
+# if multiple multi_robot_circle, only the closest one.
+# obstalce - robot join
