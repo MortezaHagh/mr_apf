@@ -557,7 +557,7 @@ class ApfMotion(object):
         if (nr.d< nr.r_start):
             if (nr.d< nr.r_prec) and (abs(nr.h_rR)<(np.pi/2+np.pi/10)):
                 self.stop_flag = True
-                if nr.p:
+                if (not nr.reached) and (not nr.stop) and nr.p:
                     self.stop_flag_2 = True
 
             #
