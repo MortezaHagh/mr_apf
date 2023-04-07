@@ -556,9 +556,9 @@ class ApfMotion(object):
 
     def compute_robot_force(self, nr):
         if (nr.d< nr.r_start):
-            if (nr.d< nr.r_prec) and (abs(nr.h_rR)<(np.pi/2)):
+            if (nr.d< nr.r_prec) and (abs(nr.h_rR)<(np.pi/2+np.pi/10)):
                 self.stop_flag = True
-                if (not nr.reached) and (not nr.stop) and nr.p:
+                if nr.p:
                     self.stop_flag_2 = True
 
             #
