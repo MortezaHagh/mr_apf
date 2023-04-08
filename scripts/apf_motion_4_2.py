@@ -213,7 +213,7 @@ class ApfMotion(object):
         if  f_r < -1 and abs(w)<0.05:
             w = 1*np.sign(w)
         if (v==0) and abs(w)<0.03:
-            v = self.v_min_2*1
+            v = self.v_min_2*3
 
         # thresh_theta = np.pi/3
         # w = 4 * self.w_max * theta / (np.pi/6)
@@ -558,7 +558,7 @@ class ApfMotion(object):
 
     def compute_robot_force(self, nr):
         if (nr.d< nr.r_start):
-            if (nr.d< nr.r_prec) and (abs(nr.h_rR)<(np.pi/2+np.pi/10)):
+            if (nr.d< nr.r_prec) and (abs(nr.h_rR)<(np.pi/2)): # +np.pi/10
                 self.stop_flag = True
                 if (not nr.reached) and (not nr.stop) and nr.p:
                     self.stop_flag_2 = True
@@ -571,6 +571,12 @@ class ApfMotion(object):
             templ3_2 = []
 
             # compute force
+            # dx = self.goal_x - nr.x
+            # dy = self.goal_y - nr.y
+            # theta_Rg = np.arctan2(dy, dx)
+            # theta_Rr = nr.theta_rR - np.pi
+            # ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
+            # if abs(ad_Rg_Rr)
             ad_h_rR = nr.h_rR
             if (abs(ad_h_rR)<(10*np.pi/180)):
                 ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
