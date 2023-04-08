@@ -187,10 +187,11 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
-            if self.ind==1: print("f0: ", self.stop_flag_multi, "f: ", self.stop_flag)
-            if self.ind==1: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
-            if self.ind==1: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
-            if self.ind==1: print(" ------------------------------------ ")
+            n = 2
+            if self.ind==n: print("f0: ", self.stop_flag_multi, "f: ", self.stop_flag)
+            if self.ind==n: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
+            if self.ind==n: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
+            if self.ind==n: print(" ------------------------------------ ")
             self.rate.sleep()
 
         req = SharePoses2Request()
@@ -527,6 +528,15 @@ class ApfMotion(object):
                     self.stop_flag_2 = True
                     return
                 
+                dx = self.goal_x - nr.x
+                dy = self.goal_y - nr.y
+                theta_Rg = np.arctan2(dy, dx)
+                theta_Rr = nr.theta_rR - np.pi
+                ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
+                target_other_side = False
+                if abs(ad_Rg_Rr)>90:
+                    target_other_side = True
+                    
                 coeff = 1
                 f1 = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
                 f = f1 + 2
@@ -540,12 +550,13 @@ class ApfMotion(object):
                 f3 = f1 + 3
                 templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
-                if (nr.r_prec<nr.d) and (abs(nr.h_rR)<(90*np.pi/180)):
-                    templ = templ3
-                elif (0.8*nr.r_prec<nr.d<nr.r_prec)and (abs(nr.h_rR)<(90*np.pi/180)):
-                    templ = templ3
-                    # if (abs(nr.h_rR)<(np.pi/2)):
-                    #     templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
+                if target_other_side:
+                    if (nr.r_prec<nr.d) : # and (abs(nr.h_rR)<(90*np.pi/180))
+                        templ = templ3
+                    elif (0.8*nr.r_prec<nr.d<nr.r_prec): # and (abs(nr.h_rR)<(90*np.pi/180))
+                        templ = templ3
+                        # if (abs(nr.h_rR)<(np.pi/2)):
+                        #     templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
 
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -571,12 +582,15 @@ class ApfMotion(object):
             templ3_2 = []
 
             # compute force
-            # dx = self.goal_x - nr.x
-            # dy = self.goal_y - nr.y
-            # theta_Rg = np.arctan2(dy, dx)
-            # theta_Rr = nr.theta_rR - np.pi
-            # ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
-            # if abs(ad_Rg_Rr)
+            dx = self.goal_x - nr.x
+            dy = self.goal_y - nr.y
+            theta_Rg = np.arctan2(dy, dx)
+            theta_Rr = nr.theta_rR - np.pi
+            ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
+            target_other_side = False
+            if abs(ad_Rg_Rr)>90:
+                target_other_side = True
+
             ad_h_rR = nr.h_rR
             if (abs(ad_h_rR)<(10*np.pi/180)):
                 ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
@@ -604,21 +618,22 @@ class ApfMotion(object):
             
 
             # adjust heading
-            if (nr.r_half<nr.d<nr.r_start):
-                if (not nr.reached) and (not nr.stop):
-                    if (abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
-                        templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
-                else:
-                    if (abs(ad_h_rR)<(np.pi/2)):
-                        templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
+            if target_other_side:
+                if (nr.r_half<nr.d<nr.r_start):
+                    if (not nr.reached) and (not nr.stop):
+                        if (abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
+                            templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
+                    else:
+                        if (abs(ad_h_rR)<(np.pi/2)):
+                            templ = [templ3[0]+templ[0], templ3[1]+templ[1]]
 
-            elif (nr.r_prec <nr.d<nr.r_half):
-                if (not nr.reached) and (not nr.stop):
-                    if (abs(ad_Rr_H)<(np.pi/2)):
-                        templ = [templ2_2[0]+templ[0], templ2_2[1]+templ[1]]
-                else:
-                    if (abs(ad_h_rR)<(np.pi/2)):
-                        templ = [templ3_2[0]+templ[0], templ3_2[1]+templ[1]]
+                elif (nr.r_prec <nr.d<nr.r_half):
+                    if (not nr.reached) and (not nr.stop):
+                        if (abs(ad_Rr_H)<(np.pi/2)):
+                            templ = [templ2_2[0]+templ[0], templ2_2[1]+templ[1]]
+                    else:
+                        if (abs(ad_h_rR)<(np.pi/2)):
+                            templ = [templ3_2[0]+templ[0], templ3_2[1]+templ[1]]
         return templ
 
     # -----------------------  f_obstacle  ----------------------------#
@@ -637,6 +652,15 @@ class ApfMotion(object):
             
             # if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
             #     self.stop_flag = True
+
+            dx = self.goal_x - self.obs_x[i]
+            dy = self.goal_y - self.obs_y[i]
+            theta_og = np.arctan2(dy, dx)
+            theta_or = theta_ro - np.pi
+            ad_Rg_Rr = self.angle_diff(theta_og, theta_or)
+            target_other_side = False
+            if abs(ad_Rg_Rr)>90:
+                target_other_side = True
 
             coeff = 1
             if (abs(ad_h_ro)<(10*np.pi/180)):
@@ -657,9 +681,10 @@ class ApfMotion(object):
             ft = f + 2
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
 
-            if (self.obst_prec_d<d_ro):
-                if (abs(ad_h_ro)<np.pi/2):
-                        templ = [templt[0]+templ[0], templt[1]+templ[1]]
+            if target_other_side:
+                if (self.obst_prec_d<d_ro):
+                    if (abs(ad_h_ro)<np.pi/2):
+                            templ = [templt[0]+templ[0], templt[1]+templ[1]]
 
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
