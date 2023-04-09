@@ -77,6 +77,12 @@ class CreateModel(object):
 
 if __name__ == '__main__':
     from plot_model import plot_model
+    
+    class Setting:
+        def __init__(self):
+            self.obst_r = 0.11
+            self.obst_prec_d = 0.4
+    setting = Setting()
     model = CreateModel()
-    plot_model(model)
+    plot_model(model, setting)
     plt.show()

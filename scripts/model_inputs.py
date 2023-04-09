@@ -1,4 +1,5 @@
-
+import random
+import numpy as np
 
 class ModelInputs():
     def __init__(self, map_id=1, path_unit=1.0, robot_count = 1):
@@ -42,8 +43,8 @@ class ModelInputs():
         xc2 = xc1*2
         yc2 = yc1 + [y+6 for y in yc1]
 
-        self.x_obst = xc2
-        self.y_obst = yc2
+        self.x_obst = [] #xc2
+        self.y_obst = [] # yc2
 
         # robots
         self.robot_count = robot_n
@@ -62,7 +63,7 @@ class ModelInputs():
         robot_count = robot_n
         self.ids = list(range(1,robot_count+1))
         self.heading = [0.0 for i in range(robot_count)]
-        self.heading[2] = 3.14/2
+        # self.heading[2] = 3.14/2
         self.xs = [xs[i] for i in range(robot_count)]
         self.ys = [ys[i] for i in range(robot_count)]
         self.xt = [xt[i] for i in range(robot_count)]
@@ -511,7 +512,7 @@ class ModelInputs():
         self.yt = []
 
     def collide(self, robot_n=2):
-         # area
+        # area
         lim = 13
         self.lim = lim
         self.x_min = 0
@@ -545,3 +546,50 @@ class ModelInputs():
         self.ys = [ys[i] for i in range(robot_count)]
         self.xt = [xt[i] for i in range(robot_count)]
         self.yt = [yt[i] for i in range(robot_count)]
+
+
+    def random_map(self):
+
+        obst_n = 10
+        robots_n = 10
+        self.robot_count = robots_n
+
+        # area
+        lim = 13
+        self.lim = lim
+        self.x_min = 0
+        self.y_min = 0
+        self.x_max = lim
+        self.y_max = lim
+
+        xx = np.arange(self.x_min, self.x_max, 1.0).tolist()
+        yy = np.arange(self.y_min, self.y_max, 1.0).tolist()
+
+        m = []
+        for y in yy:
+            for x in xx:
+                m.append([x, y])
+        
+        nm = len(m)
+        r_m = m[:]
+        random.shuffle(r_m)
+
+        obst_i = r_m[0:obst_n]
+        robots_s_i = r_m[obst_n:robots_n]
+        robots_g_i = r_m[robots_n:2*robots_n]
+
+        self.x_obst = [m[i][0] for i in obst_i]
+        self.y_obst = [m[i][1] for i in obst_i]
+        
+        robot_count = robots_n
+        self.ids = list(range(1,robot_count+1))
+        self.heading = [0.0 for i in range(robot_count)]
+        self.xs = [m[i][0] for i in robots_s_i]
+        self.ys = [m[i][1] for i in robots_s_i]
+        self.xt = [m[i][0] for i in robots_g_i]
+        self.yt = [m[i][1] for i in robots_g_i]
+
+
+if __name__=="__main__":
+    mi = ModelInputs()
+    mi.random_map()

@@ -524,9 +524,9 @@ class ApfMotion(object):
                     return
 
             else:
-                if (nr.d<nr.r_prec/2):
-                    self.stop_flag_2 = True
-                    return
+                # if (nr.d<nr.r_prec/2):
+                #     self.stop_flag_2 = True
+                #     return
                 
                 dx = self.goal_x - nr.x
                 dy = self.goal_y - nr.y
@@ -542,7 +542,7 @@ class ApfMotion(object):
                 f = f1 + 2
                 templ = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
-                if (abs(nr.h_rR)<(45*np.pi/180)):
+                if True: #(abs(nr.h_rR)<(45*np.pi/180)):
                     ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
                     coeff = np.sign(ad_rg_rR*nr.h_rR)
                 angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.h_rR)*coeff

@@ -61,6 +61,10 @@ class Results:
         #     json.dump(hwading_data, outfile, indent=2)
         #     outfile.write("\n")
         #     json.dump(robot_count, outfile, indent=2)
+        print("==================================")
+        print("operation_time", self.operation_time)
+        print("==================================")
+
 
 
     def cal_len(self, p):
