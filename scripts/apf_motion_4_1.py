@@ -534,12 +534,12 @@ class ApfMotion(object):
                 theta_Rr = nr.theta_rR - np.pi
                 ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
                 target_other_side = False
-                if abs(ad_Rg_Rr)>90:
+                if abs(ad_Rg_Rr)>np.pi/4:
                     target_other_side = True
 
                 coeff = 1
                 f1 = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-                f = f1 + 1
+                f = f1 + 3
                 templ = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
                 if (abs(nr.h_rR)<(10*np.pi/180)):
@@ -547,10 +547,10 @@ class ApfMotion(object):
                     coeff = np.sign(ad_rg_rR*nr.h_rR)
                 angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(nr.h_rR)*coeff
                 ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
-                f3 = f1 + 2
+                f3 = f1 + 3
                 templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
-                if target_other_side:
+                if True: #target_other_side:
                     if (nr.r_prec<nr.d):
                         templ = templ3
                     elif (0.8*nr.r_prec<nr.d<nr.r_prec):
@@ -588,15 +588,22 @@ class ApfMotion(object):
             theta_Rr = nr.theta_rR - np.pi
             ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
             target_other_side = False
-            if abs(ad_Rg_Rr)>90:
+            if abs(ad_Rg_Rr)>np.pi/2:
                 target_other_side = True
 
             ad_h_rR = nr.h_rR
             if (abs(ad_h_rR)<(10*np.pi/180)):
                 ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
                 coeff = np.sign(ad_rg_rR*nr.h_rR)
+            
+            flag_rR = True
             ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H)
+            ad_rR_h =  self.angle_diff(nr.theta_rR, self.r_h)
+            if (ad_Rr_H*ad_rR_h)<0:
+                if not nr.p:
+                    flag_rR = False
+
             ad_C_h = self.angle_diff(angle_turn_R, self.r_h)
             angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)*coeff
             ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
@@ -621,7 +628,7 @@ class ApfMotion(object):
             if target_other_side:
                 if (nr.r_half<nr.d<nr.r_start):
                     if (not nr.reached) and (not nr.stop):
-                        if (abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
+                        if flag_rR and (abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
                             templ = [templ2[0]+templ[0], templ2[1]+templ[1]]
                     else:
                         if (abs(ad_h_rR)<(np.pi/2)):
@@ -629,7 +636,7 @@ class ApfMotion(object):
 
                 elif (nr.r_prec <nr.d<nr.r_half):
                     if (not nr.reached) and (not nr.stop):
-                        if (abs(ad_Rr_H)<(np.pi/2)):
+                        if flag_rR and (abs(ad_Rr_H)<(np.pi/2)):
                             templ = [templ2_2[0]+templ[0], templ2_2[1]+templ[1]]
                     else:
                         if (abs(ad_h_rR)<(np.pi/2)):
@@ -657,9 +664,9 @@ class ApfMotion(object):
             dy = self.goal_y - self.obs_y[i]
             theta_og = np.arctan2(dy, dx)
             theta_or = theta_ro - np.pi
-            ad_Rg_Rr = self.angle_diff(theta_og, theta_or)
+            ad_og_or = self.angle_diff(theta_og, theta_or)
             target_other_side = False
-            if abs(ad_Rg_Rr)>90:
+            if abs(ad_og_or)>np.pi/2:
                 target_other_side = True
 
             coeff = 1

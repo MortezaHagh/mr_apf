@@ -533,12 +533,12 @@ class ApfMotion(object):
                 f = f1 + 1
                 templ = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
-                if (abs(nr.h_rR)<(10*np.pi/180)):
+                if (abs(nr.h_rR)<(35*np.pi/180)):
                     ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
                     coeff = np.sign(ad_rg_rR*nr.h_rR)
                 angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(nr.h_rR)*coeff
                 ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
-                f3 = f1 + 2
+                f3 = f1 + 3
                 templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
                 if (nr.r_prec<nr.d):

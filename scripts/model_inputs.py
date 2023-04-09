@@ -6,7 +6,8 @@ class ModelInputs():
         print("Inputs for creating model")
 
         if map_id == 1:
-            self.map_0(robot_count)  # collide map_0
+            self.map_0(robot_count)
+            # self.collide()  # collide map_0
 
         self.apply_path_unit(path_unit)
 
@@ -534,14 +535,26 @@ class ModelInputs():
         self.robot_count = 2
 
         # robots
-        xs = [3, 7] 
-        ys = [0, 0.1]
-        xt = [7, 3]
-        yt = [0, 0.0]
+        # xs = [3, 7] 
+        # ys = [0, 0]
+        # xt = [7, 3]
+        # yt = [0, 0]
+
+        # xs = [3, 7] 
+        # ys = [0, 0.1]
+        # xt = [7, 3]
+        # yt = [0, 0.0]
+
+        # self.heading = [0.0 , 3.14]
+
+        xs = [0, 0] 
+        ys = [0, 2]
+        xt = [4, 4]
+        yt = [2, 0]
         
         robot_count = 2
         self.ids = list(range(1,robot_count+1))
-        self.heading = [0.0 , 3.14]
+        self.heading = [0.0 , 0.0]
         self.xs = [xs[i] for i in range(robot_count)]
         self.ys = [ys[i] for i in range(robot_count)]
         self.xt = [xt[i] for i in range(robot_count)]
