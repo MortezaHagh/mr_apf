@@ -15,16 +15,16 @@ class PoseService(object):
         rospy.on_shutdown(self.shutdown_hook)
 
         # data
+        self.topics = {}
         self.count = 0
         self.ids = []
         self.xt = {}
         self.yt = {}
-        self.topics = {}
-        self.priorities = {}
-        self.reached = {}
-        self.xy = {}
         self.h = {}
+        self.xy = {}
         self.stop = {}
+        self.reached = {}
+        self.priorities = {}
 
         # service
         self.srv = rospy.Service(pose_srv_name, SharePoses2, self.pose_cb)
@@ -48,7 +48,6 @@ class PoseService(object):
             self.stop[req_i] = True
             return resp
 
-        xy = {}
         for i in self.ids:
             x,y, h = self.get_odom(self.topics[i])
             self.h[i] = h
@@ -59,8 +58,8 @@ class PoseService(object):
             resp.x.append(x)
             resp.y.append(y)
             resp.heading.append(h)
-            resp.reached.append(self.reached[i])
             resp.stopp.append(self.stop[i])
+            resp.reached.append(self.reached[i])
         
         priorities = self.cal_priorities(self.xy, req_i)
         resp.priority = priorities
