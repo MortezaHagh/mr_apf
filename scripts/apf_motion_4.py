@@ -25,6 +25,7 @@ class NewRobots:
         self.r_half = 0
         self.r_start = 0
         self.p = False
+        self.big = False
         self.stop = False
         self.reached = False
 
@@ -128,7 +129,7 @@ class ApfMotion(object):
         self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
 
         self.w_coeff = 1                        # init_params.w_coeff       # angular velocity coeff
-        self.goal_dis_tresh = 0.11              # init_params.is_tresh     # distance thresh to finish
+        self.goal_dis_tresh = 0.11              # init_params.dis_tresh     # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
     # --------------------------  exec_cb  ---------------------------#
@@ -212,8 +213,8 @@ class ApfMotion(object):
 
         if  f_r < -1 and abs(w)<0.05:
             w = 1*np.sign(w)
-        if (v==0) and abs(w)<0.03:
-            v = self.v_min_2*1
+        # if (v==0) and abs(w)<0.03:
+        #     v = self.v_min_2*1
 
         # thresh_theta = np.pi/3
         # w = 4 * self.w_max * theta / (np.pi/6)
@@ -353,8 +354,6 @@ class ApfMotion(object):
                     break
                 for ind_j in robots_inds_2:
                     if not (robots_reached[p] and robots_reached[ind_j]):
-                        dx = (robots_x[p] - robots_x[ind_j])
-                        dy = (robots_y[p] - robots_y[ind_j])
                         dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
                         if (dist<(self.robot_prec_d*2.2)):     ##### robot_start_d robot_prec_d
                             robots_inds_f[p].append(ind_j)
@@ -439,7 +438,7 @@ class ApfMotion(object):
                     is_target_in = True
                     continue
 
-                #
+                # r_c, r_R
                 dx = xc - self.r_x
                 dy = yc - self.r_y
                 d_rR = np.sqrt(dx**2 + dy**2)
@@ -473,7 +472,6 @@ class ApfMotion(object):
             if do<self.obst_start_d:
                 f_obsts_inds.append(oi)
         self.f_obsts_inds = f_obsts_inds
-
 
     def eval_obst(self, xc, yc, rc):
         ros = []

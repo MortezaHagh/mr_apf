@@ -25,6 +25,7 @@ class NewRobots:
         self.r_half = 0
         self.r_start = 0
         self.p = False
+        self.big = False
         self.stop = False
         self.reached = False
 
@@ -40,7 +41,7 @@ class ApfMotion(object):
         # Viusalize
         self.vs = Viusalize(model)
 
-        # preallocation and params and setting
+        # preallocation - params - setting
         self.init(model, robot, init_params)
 
         # map: target and obstacles coordinates
@@ -141,7 +142,7 @@ class ApfMotion(object):
     # --------------------------  go_to_goal  ---------------------------#
 
     def go_to_goal(self):
-        
+
         while self.goal_dist > self.goal_dis_tresh and not rospy.is_shutdown():
 
             # detect and group
@@ -353,8 +354,6 @@ class ApfMotion(object):
                     break
                 for ind_j in robots_inds_2:
                     if not (robots_reached[p] and robots_reached[ind_j]):
-                        dx = (robots_x[p] - robots_x[ind_j])
-                        dy = (robots_y[p] - robots_y[ind_j])
                         dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
                         if (dist<(self.robot_prec_d*2.2)):     ##### robot_start_d robot_prec_d
                             robots_inds_f[p].append(ind_j)
@@ -439,7 +438,7 @@ class ApfMotion(object):
                     is_target_in = True
                     continue
 
-                #
+                # r_c, r_R
                 dx = xc - self.r_x
                 dy = yc - self.r_y
                 d_rR = np.sqrt(dx**2 + dy**2)
@@ -472,8 +471,7 @@ class ApfMotion(object):
             do = self.distance(xo, yo, self.r_x, self.r_y)
             if do<self.obst_start_d:
                 f_obsts_inds.append(oi)
-        return f_obsts_inds
-
+        self.f_obsts_inds = f_obsts_inds
 
     def eval_obst(self, xc, yc, rc):
         ros = []
@@ -499,8 +497,8 @@ class ApfMotion(object):
         # f = self.zeta * goal_dist
         f = self.fix_f
         theta_rg = np.arctan2(dy, dx)
-        self.theta_rg = theta_rg
         ad_rg_h = self.angle_diff(theta_rg, self.r_h)
+        self.theta_rg = theta_rg
         self.goal_dist = goal_dist
         self.goal_theta = theta_rg
         fx = round(f * np.cos(ad_rg_h), 3)
