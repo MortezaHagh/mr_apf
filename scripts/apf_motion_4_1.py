@@ -384,11 +384,13 @@ class ApfMotion(object):
                 P = [robots_priority[i]>0 for i in g]
 
                 # polygon
+                is_g2 = True
                 if len(g)>2:
                     point_robot = Point(self.r_x, self.r_y)
                     point_target = Point(self.goal_x, self.goal_y)
                     polys_points = [Point(robots_x[i], robots_y[i]) for i in g if (not robots_reached[i])]
                     if (len(polys_points)>2):
+                        is_g2 = False
                         mpt = MultiPoint([shape(p) for p in polys_points])
                         mp = mpt.convex_hull
                         mp_bound = mp.boundary.coords
@@ -397,6 +399,14 @@ class ApfMotion(object):
                         is_target_in = mp.contains(point_target)
                         self.vs.robot_poly([[], mp_bound], self.ns)
 
+                        # get the minimum bounding circle of the convex hull
+                        mbr = mp.minimum_rotated_rectangle
+                        circum_center = mbr.centroid.coords[0]
+                        # calculate the radius of the circumscribed circle
+                        radius = mbr.exterior.distance(mbr.centroid)
+                        xc = circum_center[0]
+                        yc = circum_center[1]
+                        rc = 2*radius #+ self.robot_r + self.prec_d
                 
                 # if robot is in the polygon
                 if (not is_target_in) and is_robot_in:
@@ -404,33 +414,34 @@ class ApfMotion(object):
                     return
                 
                 # robot is not in the polygon, detect """triangle"""
-                ad = [AD_h_rR[i] for i in g]
-                a_min = g[np.argmin(ad)]
-                a_max = g[np.argmax(ad)]
+                if is_g2:
+                    ad = [AD_h_rR[i] for i in g]
+                    a_min = g[np.argmin(ad)]
+                    a_max = g[np.argmax(ad)]
 
-                x1 = robots_x[a_min]
-                x2 = robots_x[a_max]
-                y1 = robots_y[a_min]
-                y2 = robots_y[a_max]
-                dx = x2-x1
-                dy = y2-y1 
-                theta = np.arctan2(dy, dx)
-                d12 = self.distance(x1, y1, x2, y2)
+                    x1 = robots_x[a_min]
+                    x2 = robots_x[a_max]
+                    y1 = robots_y[a_min]
+                    y2 = robots_y[a_max]
+                    dx = x2-x1
+                    dy = y2-y1 
+                    theta = np.arctan2(dy, dx)
+                    d12 = self.distance(x1, y1, x2, y2)
 
-                xx1 = x1 + (d12/np.sqrt(3)) * np.cos(theta+np.pi/6) 
-                yy1 = y1 + (d12/np.sqrt(3)) * np.sin(theta+np.pi/6)
-                xx2 = x1 + (d12/np.sqrt(3)) * np.cos(theta-np.pi/6) 
-                yy2 = y1 + (d12/np.sqrt(3)) * np.sin(theta-np.pi/6)
-                dd1 = self.distance(xx1, yy1, self.r_x, self.r_y) 
-                dd2 = self.distance(xx2, yy2, self.r_x, self.r_y)
-                if (dd1<dd2):
-                    xc = xx2
-                    yc = yy2
-                else:
-                    xc = xx1
-                    yc = yy1
-                rc = d12/np.sqrt(2) # /np.sqrt(3) d12
-                # rc = self.eval_obst(xc, yc, rc)
+                    xx1 = x1 + (d12/np.sqrt(3)) * np.cos(theta+np.pi/6) 
+                    yy1 = y1 + (d12/np.sqrt(3)) * np.sin(theta+np.pi/6)
+                    xx2 = x1 + (d12/np.sqrt(3)) * np.cos(theta-np.pi/6) 
+                    yy2 = y1 + (d12/np.sqrt(3)) * np.sin(theta-np.pi/6)
+                    dd1 = self.distance(xx1, yy1, self.r_x, self.r_y) 
+                    dd2 = self.distance(xx2, yy2, self.r_x, self.r_y)
+                    if (dd1<dd2):
+                        xc = xx2
+                        yc = yy2
+                    else:
+                        xc = xx1
+                        yc = yy1
+                    rc = d12/np.sqrt(2) # /np.sqrt(3) d12
+                    # rc = self.eval_obst(xc, yc, rc)
 
                 # 
                 d_tc = self.distance(self.goal_x, self.goal_y, xc, yc)
@@ -549,10 +560,11 @@ class ApfMotion(object):
         f = f1 + 1
         nr_force = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
-        if (abs(nr.h_rR)<(10*np.pi/180)):
+        theta_ = 35
+        if (abs(nr.h_rR)<(theta_*np.pi/180)):
             ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
             coeff = np.sign(ad_rg_rR*nr.h_rR)
-        angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(nr.h_rR)*coeff
+        angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.h_rR)*coeff
         ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
         f3 = f1 + 4
         templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
@@ -565,6 +577,9 @@ class ApfMotion(object):
                 # nr_force = templ3
                 nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
             # if (abs(nr.h_rR)<(np.pi/2)):
+            #     nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
+
+        return nr_force
 
 
     def compute_robot_force(self, nr):
@@ -623,7 +638,6 @@ class ApfMotion(object):
             templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
             templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
             
-
             # adjust heading
             if True: #target_other_side:
                 if (nr.r_half<nr.d<nr.r_start):
