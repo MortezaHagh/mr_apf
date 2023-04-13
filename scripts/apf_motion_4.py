@@ -406,7 +406,7 @@ class ApfMotion(object):
                         radius = mbr.exterior.distance(mbr.centroid)
                         xc = circum_center[0]
                         yc = circum_center[1]
-                        rc = 2*radius #+ self.robot_r + self.prec_d
+                        rc = 2.5*radius + self.ind/20 #+ self.robot_r + self.prec_d
                 
                 # if robot is in the polygon
                 if (not is_target_in) and is_robot_in:
