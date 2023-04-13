@@ -585,8 +585,16 @@ class ApfMotion(object):
             if (abs(ad_h_rR)<(10*np.pi/180)):
                 ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
                 coeff = np.sign(ad_rg_rR*nr.h_rR)
+
+            flag_rR = True
             ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
             angle_turn_R = nr.theta_rR - (np.pi/2+np.pi/8)*np.sign(ad_Rr_H)
+            ad_rR_h =  self.angle_diff(nr.theta_rR, self.r_h)
+
+            if (ad_Rr_H*ad_rR_h)<0:
+                if not nr.p:
+                    flag_rR = False
+
             ad_C_h = self.angle_diff(angle_turn_R, self.r_h)
             angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(ad_h_rR)*coeff
             ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
@@ -609,7 +617,7 @@ class ApfMotion(object):
             # adjust heading
             if (nr.r_half<nr.d<nr.r_start):
                 if (not nr.reached) and (not nr.stop):
-                    if (abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
+                    if (flag_rR and abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
                         nr_force = [templ2[0]+nr_force[0], templ2[1]+nr_force[1]]
                 else:
                     if (abs(ad_h_rR)<(np.pi/2)):
@@ -617,7 +625,7 @@ class ApfMotion(object):
 
             elif (nr.r_prec <nr.d<nr.r_half):
                 if (not nr.reached) and (not nr.stop):
-                    if (abs(ad_Rr_H)<(np.pi/2)):
+                    if (flag_rR and abs(ad_Rr_H)<(np.pi/2)):
                         nr_force = [templ2_2[0]+nr_force[0], templ2_2[1]+nr_force[1]]
                 else:
                     if (abs(ad_h_rR)<(np.pi/2)):
