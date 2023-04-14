@@ -85,6 +85,7 @@ class ApfMotion(object):
         self.force_ot = []
         self.stop_flag = False
         self.stop_flag_2 = False
+        self.near_robots = False
 
         # data
         self.model = model
@@ -523,12 +524,14 @@ class ApfMotion(object):
         robot_f = [0, 0]
         self.robot_f = [0, 0]
         new_robots = self.new_robots
+        self.near_robots = False
 
         for nr in new_robots:
             if (not nr.big):
                 nr_force = self.compute_robot_force(nr)
-                if self.stop_flag_2:
-                    return
+                # if self.stop_flag_2:
+                #     return
+                # if  self.near_robots
             else:
                 nr_force = self.compute_multi_force(nr)
 
@@ -544,7 +547,7 @@ class ApfMotion(object):
     def compute_multi_force(self, nr):       
         coeff = 1
         f1 = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-        f = f1 + 1
+        f = f1 + 2
         nr_force = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
         theta_ = 10
@@ -553,12 +556,12 @@ class ApfMotion(object):
             coeff = np.sign(ad_rg_rR*nr.h_rR)
         angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.h_rR)*coeff
         ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
-        f3 = f1 + 3
+        f3 = f1 + 4
         templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
         if (nr.r_prec<nr.d):
             nr_force = templ3
-        elif (0.8*nr.r_prec<nr.d<nr.r_prec):
+        elif (0.8*nr.r_prec<nr.d<nr.r_prec): # todo
             nr_force = templ3
             # if (abs(nr.h_rR)<(np.pi/2)):
             #     nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
@@ -572,6 +575,9 @@ class ApfMotion(object):
                 self.stop_flag = True
                 if (not nr.reached) and (not nr.stop) and nr.p:
                     self.stop_flag_2 = True
+
+            if (nr.d<nr.r_half and nr.p):
+                self.near_robots = True
 
             #
             coeff = 1
