@@ -506,8 +506,10 @@ class ApfMotion(object):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
         goal_dist = np.sqrt(dx**2 + dy**2)
-        # f = self.zeta * goal_dist
+        # f = self.zeta * goal_dist            
         f = self.fix_f
+        if goal_dist<0.5:
+            f = 3*f
         theta_rg = np.arctan2(dy, dx)
         ad_rg_h = self.angle_diff(theta_rg, self.r_h)
         self.theta_rg = theta_rg
@@ -550,8 +552,8 @@ class ApfMotion(object):
         f = f1 + 2
         nr_force = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
-        theta_ = 10
-        if True: # (abs(nr.h_rR)<(theta_*np.pi/180)):
+        theta_ = 40
+        if (abs(nr.h_rR)<(theta_*np.pi/180)):
             ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
             coeff = np.sign(ad_rg_rR*nr.h_rR)
         angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.h_rR)*coeff
