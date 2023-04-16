@@ -165,6 +165,9 @@ class ApfMotion(object):
 
         w = 3 * self.w_max * f_theta / self.fix_f
 
+        if  f_r < -1 and abs(w)<0.05:
+            w = 1*np.sign(w)
+            
         if (v==0) and abs(w)<0.03:
             v = self.v_min_2*4
 
