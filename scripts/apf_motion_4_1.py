@@ -671,7 +671,7 @@ class ApfMotion(object):
             
             # if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
             #     self.stop_flag = True
-            
+
             dx = self.goal_x - self.obs_x[i]
             dy = self.goal_y - self.obs_y[i]
             theta_og = np.arctan2(dy, dx)
@@ -700,7 +700,7 @@ class ApfMotion(object):
             ft = f + 2
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
 
-            if target_other_side:
+            if True: #target_other_side:
                 if (self.obst_prec_d<d_ro):
                     if (abs(ad_h_ro)<np.pi/2):
                             o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]

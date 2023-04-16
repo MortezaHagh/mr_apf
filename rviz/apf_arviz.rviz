@@ -7,6 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /TF1/Frames1
+        - /Marker2/Status1
       Splitter Ratio: 0.7441176176071167
     Tree Height: 726
   - Class: rviz/Selection
@@ -78,15 +79,9 @@ Visualization Manager:
           Value: false
         r1/wheel_right_link:
           Value: false
-        r10/base_footprint:
-          Value: true
         r10/odom:
           Value: true
-        r11/base_footprint:
-          Value: true
         r11/odom:
-          Value: true
-        r12/base_footprint:
           Value: true
         r12/odom:
           Value: true
@@ -124,10 +119,6 @@ Visualization Manager:
           Value: false
         r3/odom:
           Value: false
-        r3/wheel_left_link:
-          Value: false
-        r3/wheel_right_link:
-          Value: false
         r4/base_footprint:
           Value: false
         r4/base_link:
@@ -140,27 +131,13 @@ Visualization Manager:
           Value: false
         r4/odom:
           Value: true
-        r4/wheel_left_link:
-          Value: false
-        r4/wheel_right_link:
-          Value: false
-        r5/base_footprint:
-          Value: true
         r5/odom:
-          Value: true
-        r6/base_footprint:
           Value: true
         r6/odom:
           Value: true
-        r7/base_footprint:
-          Value: true
         r7/odom:
           Value: true
-        r8/base_footprint:
-          Value: true
         r8/odom:
-          Value: true
-        r9/base_footprint:
           Value: true
         r9/odom:
           Value: true
@@ -186,14 +163,11 @@ Visualization Manager:
                   r1/wheel_right_link:
                     {}
             r10/odom:
-              r10/base_footprint:
-                {}
+              {}
             r11/odom:
-              r11/base_footprint:
-                {}
+              {}
             r12/odom:
-              r12/base_footprint:
-                {}
+              {}
             r13/odom:
               {}
             r14/odom:
@@ -214,46 +188,19 @@ Visualization Manager:
                   r2/wheel_right_link:
                     {}
             r3/odom:
-              r3/base_footprint:
-                r3/base_link:
-                  r3/caster_back_left_link:
-                    {}
-                  r3/caster_back_right_link:
-                    {}
-                  r3/imu_link:
-                    {}
-                  r3/wheel_left_link:
-                    {}
-                  r3/wheel_right_link:
-                    {}
+              {}
             r4/odom:
-              r4/base_footprint:
-                r4/base_link:
-                  r4/caster_back_left_link:
-                    {}
-                  r4/caster_back_right_link:
-                    {}
-                  r4/imu_link:
-                    {}
-                  r4/wheel_left_link:
-                    {}
-                  r4/wheel_right_link:
-                    {}
+              {}
             r5/odom:
-              r5/base_footprint:
-                {}
+              {}
             r6/odom:
-              r6/base_footprint:
-                {}
+              {}
             r7/odom:
-              r7/base_footprint:
-                {}
+              {}
             r8/odom:
-              r8/base_footprint:
-                {}
+              {}
             r9/odom:
-              r9/base_footprint:
-                {}
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 0.699999988079071
@@ -530,6 +477,22 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /arrows
+      Name: Marker
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /arrowsf
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -558,7 +521,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 8.00374984741211
+      Distance: 11.115608215332031
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -595,4 +558,4 @@ Window Geometry:
     collapsed: true
   Width: 1267
   X: 653
-  Y: 0
+  Y: 27

@@ -5,6 +5,7 @@ import numpy as np
 from geometry_msgs.msg import Point32, Polygon, PolygonStamped
 from sensor_msgs.msg import PointCloud, ChannelFloat32
 from visualization_msgs.msg import Marker, MarkerArray
+from tf.transformations import quaternion_from_euler
 
 class Viusalize:
     def __init__(self, model):
@@ -43,6 +44,8 @@ class Viusalize:
         self.robots_precs_pc_pub = rospy.Publisher("/robots_precs", PointCloud, queue_size=10)
         self.robots_starts_pc_pub = rospy.Publisher("/robots_starts", PointCloud, queue_size=10)
         self.robots_text_pub = rospy.Publisher("/robots_texts", MarkerArray, queue_size=10)
+        self.arrow_pub = rospy.Publisher("/arrows", Marker, queue_size=10)
+        self.arrowf_pub = rospy.Publisher("/arrowsf", Marker, queue_size=10)
 
         self.robots_pubs = {}
         self.robots_poly_pubs = {}
@@ -299,3 +302,66 @@ class Viusalize:
             else:
                 self.robots_poly_pubs_2[ns].publish(pol_stamp)
 
+
+    def arrow(self, x, y, theta):
+        marker = Marker()
+        marker.header.frame_id = "/map"
+        marker.header.stamp = rospy.Time.now()
+
+        # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
+        marker.type = marker.ARROW
+        
+        q = quaternion_from_euler(0, 0, theta)
+
+        marker.pose.position.x = x
+        marker.pose.position.y = y
+        marker.pose.position.z = 0
+        marker.pose.orientation.x = q[0]
+        marker.pose.orientation.y = q[1]
+        marker.pose.orientation.z = q[2]
+        marker.pose.orientation.w = q[3]
+
+        # Set the scale of the marker
+        marker.scale.x = 0.9
+        marker.scale.y = 0.1
+        marker.scale.z = 0.1
+
+        # Set the color
+        marker.color.r = 1.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        marker.color.a = 1.0
+
+        self.arrow_pub.publish(marker)
+
+    
+    def arrow_f(self, x, y, theta):
+        marker = Marker()
+        marker.header.frame_id = "/map"
+        marker.header.stamp = rospy.Time.now()
+
+        # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
+        marker.type = marker.ARROW
+        
+        q = quaternion_from_euler(0, 0, theta)
+
+        marker.pose.position.x = x
+        marker.pose.position.y = y
+        marker.pose.position.z = 0
+        marker.pose.orientation.x = q[0]
+        marker.pose.orientation.y = q[1]
+        marker.pose.orientation.z = q[2]
+        marker.pose.orientation.w = q[3]
+
+        # Set the scale of the marker
+        marker.scale.x = 0.9
+        marker.scale.y = 0.1
+        marker.scale.z = 0.1
+
+        # Set the color
+        marker.color.r = 0.0
+        marker.color.g = 1.0
+        marker.color.b = 0.0
+        marker.color.a = 1.0
+
+        self.arrowf_pub.publish(marker)
