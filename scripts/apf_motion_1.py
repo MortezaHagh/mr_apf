@@ -163,7 +163,7 @@ class ApfMotion(object):
         else:
             v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
 
-        w = 1 * self.w_max * f_theta / self.fix_f
+        w = 3 * self.w_max * f_theta / self.fix_f
 
         if (v==0) and abs(w)<0.03:
             v = self.v_min_2*4
@@ -214,8 +214,8 @@ class ApfMotion(object):
         dx = self.goal_x - self.r_x
         dy = self.goal_y - self.r_y
         goal_dist = np.sqrt(dx**2 + dy**2)
-        # f = self.zeta * goal_dist
-        f = self.fix_f
+        f = self.zeta * goal_dist
+        # f = self.fix_f
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
         angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
@@ -246,7 +246,7 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
 
-            if (not resp.reached) and d_ro < self.robot_stop_d and resp.priority[i] > 0 and abs(angle_diff) > np.pi/2:
+            if (not resp.reached) and d_ro < self.robot_stop_d and resp.priority[i] > 0: # and abs(angle_diff) > np.pi/2:
                 self.stop_flag = True
                 break
 
