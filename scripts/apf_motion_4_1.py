@@ -513,7 +513,7 @@ class ApfMotion(object):
         # f = self.zeta * goal_dist            
         f = self.fix_f
         if goal_dist<0.5:
-            f = 3*f
+            f = 2*f
         theta_rg = np.arctan2(dy, dx)
         ad_rg_h = self.angle_diff(theta_rg, self.r_h)
         self.theta_rg = theta_rg
@@ -551,7 +551,7 @@ class ApfMotion(object):
 
     def compute_multi_force(self, nr):
         nr_force = [0, 0]
-        if True: # nr.d<nr.r_start: ###
+        if True: #nr.d<nr.r_start:
             # r_g
             dx = self.goal_x - nr.x
             dy = self.goal_y - nr.y
@@ -594,7 +594,7 @@ class ApfMotion(object):
                 if (not nr.reached) and (not nr.stop) and nr.p:
                     self.stop_flag_2 = True
 
-            if (nr.d<nr.r_half):        #  and nr.p
+            if (nr.d<nr.r_half):
                 self.near_robots = True
 
             #
@@ -611,7 +611,7 @@ class ApfMotion(object):
             theta_Rr = nr.theta_rR - np.pi
             ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
             target_other_side = False
-            if abs(ad_Rg_Rr)>np.pi/2:
+            if abs(ad_Rg_Rr)>np.pi/3:
                 target_other_side = True
 
             ad_h_rR = nr.h_rR

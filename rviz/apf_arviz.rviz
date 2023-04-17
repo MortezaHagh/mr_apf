@@ -78,15 +78,27 @@ Visualization Manager:
           Value: false
         r1/wheel_right_link:
           Value: false
+        r10/base_footprint:
+          Value: true
         r10/odom:
+          Value: true
+        r11/base_footprint:
           Value: true
         r11/odom:
           Value: true
+        r12/base_footprint:
+          Value: true
         r12/odom:
+          Value: true
+        r13/base_footprint:
           Value: true
         r13/odom:
           Value: true
+        r14/base_footprint:
+          Value: true
         r14/odom:
+          Value: true
+        r15/base_footprint:
           Value: true
         r15/odom:
           Value: true
@@ -142,11 +154,19 @@ Visualization Manager:
           Value: true
         r5/odom:
           Value: true
+        r6/base_footprint:
+          Value: true
         r6/odom:
+          Value: true
+        r7/base_footprint:
           Value: true
         r7/odom:
           Value: true
+        r8/base_footprint:
+          Value: true
         r8/odom:
+          Value: true
+        r9/base_footprint:
           Value: true
         r9/odom:
           Value: true
@@ -172,17 +192,23 @@ Visualization Manager:
                   r1/wheel_right_link:
                     {}
             r10/odom:
-              {}
+              r10/base_footprint:
+                {}
             r11/odom:
-              {}
+              r11/base_footprint:
+                {}
             r12/odom:
-              {}
+              r12/base_footprint:
+                {}
             r13/odom:
-              {}
+              r13/base_footprint:
+                {}
             r14/odom:
-              {}
+              r14/base_footprint:
+                {}
             r15/odom:
-              {}
+              r15/base_footprint:
+                {}
             r2/odom:
               r2/base_footprint:
                 r2/base_link:
@@ -226,13 +252,17 @@ Visualization Manager:
               r5/base_footprint:
                 {}
             r6/odom:
-              {}
+              r6/base_footprint:
+                {}
             r7/odom:
-              {}
+              r7/base_footprint:
+                {}
             r8/odom:
-              {}
+              r8/base_footprint:
+                {}
             r9/odom:
-              {}
+              r9/base_footprint:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 0.699999988079071
@@ -493,7 +523,7 @@ Visualization Manager:
       Color: 252; 175; 62
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -508,15 +538,15 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/Polygon
       Color: 52; 101; 164
-      Enabled: true
+      Enabled: false
       Name: Polygon
       Topic: /r3/robot_poly_2
       Unreliable: false
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /arrows
@@ -530,7 +560,7 @@ Visualization Manager:
       Marker Topic: /arrowsf
       Name: Marker
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
   Enabled: true

@@ -216,7 +216,7 @@ class ApfMotion(object):
             w = 1*np.sign(w)
 
         # if (v==0) and abs(w)<0.03:
-        #     v = self.v_min_2*1
+        #     v = self.v_min_2*2
 
         # thresh_theta = np.pi/3
         # w = 4 * self.w_max * theta / (np.pi/6)
@@ -410,8 +410,8 @@ class ApfMotion(object):
                         radius = mbr.exterior.distance(mbr.centroid)
                         xc = circum_center[0]
                         yc = circum_center[1]
-                        radius = max(radius, self.robot_prec_d)
                         rc = 2.5*radius + self.ind/20 #+ self.robot_r + self.prec_d
+                        rc = max(rc, 2*self.robot_prec_d)
                 
                 # if robot is in the polygon
                 if (not is_target_in) and is_robot_in:
@@ -513,7 +513,7 @@ class ApfMotion(object):
         # f = self.zeta * goal_dist            
         f = self.fix_f
         if goal_dist<0.5:
-            f = 3*f
+            f = 2*f
         theta_rg = np.arctan2(dy, dx)
         ad_rg_h = self.angle_diff(theta_rg, self.r_h)
         self.theta_rg = theta_rg
@@ -537,7 +537,7 @@ class ApfMotion(object):
                 nr_force = self.compute_robot_force(nr)
                 # self.viz_arrow(nr_force)
             else:
-                if not self.near_robots:
+                if not self.near_robots: ###
                     nr_force = self.compute_multi_force(nr)
 
             robot_f[0] += round(nr_force[0], 3)
@@ -559,7 +559,7 @@ class ApfMotion(object):
             theta_Rr = nr.theta_rR - np.pi
             ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
             target_other_side = False
-            if abs(ad_Rg_Rr)>np.pi/4:
+            if abs(ad_Rg_Rr)>np.pi/3:
                 target_other_side = True
 
             coeff = 1
@@ -573,13 +573,13 @@ class ApfMotion(object):
                 coeff = np.sign(ad_rg_rR*nr.h_rR)
             angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.h_rR)*coeff
             ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
-            f3 = f1 + 3
+            f3 = f1 + 4
             templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
             if target_other_side:
                 if (nr.r_prec<nr.d):
                     nr_force = templ3
-                elif (0.8*nr.r_prec<nr.d<nr.r_prec): # todo
+                elif (0.8*nr.r_prec<nr.d<nr.r_prec):
                     nr_force = templ3
                     # nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
 
@@ -594,7 +594,7 @@ class ApfMotion(object):
                 if (not nr.reached) and (not nr.stop) and nr.p:
                     self.stop_flag_2 = True
 
-            if (nr.d<nr.r_half):        #  and nr.p
+            if (nr.d<nr.r_half):
                 self.near_robots = True
 
             #
@@ -611,7 +611,7 @@ class ApfMotion(object):
             theta_Rr = nr.theta_rR - np.pi
             ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
             target_other_side = False
-            if abs(ad_Rg_Rr)>np.pi/2:
+            if abs(ad_Rg_Rr)>np.pi/3:
                 target_other_side = True
 
             ad_h_rR = nr.h_rR
@@ -662,7 +662,7 @@ class ApfMotion(object):
 
                 elif (nr.r_prec <nr.d<nr.r_half):
                     if (not nr.reached) and (not nr.stop):
-                        if (flag_rR and abs(ad_h_rR)<np.pi/2 and abs(ad_Rr_H)<(np.pi/2)):
+                        if (flag_rR and abs(ad_h_rR)<np.pi/2):
                             nr_force = [templ2_2[0]+nr_force[0], templ2_2[1]+nr_force[1]]
                     else:
                         if (abs(ad_h_rR)<(np.pi/2)):

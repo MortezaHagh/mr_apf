@@ -210,7 +210,7 @@ class ApfMotion(object):
         else:
             v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
 
-        w = 1 * self.w_max * f_theta / self.fix_f
+        w = 3 * self.w_max * f_theta / self.fix_f
 
         if  f_r < -1 and abs(w)<0.05:
             w = 1*np.sign(w)
@@ -442,7 +442,7 @@ class ApfMotion(object):
                     else:
                         xc = xx1
                         yc = yy1
-                    rc = d12/np.sqrt(2) # /np.sqrt(3) d12
+                    rc = d12/np.sqrt(2)      # /np.sqrt(3) d12
                     # rc = self.eval_obst(xc, yc, rc)
 
                 # 
@@ -510,7 +510,7 @@ class ApfMotion(object):
         # f = self.zeta * goal_dist            
         f = self.fix_f
         if goal_dist<0.5:
-            f = 3*f
+            f = 2*f
         theta_rg = np.arctan2(dy, dx)
         ad_rg_h = self.angle_diff(theta_rg, self.r_h)
         self.theta_rg = theta_rg
@@ -532,6 +532,7 @@ class ApfMotion(object):
         for nr in new_robots:
             if (not nr.big):
                 nr_force = self.compute_robot_force(nr)
+                # self.viz_arrow(nr_force)
             else:
                 nr_force = self.compute_multi_force(nr)
 
