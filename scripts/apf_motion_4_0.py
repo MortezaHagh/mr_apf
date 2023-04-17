@@ -214,6 +214,7 @@ class ApfMotion(object):
 
         if  f_r < -1 and abs(w)<0.05:
             w = 1*np.sign(w)
+
         # if (v==0) and abs(w)<0.03:
         #     v = self.v_min_2*1
 
@@ -531,9 +532,6 @@ class ApfMotion(object):
         for nr in new_robots:
             if (not nr.big):
                 nr_force = self.compute_robot_force(nr)
-                # if self.stop_flag_2:
-                #     return
-                # if  self.near_robots
             else:
                 nr_force = self.compute_multi_force(nr)
 

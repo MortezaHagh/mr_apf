@@ -537,8 +537,8 @@ class ApfMotion(object):
                 nr_force = self.compute_robot_force(nr)
                 # self.viz_arrow(nr_force)
             else:
-                # if not self.near_robots: ###d
-                nr_force = self.compute_multi_force(nr)
+                if not self.near_robots: ###d
+                    nr_force = self.compute_multi_force(nr)
 
             robot_f[0] += round(nr_force[0], 3)
             robot_f[1] += round(nr_force[1], 3)
