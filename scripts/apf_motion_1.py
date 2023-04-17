@@ -139,7 +139,7 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
-            n = 3
+            n = 1
             if self.ind==n: print("f: ", self.stop_flag)
             if self.ind==n: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
             if self.ind==n: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
@@ -168,8 +168,8 @@ class ApfMotion(object):
         if  f_r < -1 and abs(w)<0.05:
             w = 1*np.sign(w)
             
-        if (v==0) and abs(w)<0.03:
-            v = self.v_min_2*4
+        if (v<=self.v_min_2*2) and abs(w)<0.03:
+            v = self.v_min_2*2
 
         # thresh_theta = np.pi/3
         # w = 4 * self.w_max * theta / (np.pi/6)
