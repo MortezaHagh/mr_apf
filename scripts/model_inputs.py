@@ -44,8 +44,11 @@ class ModelInputs():
         xc2 = xc1*2
         yc2 = yc1 + [y+6 for y in yc1]
 
-        self.x_obst = [] #xc2
-        self.y_obst = [] # yc2
+        # self.x_obst = []
+        # self.y_obst = []
+
+        self.x_obst = xc2
+        self.y_obst = yc2
 
         # robots
         self.robot_count = robot_n

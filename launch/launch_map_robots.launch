@@ -2,7 +2,7 @@
 <launch>
   
   <include file="$(find init_sim)/launch/empty_world_complete.launch">
-    <arg name="world_name" value="$(find init_sim)/worlds/empty_world_1.world"/>  
+    <arg name="world_name" value="$(find init_sim)/worlds/columns1.world"/>  
     <!-- walls3 empty_wall empty_world_1 columns1.world-->
     
     <arg name="paused" value="false"/>
