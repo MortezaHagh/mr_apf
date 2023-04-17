@@ -411,7 +411,7 @@ class ApfMotion(object):
                         xc = circum_center[0]
                         yc = circum_center[1]
                         radius = max(radius, self.robot_prec_d)
-                        rc = 2.5*radius + self.ind/20 #+ self.robot_r + self.prec_d
+                        rc = radius #2.5*radius + self.ind/20 #+ self.robot_r + self.prec_d
                 
                 # if robot is in the polygon
                 if (not is_target_in) and is_robot_in:
@@ -445,7 +445,7 @@ class ApfMotion(object):
                     else:
                         xc = xx1
                         yc = yy1
-                    rc = d12/np.sqrt(2)      # /np.sqrt(3) d12
+                    rc = d12/np.sqrt(3)      # /np.sqrt(3) d12
                     # rc = self.eval_obst(xc, yc, rc)
 
                 # 
@@ -551,7 +551,7 @@ class ApfMotion(object):
 
     def compute_multi_force(self, nr):
         nr_force = [0, 0]
-        if nr.d<nr.r_start:
+        if True: # nr.d<nr.r_start: ###
             # r_g
             dx = self.goal_x - nr.x
             dy = self.goal_y - nr.y
@@ -580,8 +580,8 @@ class ApfMotion(object):
                 if (nr.r_prec<nr.d):
                     nr_force = templ3
                 elif (0.8*nr.r_prec<nr.d<nr.r_prec): # todo
-                    # nr_force = templ3
-                    nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
+                    nr_force = templ3
+                    # nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
 
         return nr_force
 
@@ -716,7 +716,7 @@ class ApfMotion(object):
             ft = f + 2
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
 
-            if True: #target_other_side:
+            if target_other_side: #target_other_side:
                 if (self.obst_prec_d<d_ro):
                     if (abs(ad_h_ro)<np.pi/2):
                             o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
