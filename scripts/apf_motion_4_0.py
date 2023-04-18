@@ -109,7 +109,7 @@ class ApfMotion(object):
         self.v_min = 0.0        # init_params.linear_min_speed
         self.w_min = 0.0        # init_params.angular_min_speed
         self.w_max = 1.0        # init_params.angular_max_speed
-        self.v_min_2 = 0.04     # init_params.linear_min_speed_2
+        self.v_min_2 = 0.05     # init_params.linear_min_speed_2
 
         # settings
         self.zeta = 1
@@ -167,7 +167,8 @@ class ApfMotion(object):
                 self.v_ang.append(self.w)
 
                 if stop_flag:
-                    self.v = 0
+                    self.v = min(self.v, self.v_min_2)
+                    # self.v = 0
                     # self.w = 0
                 
                 if self.stop_flag_2:
@@ -188,7 +189,7 @@ class ApfMotion(object):
             self.path_x.append(round(self.r_x, 3))
             self.path_y.append(round(self.r_y, 3))
 
-            n = 2
+            n = 1
             if self.ind==n: print("fm: ", self.stop_flag_multi, "f: ", self.stop_flag)
             if self.ind==n: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
             if self.ind==n: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
@@ -215,8 +216,8 @@ class ApfMotion(object):
         if  f_r < -1 and abs(w)<0.05:
             w = 1*np.sign(w)
 
-        # if (v==0) and abs(w)<0.03:
-        #     v = self.v_min_2*1
+        if (v==0) and abs(w)<0.03:
+            v = self.v_min_2*1
 
         # thresh_theta = np.pi/3
         # w = 4 * self.w_max * theta / (np.pi/6)
@@ -408,7 +409,7 @@ class ApfMotion(object):
                         radius = mbr.exterior.distance(mbr.centroid)
                         xc = circum_center[0]
                         yc = circum_center[1]
-                        rc = 2.5*radius + self.ind/20 #+ self.robot_r + self.prec_d
+                        rc = 2.5*radius #+ self.robot_r + self.prec_d
                 
                 # if robot is in the polygon
                 if (not is_target_in) and is_robot_in:
@@ -582,10 +583,10 @@ class ApfMotion(object):
 
             #
             coeff = 1
-            nr_force = []
             templ2 = []
             templ3 = []
             templ3_2 = []
+            nr_force = []
 
             # compute force
             ad_h_rR = nr.h_rR
@@ -595,20 +596,20 @@ class ApfMotion(object):
 
             flag_rR = True
             ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
-            angle_turn_R = nr.theta_rR - (np.pi/2+np.pi/8)*np.sign(ad_Rr_H)
             ad_rR_h =  self.angle_diff(nr.theta_rR, self.r_h)
 
             if (ad_Rr_H*ad_rR_h)<0:
                 if not nr.p:
                     flag_rR = False
 
+            angle_turn_R = nr.theta_rR - (np.pi/2+np.pi/8)*np.sign(ad_Rr_H)
             ad_C_h = self.angle_diff(angle_turn_R, self.r_h)
             angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(ad_h_rR)*coeff
             ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
 
             f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
 
-            fl = f+2
+            fl = f + 2
             nr_force = [fl * -np.cos(ad_h_rR), fl * np.sin(ad_h_rR)]
 
             f2 = f + 2

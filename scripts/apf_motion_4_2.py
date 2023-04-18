@@ -109,7 +109,7 @@ class ApfMotion(object):
         self.v_min = 0.0        # init_params.linear_min_speed
         self.w_min = 0.0        # init_params.angular_min_speed
         self.w_max = 1.0        # init_params.angular_max_speed
-        self.v_min_2 = 0.04     # init_params.linear_min_speed_2
+        self.v_min_2 = 0.05     # init_params.linear_min_speed_2
 
         # settings
         self.zeta = 1
@@ -167,7 +167,8 @@ class ApfMotion(object):
                 self.v_ang.append(self.w)
 
                 if stop_flag:
-                    self.v = 0
+                    self.v = min(self.v, self.v_min_2)
+                    # self.v = 0
                     # self.w = 0
                 
                 if self.stop_flag_2:
@@ -210,13 +211,13 @@ class ApfMotion(object):
         else:
             v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
 
-        w = 1 * self.w_max * f_theta / self.fix_f
+        w = 3 * self.w_max * f_theta / self.fix_f
 
         if  f_r < -1 and abs(w)<0.05:
             w = 1*np.sign(w)
 
-        # if (v==0) and abs(w)<0.03:
-        #     v = self.v_min_2*2
+        if (v==0) and abs(w)<0.03:
+            v = self.v_min_2*1
 
         # thresh_theta = np.pi/3
         # w = 4 * self.w_max * theta / (np.pi/6)
@@ -410,7 +411,7 @@ class ApfMotion(object):
                         radius = mbr.exterior.distance(mbr.centroid)
                         xc = circum_center[0]
                         yc = circum_center[1]
-                        rc = 2.5*radius + self.ind/20 #+ self.robot_r + self.prec_d
+                        rc = 2.5*radius  #+ self.robot_r + self.prec_d
                         rc = max(rc, 2*self.robot_prec_d)
                 
                 # if robot is in the polygon
@@ -537,7 +538,7 @@ class ApfMotion(object):
                 nr_force = self.compute_robot_force(nr)
                 # self.viz_arrow(nr_force)
             else:
-                if not self.near_robots: ###
+                if not self.near_robots:
                     nr_force = self.compute_multi_force(nr)
 
             robot_f[0] += round(nr_force[0], 3)
@@ -559,7 +560,7 @@ class ApfMotion(object):
             theta_Rr = nr.theta_rR - np.pi
             ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
             target_other_side = False
-            if abs(ad_Rg_Rr)>np.pi/3:
+            if abs(ad_Rg_Rr)>np.pi/4:
                 target_other_side = True
 
             coeff = 1
@@ -657,8 +658,6 @@ class ApfMotion(object):
                     else:
                         if (abs(ad_h_rR)<(np.pi/2)):
                             nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
-                        # else:
-                        #     nr_force = [0, 0]
 
                 elif (nr.r_prec <nr.d<nr.r_half):
                     if (not nr.reached) and (not nr.stop):
@@ -667,8 +666,6 @@ class ApfMotion(object):
                     else:
                         if (abs(ad_h_rR)<(np.pi/2)):
                             nr_force = [templ3_2[0]+nr_force[0], templ3_2[1]+nr_force[1]]
-                        # else:
-                        #     nr_force = [0, 0]
         return nr_force
 
     # -----------------------  f_obstacle  ----------------------------#
