@@ -130,7 +130,7 @@ class ApfMotion(object):
         self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
 
         self.w_coeff = 1                        # init_params.w_coeff       # angular velocity coeff
-        self.goal_dis_tresh = 0.11              # init_params.dis_tresh     # distance thresh to finish
+        self.goal_dis_tresh = 0.07              # init_params.dis_tresh     # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
     # --------------------------  exec_cb  ---------------------------#
@@ -577,6 +577,7 @@ class ApfMotion(object):
                 self.stop_flag = True
                 if (not nr.reached) and (not nr.stop) and nr.p:
                     self.stop_flag_2 = True
+                    return [0, 0]
 
             if (nr.d<nr.r_half and nr.p):
                 self.near_robots = True
@@ -654,8 +655,8 @@ class ApfMotion(object):
             theta_ro = np.arctan2(dy, dx)
             ad_h_ro = self.angle_diff(self.r_h, theta_ro)
             
-            # if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
-            #     self.stop_flag = True
+            if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
+                self.stop_flag = True
 
             coeff = 1
             if (abs(ad_h_ro)<(10*np.pi/180)):
