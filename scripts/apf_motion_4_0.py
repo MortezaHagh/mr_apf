@@ -130,7 +130,7 @@ class ApfMotion(object):
         self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
 
         self.w_coeff = 1                        # init_params.w_coeff       # angular velocity coeff
-        self.goal_dis_tresh = 0.07              # init_params.dis_tresh     # distance thresh to finish
+        self.goal_dis_tresh = 0.06              # init_params.dis_tresh     # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
     # --------------------------  exec_cb  ---------------------------#
@@ -409,7 +409,8 @@ class ApfMotion(object):
                         radius = mbr.exterior.distance(mbr.centroid)
                         xc = circum_center[0]
                         yc = circum_center[1]
-                        rc = 2.5*radius #+ self.robot_r + self.prec_d
+                        rc = 2.5*radius  #+ self.robot_r + self.prec_d
+                        rc = max(rc, 2*self.robot_prec_d)
                 
                 # if robot is in the polygon
                 if (not is_target_in) and is_robot_in:
@@ -546,16 +547,34 @@ class ApfMotion(object):
 
     # -----------------------  compute_robot_force  ----------------------------#
 
-    def compute_multi_force(self, nr):       
+    def compute_multi_force(self, nr):     
+        # force 
         coeff = 1
         f1 = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
         f = f1 + 2
         nr_force = [f * -np.cos(nr.h_rR), f * np.sin(nr.h_rR)]
 
-        theta_ = 40
-        if (abs(nr.h_rR)<(theta_*np.pi/180)):
-            ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
+        # based_on_goal, target_other_side
+        based_on_goal = False
+        dx = self.goal_x - nr.x
+        dy = self.goal_y - nr.y
+        theta_Rg = np.arctan2(dy, dx)
+        theta_Rr = nr.theta_rR - np.pi
+        ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
+        if abs(ad_Rg_Rr)<np.deg2rad(180-20):
+            based_on_goal = True
+        target_other_side = False
+        if abs(ad_Rg_Rr)>np.pi/5:
+            target_other_side = True
+
+        theta_ = 20
+        ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
+        if based_on_goal:
             coeff = np.sign(ad_rg_rR*nr.h_rR)
+        else:
+            if abs(nr.h_rR)<np.deg2rad(theta_):
+                coeff = np.sign(ad_rg_rR*nr.h_rR)
+
         angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.h_rR)*coeff
         ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
         f3 = f1 + 4
@@ -563,7 +582,7 @@ class ApfMotion(object):
 
         if (nr.r_prec<nr.d):
             nr_force = templ3
-        elif (0.8*nr.r_prec<nr.d<nr.r_prec): # todo
+        elif (0.8*nr.r_prec<nr.d<nr.r_prec):
             nr_force = templ3
             # if (abs(nr.h_rR)<(np.pi/2)):
             #     nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
