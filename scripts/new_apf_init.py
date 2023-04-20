@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import json
 import rospy
 import rospkg
@@ -22,18 +23,23 @@ class Run():
     def __init__(self):
 
         # # results
-        version = 3     # 3
+        version = 4
         self.test_id = 13     # check
         self.test = "T" + str(self.test_id) + "_v" + str(version)
         # rospack = rospkg.RosPack()
         # pkg_path = "rospack.get_path('apf')"
         self.pred = "/home/piotr/Documents/Morteza/CurrentAPF/"
+        self.dir_f = self.pred + self.test + "/apf_paths"
         self.dir_p = self.pred + self.test + "/apf_paths.json"
         self.dir_t = self.pred + self.test + "/apf_times.json"
-        self.dir_f = self.pred + self.test + "/apf_paths"
         self.dir_force = self.pred + self.test + "/apf_forces"
         res_pred = "res_" + str(self.test_id) + "_v" + str(version) + ".json"
         self.result_path = "/home/piotr/Documents/Morteza/CurrentAPF" + '/result_apf/' + res_pred
+
+        path = self.pred + self.test
+        isExist = os.path.exists(path)
+        if not isExist:
+            os.makedirs(path)
 
         # ros
         rate = rospy.Rate(20)

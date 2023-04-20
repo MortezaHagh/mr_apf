@@ -534,11 +534,12 @@ class ApfMotion(object):
         self.near_robots = False
 
         for nr in new_robots:
+            nr_force = [0, 0]
             if (not nr.big):
                 nr_force = self.compute_robot_force(nr)
                 # self.viz_arrow(nr_force)
             else:
-                if not self.near_robots:
+                if (not self.near_robots) and (not self.near_obst):
                     nr_force = self.compute_multi_force(nr)
 
             robot_f[0] += round(nr_force[0], 3)
@@ -683,6 +684,7 @@ class ApfMotion(object):
     def f_obstacle(self):
         obs_f = [0, 0]
         self.obs_f = [0, 0]
+        self.near_obst = False
 
         for i in self.f_obsts_inds:
             dy = (self.obs_y[i] - self.r_y)
@@ -692,6 +694,9 @@ class ApfMotion(object):
             theta_ro = np.arctan2(dy, dx)
             ad_h_ro = self.angle_diff(self.r_h, theta_ro)
             
+            # if (d_ro < self.obst_half_d):
+            #     self.near_obst = True
+
             if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
                 self.stop_flag = True
 
