@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import copy
 import rospy
 import numpy as np
 from nav_msgs.msg import Odometry
@@ -362,10 +363,12 @@ class ApfMotion(object):
                 new_robots.append(nr)
                 if robots_reached[i]: 
                     for xy in XY:
-                        nr.x = xy[0]
-                        nr.y = xy[1]
-                        new_robots.append(nr)
-                        multi_robots_vis.append(nr)
+                        nnr = copy.copy(nr)
+                        nnr.x = xy[0]
+                        nnr.y = xy[1]
+                        nnr.z = nnr.z/2
+                        new_robots.append(nnr)
+                        multi_robots_vis.append(nnr)
         
         # if there is none robots in proximity
         if len(robots_inds)==0:
