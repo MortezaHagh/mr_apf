@@ -6,8 +6,8 @@ class ModelInputs():
         print("Inputs for creating model")
 
         if map_id == 1:
-            self.map_0(robot_count)
-            # self.collide()  # collide map_0
+            # self.map_0(robot_count)
+            self.collide()  # collide map_0
 
         self.apply_path_unit(path_unit)
 
