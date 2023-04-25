@@ -625,7 +625,7 @@ class ApfMotion(object):
         theta_Rg = np.arctan2(dy, dx)
         theta_Rr = nr.theta_rR - np.pi
         ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
-        if abs(ad_Rg_Rr)<np.deg2rad(180-40):
+        if abs(ad_Rg_Rr)<np.deg2rad(180-20):
             based_on_goal = True
         target_other_side = False
         if abs(ad_Rg_Rr)>np.pi/5:
