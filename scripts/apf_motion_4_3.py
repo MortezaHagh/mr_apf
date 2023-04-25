@@ -605,7 +605,7 @@ class ApfMotion(object):
         theta_Rg = np.arctan2(dy, dx)
         theta_Rr = nr.theta_rR - np.pi
         ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
-        if abs(ad_Rg_Rr)<np.deg2rad(180-20):
+        if abs(ad_Rg_Rr)<np.deg2rad(180-40):
             based_on_goal = True
         target_other_side = False
         if abs(ad_Rg_Rr)>np.pi/5:
@@ -616,7 +616,7 @@ class ApfMotion(object):
         if based_on_goal:
             coeff = np.sign(ad_rg_rR*nr.h_rR)
         else:
-            if abs(nr.h_rR)<np.deg2rad(theta_):
+            if abs(nr.h_rR)<np.deg2rad(theta_) or abs(nr.h_rR)>np.deg2rad(180-theta_):
                 coeff = np.sign(ad_rg_rR*nr.h_rR)
 
         angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.h_rR)*coeff
@@ -661,7 +661,7 @@ class ApfMotion(object):
             r_coeff = 1
             theta_ = 10
             ad_h_rR = nr.h_rR
-            if (abs(ad_h_rR)<np.deg2rad(theta_)):
+            if (abs(ad_h_rR)<np.deg2rad(theta_) or abs(ad_h_rR)>np.deg2rad(180-theta_)):
                 ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
                 r_coeff = np.sign(ad_rg_rR*nr.h_rR)
 
@@ -719,7 +719,7 @@ class ApfMotion(object):
                         if (flag_rR and abs(ad_h_rR)<np.pi/2 and abs(ad_Rr_H)<np.pi/2):
                             nr_force = [templ2_2[0]+nr_force[0], templ2_2[1]+nr_force[1]]
                     else:
-                        if (abs(ad_h_rR)<(np.pi/2)):
+                        if True: #(abs(ad_h_rR)<(np.pi/2)):
                             nr_force = [templ3_2[0]+nr_force[0], templ3_2[1]+nr_force[1]]
         return nr_force
 
@@ -754,8 +754,8 @@ class ApfMotion(object):
                 target_other_side = True
 
             coeff = 1
-            theta = 20
-            if (abs(ad_h_ro)<(theta*np.pi/180)):
+            theta_ = 20
+            if (abs(ad_h_ro)<np.deg2rad(theta_) or abs(ad_h_ro)>np.deg2rad(180-theta_)):
                 ad_rg_ro = self.angle_diff(self.theta_rg,  theta_ro)
                 coeff = np.sign(ad_rg_ro*ad_h_ro)
             # angle_turn_o = theta_ro + (np.pi/2)*np.sign(ad_h_ro)
