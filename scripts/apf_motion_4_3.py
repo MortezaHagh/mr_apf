@@ -279,6 +279,7 @@ class ApfMotion(object):
         AD_h_rR = []
         new_robots = []
         multi_robots = []
+        multi_robots_vis = []
         robots_inds = []
         robots_inds_f = {}
         self.new_robots = []
@@ -338,12 +339,13 @@ class ApfMotion(object):
                 nr.stop = robots_stopped[i]
                 nr.reached = robots_reached[i]
                 rc = self.robot_prec_d
-                # rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d)
+                rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d, d_rR)
                 nr.r_prec = rc
                 nr.r_half = 1.5 * rc
                 nr.r_start = 2.0 * rc
                 nr.z = 4 * self.fix_f * rc**4
                 new_robots.append(nr)
+                multi_robots_vis.append(nr)
         
         # if there is none robots in proximity
         if len(robots_inds)==0:
@@ -447,7 +449,6 @@ class ApfMotion(object):
                         xc = xx1
                         yc = yy1
                     rc = d12/np.sqrt(2)      # /np.sqrt(3) d12
-                    # rc = self.eval_obst(xc, yc, rc)
 
                 # 
                 d_tc = self.distance(self.goal_x, self.goal_y, xc, yc)
@@ -468,15 +469,17 @@ class ApfMotion(object):
                 nr.h_rR = ad_h_rR
                 nr.theta_rR = theta_rR
                 if any(P): nr.p = True
-                nr.r_prec = rc + self.robot_r + self.prec_d
+                r_prec = rc + self.robot_r + self.prec_d
+                nr.r_prec = self.eval_obst(xc, yc, r_prec, d_rR)
                 nr.r_half = 1.5 * nr.r_prec
                 nr.r_start = 2.0 * nr.r_prec
                 nr.z = 4 * self.fix_f * nr.r_prec**4
                 new_robots.append(nr)
                 multi_robots.append(nr)
-        
+                multi_robots_vis.append(nr)
+
         self.new_robots = new_robots
-        self.vs.robot_data(multi_robots, self.ns)
+        self.vs.robot_data(multi_robots_vis, self.ns)
         return
 
 
@@ -490,14 +493,16 @@ class ApfMotion(object):
                 f_obsts_inds.append(oi)
         self.f_obsts_inds = f_obsts_inds
 
-    def eval_obst(self, xc, yc, rc):
-        ros = []
-        for oi in self.f_obsts_inds:
+    def eval_obst(self, xc, yc, rc, d_rR):
+        ros = [rc]
+        for oi in self.obs_ind_main:
             xo = self.obs_x[oi]
             yo = self.obs_y[oi]
-            do = self.distance(xo, yo, xc, yc)
-            if rc<do<rc+self.obst_prec_d:
-                ros.append(do)
+            d_Ro = self.distance(xo, yo, xc, yc)
+            d_ro = self.distance(xo, yo, self.r_x, self.r_y)
+            if d_ro<d_rR and d_rR>rc:
+                if (rc>(d_Ro-self.obst_prec_d)) and rc<(d_Ro+self.obst_prec_d):
+                    ros.append(d_Ro+self.obst_prec_d*1)
 
         if ros!=[]:
             do_max = max(ros)
@@ -590,8 +595,8 @@ class ApfMotion(object):
         if target_other_side:
             if (nr.r_prec<nr.d):
                 nr_force = templ3
-            elif (0.8*nr.r_prec<nr.d<nr.r_prec):
-                nr_force = templ3
+            # elif (0.8*nr.r_prec<nr.d<nr.r_prec):
+            #     nr_force = templ3
                 # nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
 
         return nr_force
