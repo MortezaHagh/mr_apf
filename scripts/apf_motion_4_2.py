@@ -153,7 +153,7 @@ class ApfMotion(object):
             self.detect_group()
 
             if self.stop_flag_multi:
-                print(self.ind==n, "stop_flag_multi")
+                print(self.ind, "stop_flag_multi")
                 req = SharePoses2Request()
                 req.ind = self.ind
                 req.stopped = True
@@ -171,13 +171,13 @@ class ApfMotion(object):
                 self.v_ang.append(self.w)
 
                 if self.stop_flag_obsts or self.stop_flag_robots:
-                    print(self.ind==n, "stop_flag_obsts or stop_flag_robots")
+                    print(self.ind, "stop_flag_obsts or stop_flag_robots")
                     # self.v = min(self.v, self.v_min_2)
                     self.v = 0
                     # self.w = 0
                 
                 if self.stop_flag_full:
-                    print(self.ind==n, "stop_flag_full")
+                    print(self.ind, "stop_flag_full")
                     req = SharePoses2Request()
                     req.ind = self.ind
                     req.stopped = True
@@ -196,7 +196,7 @@ class ApfMotion(object):
             self.path_y.append(round(self.r_y, 3))
 
             n = 1
-            if self.ind==n: print("fm: ", self.stop_flag_multi, "f: ", self.stop_flag)
+            if self.ind==n: print("fm: ", self.stop_flag_multi)
             if self.ind==n: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
             if self.ind==n: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
             if self.ind==n: print(" ------------------------------------ ")
@@ -577,8 +577,8 @@ class ApfMotion(object):
                 nr_force = self.compute_robot_force(nr)
                 # self.viz_arrow(nr_force)
             else:
-                if (not self.near_robots) and (not self.near_obst):
-                    nr_force = self.compute_multi_force(nr)
+                # if (not self.near_robots) and (not self.near_obst):
+                nr_force = self.compute_multi_force(nr)
 
             robot_f[0] += round(nr_force[0], 3)
             robot_f[1] += round(nr_force[1], 3)
@@ -734,8 +734,8 @@ class ApfMotion(object):
             if (d_ro < self.obst_half_d):
                 self.near_obst = True
 
-            if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
-                self.stop_flag_obsts = True
+            # if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
+            #     self.stop_flag_obsts = True
 
             dx = self.goal_x - self.obs_x[i]
             dy = self.goal_y - self.obs_y[i]
