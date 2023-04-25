@@ -540,7 +540,7 @@ class ApfMotion(object):
         # if ros!=[]:
         #     do_max = max(ros)
         #     rc = do_max
-        return xy #rc
+        return xy  #rc
 
     # -----------------------  f_target  ----------------------------#
 
