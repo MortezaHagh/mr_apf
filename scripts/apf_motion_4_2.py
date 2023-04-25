@@ -340,13 +340,18 @@ class ApfMotion(object):
                 nr.reached = robots_reached[i]
                 rc = self.robot_prec_d
                 if robots_reached[i]:
-                    rc = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d, d_rR)
+                    XY = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d, d_rR)
                 nr.r_prec = rc
                 nr.r_half = 1.5 * rc
                 nr.r_start = 2.0 * rc
                 nr.z = 4 * self.fix_f * rc**4
                 new_robots.append(nr)
-                if robots_reached[i]: multi_robots_vis.append(nr)
+                if robots_reached[i]: 
+                    for xy in XY:
+                        nr.x = xy[0]
+                        nr.y = xy[1]
+                        new_robots.append(nr)
+                        multi_robots_vis.append(nr)
         
         # if there is none robots in proximity
         if len(robots_inds)==0:
@@ -496,7 +501,7 @@ class ApfMotion(object):
 
     def eval_obst(self, xc, yc, rc, d_rR):
         xy = []
-        ros = [rc]
+        # ros = [rc]
         for oi in self.obs_ind_main:
             xo = self.obs_x[oi]
             yo = self.obs_y[oi]
@@ -504,13 +509,15 @@ class ApfMotion(object):
             d_ro = self.distance(xo, yo, self.r_x, self.r_y)
             if d_rR>rc: #d_ro<d_rR and 
                 if (rc>(d_Ro-self.obst_prec_d)) and rc<(d_Ro+self.obst_prec_d):
-                    ros.append(d_Ro+self.obst_prec_d*1)
-                    xy.append()
+                    # ros.append(d_Ro+self.obst_prec_d*1)
+                    x = (xo+xc)/2
+                    y = (yo+yc)/2
+                    xy.append([x, y])
 
-        if ros!=[]:
-            do_max = max(ros)
-            rc = do_max
-        return rc
+        # if ros!=[]:
+        #     do_max = max(ros)
+        #     rc = do_max
+        return xy #rc
 
     # -----------------------  f_target  ----------------------------#
 
