@@ -636,23 +636,18 @@ class ApfMotion(object):
 
     def compute_robot_force(self, nr):
         if (nr.d< nr.r_start):
-            if (nr.d< nr.r_prec) and (abs(nr.h_rR)<(np.pi/2+np.pi/10)):
-                self.stop_flag_robots = True
-                if (not nr.reached) and (not nr.stop) and nr.p:
-                    self.stop_flag_full = True
-                    return [0, 0]
 
+            # near_robots
             if (nr.d<nr.r_half):
                 self.near_robots = True
 
             #
-            coeff = 1
             templ2 = []
             templ3 = []
             templ3_2 = []
             nr_force = []
 
-            # compute force
+            # target_other_side
             dx = self.goal_x - nr.x
             dy = self.goal_y - nr.y
             theta_Rg = np.arctan2(dy, dx)
@@ -662,28 +657,40 @@ class ApfMotion(object):
             if abs(ad_Rg_Rr)>np.pi/3:
                 target_other_side = True
 
+            # r_coeff, angle_turn_r
+            r_coeff = 1
+            theta_ = 10
             ad_h_rR = nr.h_rR
-            if (abs(ad_h_rR)<(10*np.pi/180)):
+            if (abs(ad_h_rR)<np.deg2rad(theta_)):
                 ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
-                coeff = np.sign(ad_rg_rR*nr.h_rR)
+                r_coeff = np.sign(ad_rg_rR*nr.h_rR)
 
+            # R_coeff, angle_turn_R
             R_coeff = 1
             flag_rR = True
             ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
             ad_rR_h = self.angle_diff(nr.theta_rR, self.r_h)
-
             if (ad_Rr_H*ad_rR_h)<0:
-                if ad_rR_h<0:
-                    flag_rR = False
-                    # R_coeff = -1
+                if abs(ad_rR_h)<abs(ad_Rr_H):
+                    R_coeff = -1
+                    # flag_rR = False
 
-            angle_turn_R = nr.theta_rR - (np.pi/2+np.pi/8)*np.sign(ad_Rr_H*R_coeff)
+            # stops
+            if (nr.d< nr.r_prec): #and (abs(nr.h_rR)<(np.pi/2+np.pi/10))
+                self.stop_flag_robots = True
+                if (not nr.reached) and (not nr.stop): # and nr.p:
+                    if abs(ad_rR_h)<np.pi/2 and abs(ad_Rr_H)>np.pi/2:
+                        self.stop_flag_full = True
+                        return [0, 0]
+
+            # angle_turns
+            angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H*R_coeff)
             ad_C_h = self.angle_diff(angle_turn_R, self.r_h)
-            angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(ad_h_rR)*coeff
+            angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)*r_coeff
             ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
 
+            # forces
             f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-
             fl = f + 0
             nr_force = [fl * -np.cos(ad_h_rR), fl * np.sin(ad_h_rR)]
 
@@ -692,7 +699,7 @@ class ApfMotion(object):
             templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
             templ2_2 = [f2_2 * np.cos(ad_C_h), f2_2 * np.sin(ad_C_h)]
 
-            f3 = f + 2
+            f3 = f + 3 #tocheck
             f3_2 = f + 4 
             templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
             templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
@@ -709,7 +716,7 @@ class ApfMotion(object):
 
                 elif (nr.r_prec <nr.d<nr.r_half):
                     if (not nr.reached) and (not nr.stop):
-                        if (flag_rR and abs(ad_h_rR)<np.pi/2):
+                        if (flag_rR and abs(ad_h_rR)<np.pi/2 and abs(ad_Rr_H)<np.pi/2):
                             nr_force = [templ2_2[0]+nr_force[0], templ2_2[1]+nr_force[1]]
                     else:
                         if (abs(ad_h_rR)<(np.pi/2)):
@@ -767,9 +774,9 @@ class ApfMotion(object):
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
 
             if target_other_side:
-                if (self.obst_prec_d<d_ro<self.obst_half_d):
+                if (self.obst_prec_d<d_ro and d_ro<self.obst_half_d):
                         o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
-                elif (self.obst_prec_d<d_ro):
+                elif (self.obst_half_d<d_ro):
                     if (abs(ad_h_ro)<np.pi/2):
                             o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
 
