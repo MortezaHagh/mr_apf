@@ -380,10 +380,10 @@ class ApfMotion(object):
                         nnr.p = robots_priority[i]>0
                         nnr.stop = True
                         nnr.reached = True
-                        nnr.r_prec = nr.r_prec
-                        nnr.r_half = nr.r_half
-                        nnr.r_start = nr.r_start
-                        nnr.z = nr.z
+                        nnr.r_prec = nr.r_prec/1.5
+                        nnr.r_half = 1.5 * nnr.r_prec
+                        nnr.r_start = 2 * nnr.r_prec
+                        nnr.z = 4 * self.fix_f * nnr.r_prec**4
                         new_robots.append(nnr)
                         multi_robots_vis.append(nnr)
         
