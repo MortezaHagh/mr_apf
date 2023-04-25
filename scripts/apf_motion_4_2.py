@@ -662,7 +662,7 @@ class ApfMotion(object):
 
             f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
 
-            fl = f + 2
+            fl = f + 0
             nr_force = [fl * -np.cos(ad_h_rR), fl * np.sin(ad_h_rR)]
 
             f2 = f + 2
