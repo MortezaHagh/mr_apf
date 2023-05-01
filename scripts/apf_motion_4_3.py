@@ -173,9 +173,10 @@ class ApfMotion(object):
 
                 if self.stop_flag_obsts or self.stop_flag_robots:
                     print(self.ind, "stop_flag_obsts or stop_flag_robots")
-                    # self.v = min(self.v, self.v_min_2)
                     self.v = 0
                     # self.w = 0
+                    if abs(self.w) < (np.deg2rad(2)):
+                        self.v = min(self.v, self.v_min_2)
                 
                 if self.stop_flag_full:
                     print(self.ind, "stop_flag_full")

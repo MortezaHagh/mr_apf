@@ -24,7 +24,7 @@ class Run():
 
         # # results
         version = 10
-        self.test_id = 15     # check
+        self.test_id = 14     # check
         self.test = "T" + str(self.test_id) + "_v" + str(version)
         # rospack = rospkg.RosPack()
         # pkg_path = "rospack.get_path('apf')"
