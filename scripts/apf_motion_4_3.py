@@ -351,7 +351,7 @@ class ApfMotion(object):
                 nr.H = robots_h[i]
                 nr.h_rR = ad_h_rR
                 nr.theta_rR = theta_rR
-                nr.p = robots_priority[i]>0
+                nr.p = (not (robots_reached[i] or robots_stopped[i])) and robots_priority[i]>0
                 nr.stop = robots_stopped[i]
                 nr.reached = robots_reached[i]
                 rc = self.robot_prec_d
@@ -646,7 +646,7 @@ class ApfMotion(object):
         templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
         if target_other_side:
-            if (nr.r_prec<nr.d) and abs(nr.h_rR)<np.pi/2: # todo
+            if (nr.r_prec<nr.d): # and abs(nr.h_rR)<np.pi/2: # todo
                 nr_force = templ3
             # elif (0.8*nr.r_prec<nr.d<nr.r_prec):
             #     # nr_force = templ3
