@@ -403,7 +403,7 @@ class ApfMotion(object):
                 for ind_j in robots_inds_2:
                     if not (robots_reached[p] and robots_reached[ind_j]):
                         dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
-                        if (dist<(self.robot_prec_d*2.2)):    # param 2 ##### robot_start_d robot_prec_d
+                        if (dist<(self.robot_prec_d*2.2)):    # param 2 
                             robots_inds_f[p].append(ind_j)
 
             # detect groups 
@@ -637,7 +637,7 @@ class ApfMotion(object):
         if based_on_goal:
             coeff = np.sign(ad_rg_rR*nr.h_rR)
         else:
-            if abs(nr.h_rR)<np.deg2rad(theta_): # or abs(nr.h_rR)>np.deg2rad(180-theta_):
+            if abs(nr.h_rR)<np.deg2rad(theta_):
                 coeff = np.sign(ad_rg_rR*nr.h_rR)
 
         angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.h_rR)*coeff
@@ -646,7 +646,8 @@ class ApfMotion(object):
         templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
         if target_other_side:
-            if (nr.r_prec<nr.d): # and abs(nr.h_rR)<np.pi/2: # todo
+            if (nr.r_prec<nr.d):
+            # if (nr.r_prec<nr.d) and abs(nr.h_rR)<np.pi/2: # todo
                 nr_force = templ3
             # elif (0.8*nr.r_prec<nr.d<nr.r_prec):
             #     # nr_force = templ3
@@ -683,7 +684,7 @@ class ApfMotion(object):
             r_coeff = 1
             theta_ = 10
             ad_h_rR = nr.h_rR
-            if abs(ad_h_rR)<np.deg2rad(theta_): # or abs(ad_h_rR)>np.deg2rad(180-theta_)):
+            if abs(ad_h_rR)<np.deg2rad(theta_):
                 ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
                 r_coeff = np.sign(ad_rg_rR*nr.h_rR)
 
@@ -709,7 +710,7 @@ class ApfMotion(object):
             # angle_turns
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H*R_coeff)
             ad_C_h = self.angle_diff(angle_turn_R, self.r_h)
-            angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)*r_coeff  # *R_coeff
+            angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)*r_coeff
             ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
 
             # forces
