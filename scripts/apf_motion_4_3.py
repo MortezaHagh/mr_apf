@@ -286,7 +286,7 @@ class ApfMotion(object):
     def detect_group(self):
 
         #
-        c_r = 3.0               # param 1
+        c_r = 2.5 # 3.0  2.5             # param 1
         is_goal_close = False
         self.stop_flag_multi = False
 
@@ -709,7 +709,7 @@ class ApfMotion(object):
             # angle_turns
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H*R_coeff)
             ad_C_h = self.angle_diff(angle_turn_R, self.r_h)
-            angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)*r_coeff
+            angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)*r_coeff  # *R_coeff
             ad_c_h = self.angle_diff(angle_turn_r, self.r_h)
 
             # forces
