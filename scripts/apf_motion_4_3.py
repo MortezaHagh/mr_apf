@@ -285,7 +285,7 @@ class ApfMotion(object):
     def detect_group(self):
 
         #
-        c_r = 2.5
+        c_r = 2.5               # param 1
         is_goal_close = False
         self.stop_flag_multi = False
 
@@ -454,7 +454,7 @@ class ApfMotion(object):
                         radius = mbr.exterior.distance(mbr.centroid)
                         xc = circum_center[0]
                         yc = circum_center[1]
-                        rc = 2.5*radius  #+ self.robot_r + self.prec_d
+                        rc = 2.5*radius  #+ self.robot_r + self.prec_d # param 1
                         rc = max(rc, 2*self.robot_prec_d)
                 
                 # if robot is in the polygon
