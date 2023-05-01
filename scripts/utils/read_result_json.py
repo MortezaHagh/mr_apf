@@ -60,6 +60,62 @@ class JsonResults:
         # Print the DataFrame
         print(df)
 
+    def create_table_2(self, directory, keys):
+        # List to store values for each file
+        file_values = []
+
+        # Iterate over files in directory
+        for filename in os.listdir(directory):
+            if filename.endswith(".json"):
+                file_path = os.path.join(directory, filename)
+
+                # Retrieve values for each key in the list
+                values = [self.get_json_value(file_path, key) for key in keys]
+
+                # Add the values to the file_values list
+                file_values.append(values)
+
+        # Create a Pandas DataFrame using the retrieved values
+        df = pd.DataFrame(file_values, columns=keys)
+
+        # Sort the DataFrame based on the values of the first key (i.e., "name")
+        df = df.sort_values(by=keys[0])
+
+        # Create a new DataFrame to store the results
+        result_df = pd.DataFrame(columns=keys)
+
+        # Initialize the last key value
+        last_key_value = None
+
+        # Iterate over the rows in the DataFrame
+        for index, row in df.iterrows():
+
+            # Check if the value of the first key has changed
+            if row[keys[0]] != last_key_value:
+                # If yes, create a new row in the result DataFrame with the minimum values of the previous rows
+                result_row = df.loc[df[keys[0]] == last_key_value].min()
+                result_df = result_df.append(result_row, ignore_index=True)
+
+                # Update the last key value
+                last_key_value = row[keys[0]]
+
+            # Update the last key value if it is None
+            if last_key_value is None:
+                last_key_value = row[keys[0]]
+
+        # Add the last row to the result DataFrame
+        result_row = df.loc[df[keys[0]] == last_key_value].min()
+        result_df = result_df.append(result_row, ignore_index=True)
+
+        # Save the DataFrame as a CSV file
+        result_df.to_csv(directory+"output_2.csv", index=False)
+
+        # Print confirmation message
+        print("CSV file saved successfully!")
+
+        # Print the DataFrame
+        print(result_df)
+
     def fix_malformed_json(self, file_path, output_file_path):
         with open(file_path, 'r') as file:
             content = file.read()
@@ -87,18 +143,36 @@ class JsonResults:
                 os.remove(file_path)
                 print(f"File {file_path} deleted.")
 
+    def delete_empty_subdirectories(self, directory):
+        for root, dirs, files in os.walk(directory, topdown=False):
+            for dir in dirs:
+                dir_path = os.path.join(root, dir)
+                if not os.listdir(dir_path):
+                    os.rmdir(dir_path)
+                    print("Deleted empty directory:", dir_path)
 
 # ------------------------------------------------------------------------
 
 jr = JsonResults()
 
-# # Directory containing JSON files
+# Directory containing JSON files
+directory = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/"
+# List of keys to retrieve values for
+keys = ["robot_count", "mean_len", "total_len", "operation_time", "total_time"]
+jr.create_table(directory, keys)
+
+# # dctory containing JSON files
 # directory = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/"
 # # List of keys to retrieve values for
 # keys = ["robot_count", "mean_len", "total_len", "operation_time", "total_time"]
-# jr.create_table(directory, keys)
+# jr.create_table_2(directory, keys)
 
-#
-directory = "/home/piotr/Documents/Morteza/CurrentAPF"
-jr.delete_files_in_directory(directory)
+
+# #
+# directory = "/home/piotr/Documents/Morteza/CurrentAPF"
+# jr.delete_files_in_directory(directory)
+
+
+# directory = "/home/piotr/Documents/Morteza/CurrentAPF"
+# jr.delete_empty_subdirectories(directory)
 

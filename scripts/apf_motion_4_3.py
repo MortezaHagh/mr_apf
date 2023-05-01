@@ -652,8 +652,8 @@ class ApfMotion(object):
             if (nr.r_prec<nr.d):
             # if (nr.r_prec<nr.d) and abs(nr.h_rR)<np.pi/2: # todo
                 nr_force = templ3
-            # elif (0.8*nr.r_prec<nr.d<nr.r_prec):
-            #     # nr_force = templ3
+            elif (0.8*nr.r_prec<nr.d<nr.r_prec):
+                nr_force = templ3
             #     nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
 
         return nr_force
