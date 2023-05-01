@@ -286,8 +286,8 @@ class ApfMotion(object):
     def detect_group(self):
 
         #
-        c_r = 2.5       # 2.5 3.0      # param 1
-        c_radius = 2.5  # 2.5          # param 3 
+        c_r = 1.5       # 2.5 3.0      # param 1
+        c_radius = 1.5  # 2.5          # param 3 
         is_goal_close = False
         self.stop_flag_multi = False
 
@@ -517,7 +517,7 @@ class ApfMotion(object):
                 nr.r_half = 1.5 * nr.r_prec
                 nr.r_start = 2.0 * nr.r_prec
                 nr.z = 4 * self.fix_f * nr.r_prec**4
-                new_robots.append(nr)
+                # new_robots.append(nr)
                 multi_robots.append(nr)
 
         if len(multi_robots)>1:
@@ -526,8 +526,10 @@ class ApfMotion(object):
             max_ind = np.argmax(rcs)
             multi_robots = [multi_robots[max_ind]]
             multi_robots_vis.append(multi_robots[0])
+            new_robots.append(multi_robots[0])
         elif len(multi_robots)==1:
             multi_robots_vis.append(multi_robots[0])
+            new_robots.append(multi_robots[0])
 
         self.new_robots = new_robots
         self.vs.robot_data(multi_robots_vis, self.ns)
@@ -795,7 +797,7 @@ class ApfMotion(object):
             # fo = f + 2
             # templo = [fo * np.cos(ad_c_o), fo * np.sin(ad_c_o)]
             
-            ft = f + 2
+            ft = f + 3
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
 
             if target_other_side:
