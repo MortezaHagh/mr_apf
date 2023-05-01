@@ -646,7 +646,7 @@ class ApfMotion(object):
         templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
 
         if target_other_side:
-            if (nr.r_prec<nr.d): # and abs(nr.h_rR)<np.pi/2: # todo
+            if (nr.r_prec<nr.d) and abs(nr.h_rR)<np.pi/2: # todo
                 nr_force = templ3
             # elif (0.8*nr.r_prec<nr.d<nr.r_prec):
             #     # nr_force = templ3
