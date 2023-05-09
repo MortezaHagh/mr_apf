@@ -286,8 +286,8 @@ class ApfMotion(object):
     def detect_group(self):
 
         #
-        c_r = 2.5       # 2.5 3.0      # param 1
-        c_radius = 2.5  # 2.5          # param 3 
+        c_r = 3.5       # 2.5 3.0      # param 1
+        c_radius = 3.5  # 2.5          # param 3 
         is_goal_close = False
         self.stop_flag_multi = False
 
