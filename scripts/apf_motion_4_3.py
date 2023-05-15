@@ -697,8 +697,8 @@ class ApfMotion(object):
             ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
             ad_rR_h = self.angle_diff(nr.theta_rR, self.r_h)
             if (ad_Rr_H*ad_rR_h)<0:
-                if abs(ad_rR_h)>abs(ad_Rr_H):
-                    R_coeff = 0
+                if abs(ad_rR_h)<abs(ad_Rr_H):
+                    R_coeff = -1
                     # flag_rR = False
 
             # stops
