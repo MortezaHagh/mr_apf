@@ -286,8 +286,8 @@ class ApfMotion(object):
     def detect_group(self):
 
         #
-        c_r = 3.5       # 2.5 3.0      # param 1
-        c_radius = 3.5  # 2.5          # param 3 
+        c_r = 2.5       # 2.5 3.0      # param 1
+        c_radius = 2.5  # 2.5          # param 3 
         is_goal_close = False
         self.stop_flag_multi = False
 
@@ -402,10 +402,10 @@ class ApfMotion(object):
                 if len(robots_inds_2)==0:
                     break
                 for ind_j in robots_inds_2:
-                    if not (robots_reached[p] and robots_reached[ind_j]):
-                        dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
-                        if (dist<(self.robot_prec_d*2.2)):    # param 2 
-                            robots_inds_f[p].append(ind_j)
+                    # if not (robots_reached[p] and robots_reached[ind_j]):
+                    dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
+                    if (dist<(self.robot_prec_d*2.2)):    # param 2 
+                        robots_inds_f[p].append(ind_j)
 
             # detect groups 
             robots_inds_3 = robots_inds[:]
@@ -698,7 +698,7 @@ class ApfMotion(object):
             ad_rR_h = self.angle_diff(nr.theta_rR, self.r_h)
             if (ad_Rr_H*ad_rR_h)<0:
                 if abs(ad_rR_h)>abs(ad_Rr_H):
-                    R_coeff = -1
+                    R_coeff = 0
                     # flag_rR = False
 
             # stops
