@@ -286,8 +286,8 @@ class ApfMotion(object):
     def detect_group(self):
 
         #
-        c_r = 3.5       # 2.5 3.0      # param 1
-        c_radius = 3.5  # 2.5          # param 3 
+        c_r = 2.5       # 2.5 3.0      # param 1
+        c_radius = 3.0  # 2.5          # param 3 
         is_goal_close = False
         self.stop_flag_multi = False
 
@@ -736,7 +736,8 @@ class ApfMotion(object):
                 if (nr.r_half<nr.d<nr.r_start):
                     if (not nr.reached) and (not nr.stop):
                         if (flag_rR and abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
-                            nr_force = [templ2[0]+nr_force[0], templ2[1]+nr_force[1]]
+                            # nr_force = [templ2[0]+nr_force[0], templ2[1]+nr_force[1]]
+                            nr_force = templ2
                     else:
                         if (abs(ad_h_rR)<(np.pi/2)):
                             nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
