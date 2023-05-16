@@ -286,8 +286,8 @@ class ApfMotion(object):
     def detect_group(self):
 
         #
-        c_r = 2.5       # 2.5 3.0      # param 1
-        c_radius = 3.0  # 2.5          # param 3 
+        c_r = 3.0       # 2.5 3.0      # param 1
+        c_radius = 3.5  # 2.5          # param 3 
         is_goal_close = False
         self.stop_flag_multi = False
 
@@ -653,8 +653,8 @@ class ApfMotion(object):
             # if (nr.r_prec<nr.d) and abs(nr.h_rR)<np.pi/2: # todo
                 nr_force = templ3
             elif (0.8*nr.r_prec<nr.d<nr.r_prec):
-                # nr_force = templ3
-                nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
+                nr_force = templ3
+                # nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
 
         return nr_force
 
@@ -697,12 +697,12 @@ class ApfMotion(object):
             ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
             ad_rR_h = self.angle_diff(nr.theta_rR, self.r_h)
             if (ad_Rr_H*ad_rR_h)<0:
-                if nr.p:
-                    # self.stop_flag_robots
-                    R_coeff = -1
-                    print(self.ind, " ==== ")
-                # if abs(ad_rR_h)>abs(ad_Rr_H):
+                # if nr.p:
+                #     # self.stop_flag_robots
                 #     R_coeff = -1
+                #     print(self.ind, " ==== ")
+                if abs(ad_rR_h)>abs(ad_Rr_H):
+                    R_coeff = -1
                     # flag_rR = False
 
             # stops
@@ -725,7 +725,7 @@ class ApfMotion(object):
             fl = f + 0
             nr_force = [fl * -np.cos(ad_h_rR), fl * np.sin(ad_h_rR)]
 
-            f2 = f + 4
+            f2 = f + 2
             f2_2 = f + 4
             templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
             templ2_2 = [f2_2 * np.cos(ad_C_h), f2_2 * np.sin(ad_C_h)]
@@ -747,7 +747,7 @@ class ApfMotion(object):
 
                 elif (nr.r_prec <nr.d<nr.r_half):
                     if (not nr.reached) and (not nr.stop):
-                        if flag_rR and abs(ad_h_rR)<(np.pi/2) and abs(ad_Rr_H)<(np.pi/2):
+                        if (flag_rR and abs(ad_h_rR)<np.pi/2 and abs(ad_Rr_H)<np.pi/2):
                             nr_force = [templ2_2[0]+nr_force[0], templ2_2[1]+nr_force[1]]
                     else:
                         if True: #(abs(ad_h_rR)<(np.pi/2)):
