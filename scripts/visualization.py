@@ -50,6 +50,7 @@ class Viusalize:
         self.robots_pubs = {}
         self.robots_poly_pubs = {}
         self.robots_poly_pubs_2 = {}
+        self.robots_arrow_pubs = {}
         self.add_robot(model)
         # self.robot_data_pub = rospy.Publisher("/robot_data", PointCloud, queue_size=10)
 
@@ -66,6 +67,7 @@ class Viusalize:
             self.robots_pubs[ns] = (rospy.Publisher(ns+"/robot_data", PointCloud, queue_size=10))
             self.robots_poly_pubs[ns] = (rospy.Publisher(ns+"/robot_poly", PolygonStamped, queue_size=10))
             self.robots_poly_pubs_2[ns] = (rospy.Publisher(ns+"/robot_poly_2", PolygonStamped, queue_size=10))
+            self.robots_arrow_pubs[ns] = rospy.Publisher(ns+"/arrowsf", Marker, queue_size=10)
 
     def robots_circles(self, xy):
         self.robots_prec_circles(xy)
@@ -335,7 +337,7 @@ class Viusalize:
         self.arrow_pub.publish(marker)
 
     
-    def arrow_f(self, x, y, theta):
+    def arrow_f(self, x, y, theta, ns):
         marker = Marker()
         marker.header.frame_id = "/map"
         marker.header.stamp = rospy.Time.now()
@@ -364,4 +366,5 @@ class Viusalize:
         marker.color.b = 0.0
         marker.color.a = 1.0
 
-        self.arrowf_pub.publish(marker)
+        # self.arrowf_pub.publish(marker)
+        self.robots_arrow_pubs[ns].publish(marker)

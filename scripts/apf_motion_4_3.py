@@ -402,10 +402,10 @@ class ApfMotion(object):
                 if len(robots_inds_2)==0:
                     break
                 for ind_j in robots_inds_2:
-                    if not (robots_reached[p] and robots_reached[ind_j]):
-                        dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
-                        if (dist<(self.robot_prec_d*2.2)):    # param 2 
-                            robots_inds_f[p].append(ind_j)
+                    # if not (robots_reached[p] and robots_reached[ind_j]):
+                    dist = self.distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
+                    if (dist<(self.robot_prec_d*2.2)):    # param 2 
+                        robots_inds_f[p].append(ind_j)
 
             # detect groups 
             robots_inds_3 = robots_inds[:]
@@ -653,8 +653,8 @@ class ApfMotion(object):
             # if (nr.r_prec<nr.d) and abs(nr.h_rR)<np.pi/2: # todo
                 nr_force = templ3
             elif (0.8*nr.r_prec<nr.d<nr.r_prec):
-                nr_force = templ3
-            #     nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
+                # nr_force = templ3
+                nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
 
         return nr_force
 
@@ -697,8 +697,12 @@ class ApfMotion(object):
             ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
             ad_rR_h = self.angle_diff(nr.theta_rR, self.r_h)
             if (ad_Rr_H*ad_rR_h)<0:
-                if abs(ad_rR_h)>abs(ad_Rr_H):
+                if nr.p:
+                    # self.stop_flag_robots
                     R_coeff = -1
+                    print(self.ind, " ==== ")
+                # if abs(ad_rR_h)>abs(ad_Rr_H):
+                #     R_coeff = -1
                     # flag_rR = False
 
             # stops
@@ -721,7 +725,7 @@ class ApfMotion(object):
             fl = f + 0
             nr_force = [fl * -np.cos(ad_h_rR), fl * np.sin(ad_h_rR)]
 
-            f2 = f + 2
+            f2 = f + 4
             f2_2 = f + 4
             templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
             templ2_2 = [f2_2 * np.cos(ad_C_h), f2_2 * np.sin(ad_C_h)]
@@ -736,15 +740,14 @@ class ApfMotion(object):
                 if (nr.r_half<nr.d<nr.r_start):
                     if (not nr.reached) and (not nr.stop):
                         if (flag_rR and abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
-                            # nr_force = [templ2[0]+nr_force[0], templ2[1]+nr_force[1]]
-                            nr_force = templ2
+                            nr_force = [templ2[0]+nr_force[0], templ2[1]+nr_force[1]]
                     else:
                         if (abs(ad_h_rR)<(np.pi/2)):
                             nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
 
                 elif (nr.r_prec <nr.d<nr.r_half):
                     if (not nr.reached) and (not nr.stop):
-                        if (flag_rR and abs(ad_h_rR)<np.pi/2 and abs(ad_Rr_H)<np.pi/2):
+                        if flag_rR and abs(ad_h_rR)<(np.pi/2) and abs(ad_Rr_H)<(np.pi/2):
                             nr_force = [templ2_2[0]+nr_force[0], templ2_2[1]+nr_force[1]]
                     else:
                         if True: #(abs(ad_h_rR)<(np.pi/2)):
@@ -889,14 +892,14 @@ class ApfMotion(object):
     
     def viz_arrow(self, nr_force, ip=True):
         n=1
-        if self.ind==n: 
+        if True: #self.ind==n: 
             theta = np.arctan2(nr_force[1], nr_force[0])
             theta = np.arctan2(np.sin(theta), np.cos(theta))
             theta = self.r_h + theta
             if ip:
                 self.vs.arrow(self.r_x, self.r_y, theta)
             else:
-                self.vs.arrow_f(self.r_x, self.r_y, theta)
+                self.vs.arrow_f(self.r_x, self.r_y, theta, self.ns)
 
     # --------------------------------------------------#
 
