@@ -96,7 +96,7 @@ class Results:
             theta = round(np.arctan2(dy, dx),2)
             thetas.append(theta)
 
-        dif_theta = [abs(self.angle(thetas[i+1], thetas[i])) for i in range(len(thetas)-1)]
+        dif_theta = [abs(self.angle_diff(thetas[i+1], thetas[i])) for i in range(len(thetas)-1)]
         dif_theta = sum(dif_theta)
         return dif_theta
 
