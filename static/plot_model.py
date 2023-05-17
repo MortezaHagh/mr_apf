@@ -10,7 +10,7 @@ def plot_model(model, settings):
     obs_r = settings.obs_effect_r
 
     fig, ax = plt.subplots(1, 1)
-    ax.set_title('MRPP')
+    # ax.set_title('MRPP')
     # ax.axis("off")
     ax.axis('equal')
     ax.grid('on')
