@@ -1,0 +1,5 @@
+1- if near robots
+2- if near obstacles
+3- controller
+4- target other side
+5- robots or obstacles close to each other - local minima - insert new obstacle
