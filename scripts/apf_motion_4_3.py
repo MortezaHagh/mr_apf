@@ -185,7 +185,7 @@ class ApfMotion(object):
                     req.stopped = True
                     self.pose_client(req)
                     self.v = 0
-                    self.w = 0
+                    # self.w = 0
 
             # publish cmd
             move_cmd = Twist()
@@ -356,23 +356,20 @@ class ApfMotion(object):
                 nr.stop = robots_stopped[i]
                 nr.reached = robots_reached[i]
                 rc = self.robot_prec_d
-                if robots_reached[i]:
-                    XY = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d, d_rR)
                 nr.r_prec = rc
                 nr.r_half = 1.5 * rc
                 nr.r_start = 2.0 * rc
                 nr.z = 4 * self.fix_f * rc**4
                 new_robots.append(nr)
                 if robots_reached[i]: 
+                    XY = self.eval_obst(robots_x[i], robots_y[i], self.robot_prec_d, d_rR)
                     for xy in XY:
                         dx_ = (xy[0] - self.r_x)
                         dy_ = (xy[1] - self.r_y)
                         d_rR_ = np.sqrt(dx_**2 + dy_**2)
                         theta_rR_ = np.arctan2(dy_, dx_)
                         ad_h_rR_ = self.angle_diff(self.r_h, theta_rR_)
-
                         nnr = NewRobots()
-                        # nnr = copy.copy(nr)
                         nnr.d = d_rR_
                         nnr.x = xy[0]
                         nnr.y = xy[1]
@@ -391,6 +388,9 @@ class ApfMotion(object):
         
         # if there is none robots in proximity
         if len(robots_inds)==0:
+            if len(multi_robots_vis)>0:
+                self.new_robots = new_robots
+                self.vs.robot_data(multi_robots_vis, self.ns)
             return
         
         # generate robots_inds_f (neighbor robots in proximity circle)
@@ -579,6 +579,7 @@ class ApfMotion(object):
             f = 2*f
         theta_rg = np.arctan2(dy, dx)
         ad_rg_h = self.angle_diff(theta_rg, self.r_h)
+        self.ad_rg_h = ad_rg_h
         self.theta_rg = theta_rg
         self.goal_dist = goal_dist
         self.goal_theta = theta_rg
@@ -676,6 +677,7 @@ class ApfMotion(object):
             # target_other_side
             dx = self.goal_x - nr.x
             dy = self.goal_y - nr.y
+            d_Rg = self.distance(self.goal_x, self.goal_y, nr.x, nr.y)
             theta_Rg = np.arctan2(dy, dx)
             theta_Rr = nr.theta_rR - np.pi
             ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
@@ -712,7 +714,14 @@ class ApfMotion(object):
                 if (not nr.reached) and (not nr.stop): # and nr.p:
                     if abs(ad_rR_h)<np.pi/2 and abs(ad_Rr_H)>np.pi/2:
                         self.stop_flag_full = True
-                        return [0, 0]
+                        # return [0, 0]
+
+            # # case hard!
+            # ad = self.angle_diff(theta_Rg,  self.theta_rg)
+            # if (nr.p) and abs(ad)<np.deg2rad(30) and d_Rg<self.goal_dist and abs(self.ad_rg_h)<np.deg2rad(40):
+            #     if abs(self.angle_diff(self.r_h,  nr.H))<np.deg2rad(90):
+            #         self.stop_flag_full = True
+            #         print(" ******************** ", self.ind)
 
             # angle_turns
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H*R_coeff)
