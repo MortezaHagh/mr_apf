@@ -6,8 +6,12 @@ import numpy as np
 
 class Results:
     def __init__(self, paths, times, path_unit, test_s, save_path):
+        
+        # input data
         self.paths = paths
         self.times = times
+
+        # preallocation
         self.lens = []
         self.times = []
         # self.angles = []
@@ -18,49 +22,47 @@ class Results:
         self.operation_time = 0
         self.headings = []
         self.total_headings = 0
+        
+        # settings
         self.path_unit = 1
         self.test_name = "res_" + test_s + ".json"
 
-        #
+        # calculate len, smoothness and time for each robot
         for k, v in paths.items():
+            self.headings.append(round(self.cal_angle(v), 2))
             self.lens.append(round(self.cal_len(v), 2))
             self.times.append(round(times[k][-1], 2))
             # self.angles.append(round(angles[k], 2))
             # self.angles2.append(angles[k])
-            self.headings.append(round(self.cal_angle(v), 2))
         
         self.total_len = round(sum(self.lens), 2)
         self.mean_len = round(self.total_len/len(self.lens), 2)
         self.total_time = round(sum(self.times),2)
         self.operation_time = max(self.times)
-        # self.total_angle = [round(sum(self.angles2), 2)]
-        # self.total_angle.append(round(180*self.total_angle[0]/np.pi, 2)) 
         self.total_headings = [round(sum(self.headings), 2)]
         self.total_headings.append(round(180*self.total_headings[0]/np.pi, 2)) 
+        # self.total_angle = [round(sum(self.angles2), 2)]
+        # self.total_angle.append(round(180*self.total_angle[0]/np.pi, 2)) 
 
-        # 
+        # final data
         final_data = {"mean_len": self.mean_len,"operation_time":self.operation_time,
                         "lens":self.lens, "times": self.times, "total_time": self.total_time, 
                         "total_len": self.total_len}
 
-        # final_data = {"lens":self.lens, "times": self.times, "total_time": self.total_time, 
-        #               "total_len": self.total_len, "operation_time":self.operation_time}
-
-        hwading_data = {"headings":self.headings, "total_heading":self.total_headings}      
+        heading_data = {"headings":self.headings, "total_heading":self.total_headings}      
         robot_count = {"robot_count": len(paths)}
         
-        # save data JSON
-        # rospack = rospkg.RosPack()
-        # pkg_path = rospack.get_path('apf')
-        # save_path = "/home/piotr/Documents/Morteza/CurrentAPF" + '/result_apf/' + self.test_name
-        all_data = [final_data, hwading_data, robot_count]
+        # # save data JSON
+        all_data = [final_data, heading_data, robot_count]
         with open(save_path, "w") as outfile:
             json.dump(all_data, outfile, indent=2)
             outfile.write("\n")
+
         # with open(save_path, "a") as outfile:
-        #     json.dump(hwading_data, outfile, indent=2)
+        #     json.dump(heading_data, outfile, indent=2)
         #     outfile.write("\n")
         #     json.dump(robot_count, outfile, indent=2)
+        
         print("==================================")
         print("operation_time", self.operation_time)
         print("==================================")
@@ -92,10 +94,12 @@ class Results:
             dx = x2-x1
             dy = y2-y1
             theta = round(np.arctan2(dy, dx),2)
-            if theta<0:
-                theta = theta + 2*np.pi
             thetas.append(theta)
-        dif_theta = [abs(thetas[i+1]-thetas[i]) for i in range(len(thetas)-1)]
+
+        dif_theta = [abs(self.angle(thetas[i+1], thetas[i])) for i in range(len(thetas)-1)]
         dif_theta = sum(dif_theta)
         return dif_theta
 
+    def angle_diff(self, a1, a2):
+        da = a1 - a2
+        return np.arctan2(np.sin(da), np.cos(da))

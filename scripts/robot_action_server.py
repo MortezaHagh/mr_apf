@@ -67,6 +67,7 @@ class InitRobotAcion(object):
         req.update = True
         self.pose_client(req)
 
+        # self.time: [start, end, duration]
         # start time
         self.time[0] = rospy.get_time()
 

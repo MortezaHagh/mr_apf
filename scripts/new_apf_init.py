@@ -102,7 +102,7 @@ class Run():
             self.paths[i] = [ac.result.path_x, ac.result.path_y]
             self.times[i] = ac.time
 
-        Results(self.paths, self.times, self.model.path_unit, self.test_name, self.result_path)
+        Results(self.paths, self.times, path_unit, self.test_name, self.result_path)
         self.data()
         self.plotting()
 
@@ -113,7 +113,7 @@ class Run():
         params = Params()
         fig, ax = plot_model(self.model, params)
 
-        # paths
+        # traversed trajectory
         colors = plt.cm.get_cmap('rainbow', len(self.paths))
         for k, v in self.paths.items():
             ax.plot(v[0], v[1], color=colors(k))
@@ -121,8 +121,10 @@ class Run():
 
         # # forces
         # plot_forces(self.rsrv.ac_services[0], self.dir_force)
+
         plt.show()
 
+    # save traversed trajectory and times
     def data(self):
         with open(self.dir_p, "w") as outfile:
             json.dump(self.paths, outfile)
