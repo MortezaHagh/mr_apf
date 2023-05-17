@@ -6,8 +6,9 @@ class ModelInputs():
         print("Inputs for creating model")
 
         if map_id == 1:
-            self.map_0(robot_count)
+            # self.map_0(robot_count)
             # self.collide()  # collide map_0
+            self.random_map()
 
         self.apply_path_unit(path_unit)
 
@@ -594,16 +595,16 @@ class ModelInputs():
         robots_s_i = r_m[obst_n:robots_n]
         robots_g_i = r_m[robots_n:2*robots_n]
 
-        self.x_obst = [m[i][0] for i in obst_i]
-        self.y_obst = [m[i][1] for i in obst_i]
+        self.x_obst = [o[0] for o in obst_i]
+        self.y_obst = [o[1] for o in obst_i]
         
         robot_count = robots_n
         self.ids = list(range(1,robot_count+1))
         self.heading = [0.0 for i in range(robot_count)]
-        self.xs = [m[i][0] for i in robots_s_i]
-        self.ys = [m[i][1] for i in robots_s_i]
-        self.xt = [m[i][0] for i in robots_g_i]
-        self.yt = [m[i][1] for i in robots_g_i]
+        self.xs = [s[0] for s in robots_s_i]
+        self.ys = [s[1] for s in robots_s_i]
+        self.xt = [t[0] for t in robots_g_i]
+        self.yt = [t[1] for t in robots_g_i]
 
 
 if __name__=="__main__":

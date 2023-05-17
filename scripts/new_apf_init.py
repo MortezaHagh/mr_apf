@@ -22,54 +22,59 @@ class Run():
 
     def __init__(self):
 
-        # # results
+        # test name and version
         version = 3
         self.test_id = 15     # check
-        self.test = "T" + str(self.test_id) + "_v" + str(version)
+        self.test_name = "T" + str(self.test_id) + "_v" + str(version)
+
+        # # results path
         # rospack = rospkg.RosPack()
         # pkg_path = "rospack.get_path('apf')"
         self.pred = "/home/piotr/Documents/Morteza/CurrentAPF/"
-        self.dir_f = self.pred + self.test + "/apf_paths"
-        self.dir_p = self.pred + self.test + "/apf_paths.json"
-        self.dir_t = self.pred + self.test + "/apf_times.json"
-        self.dir_force = self.pred + self.test + "/apf_forces"
+        self.dir_f = self.pred + self.test_name + "/apf_paths"
+        self.dir_p = self.pred + self.test_name + "/apf_paths.json"
+        self.dir_t = self.pred + self.test_name + "/apf_times.json"
+        self.dir_force = self.pred + self.test_name + "/apf_forces"
         res_pred = "res_" + str(self.test_id) + "_v" + str(version) + ".json"
         self.result_path = "/home/piotr/Documents/Morteza/CurrentAPF" + '/result_apf/' + res_pred
 
-        path = self.pred + self.test
+        # Create directory
+        path = self.pred + self.test_name
         isExist = os.path.exists(path)
         if not isExist:
             os.makedirs(path)
 
-        # ros
+        # ros settings
         rate = rospy.Rate(20)
         rospy.on_shutdown(self.shutdown_hook)
 
-        # model
+        # create model
         path_unit = 0.7
         robot_count = self.test_id
         self.model = CreateModel(map_id=1,
                                  path_unit=path_unit,
                                  robot_count=robot_count)
-        self.count = self.model.robot_count
+        
+        # results preallocation (trajectory and time)
         self.paths = {}
         self.times = {}
+        
+        # set path unit
         path_unit = 1.0
 
-        # spawn
+        # spawn robots and obstacles
         Spawning(self.model, path_unit)
 
         # visualize
         visualize = Viusalize(self.model)
 
-        # # init_robot service server ------------------------------------------------------
-        print(
-            "Initializing Central Service Server (init_apf_srv) for adding robots ... "
-        )
+        # -------------------------------------------------------------------------------------------
+        # init_robot service server 
+        print("Initializing Central Service Server (init_apf_srv) for adding robots ... ")
         init_srv_name = "init_apf_srv"
         self.rsrv = InitRobotService(self.model, init_srv_name)
 
-        # ------------------------- call_init_service - SendGoal - status----------------------------
+        # ------------------------- call_init_service - SendGoal - status  ----------------------------
 
         # calling services
         call_apf_service(self.model.robots_i.ids)
@@ -91,18 +96,17 @@ class Run():
         print("APF Mission Accomplished.")
         print(" -----------------------")
 
-        # --------------------------------- results ---------------------
+        # --------------------------------- results ---------------------------------------------
         # paths and times
         for i, ac in enumerate(self.rsrv.ac_services):
             self.paths[i] = [ac.result.path_x, ac.result.path_y]
             self.times[i] = ac.time
 
-        Results(self.paths, self.times, self.model.path_unit, self.test,
-                self.result_path)
+        Results(self.paths, self.times, self.model.path_unit, self.test_name, self.result_path)
         self.data()
         self.plotting()
 
-    # -----------------------plotting - shutdown_hook---------------------------#
+    # ----------------------- plotting - shutdown_hook -------------------------------------#
 
     def plotting(self):
         # map

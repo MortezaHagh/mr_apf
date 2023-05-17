@@ -155,11 +155,11 @@ class JsonResults:
 
 jr = JsonResults()
 
-# Directory containing JSON files
-directory = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/"
-# List of keys to retrieve values for
-keys = ["robot_count", "mean_len", "total_len", "operation_time", "total_time"]
-jr.create_table(directory, keys)
+# # Directory containing JSON files
+# directory = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/"
+# # List of keys to retrieve values for
+# keys = ["robot_count", "mean_len", "total_len", "operation_time", "total_time"]
+# jr.create_table(directory, keys)
 
 # # dctory containing JSON files
 # directory = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/"
