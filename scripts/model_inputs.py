@@ -6,9 +6,9 @@ class ModelInputs():
         print("Inputs for creating model")
 
         if map_id == 1:
-            # self.map_0(robot_count)
+            self.map_0(robot_count)
             # self.collide()  # collide map_0
-            self.random_map()
+            # self.random_map()
 
         self.apply_path_unit(path_unit)
 
@@ -45,11 +45,11 @@ class ModelInputs():
         xc2 = xc1*2
         yc2 = yc1 + [y+6 for y in yc1]
 
-        self.x_obst = []
-        self.y_obst = []
+        # self.x_obst = []
+        # self.y_obst = []
 
-        # self.x_obst = xc2
-        # self.y_obst = yc2
+        self.x_obst = xc2
+        self.y_obst = yc2
 
         # robots
         self.robot_count = robot_n
