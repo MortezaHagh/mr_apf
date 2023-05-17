@@ -173,6 +173,7 @@ jr = JsonResults()
 # jr.delete_files_in_directory(directory)
 
 
-# directory = "/home/piotr/Documents/Morteza/CurrentAPF"
+# # directory = "/home/piotr/Documents/Morteza/CurrentAPF"
+# directory = '/home/piotr/Documents/Morteza/Results-APF'
 # jr.delete_empty_subdirectories(directory)
 
