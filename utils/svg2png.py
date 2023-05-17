@@ -14,6 +14,6 @@ def convert_directory_svg_to_png(directory):
                 print(f"Converted {svg_file} to {png_file}")
 
 # Provide the directory path where the SVG files are located
-directory_path = '/home/piotr/Desktop/No Obst'
+directory_path = '/home/piotr/Desktop/No Obstacles/'
 
 convert_directory_svg_to_png(directory_path)
