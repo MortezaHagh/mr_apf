@@ -11,7 +11,8 @@ class ModelInputs():
         if map_id == 1:
             # self.map_0(robot_count)
             # self.collide()
-            self.random_map_2()
+            # self.random_map_2()
+            self.from_json_file()
 
         self.apply_path_unit(path_unit)
 
@@ -292,6 +293,64 @@ class ModelInputs():
         # Save the dictionary as a JSON file
         with open(filename, "w") as file:
             json.dump(obj_dict, file)
+
+
+
+    def from_json_file(self, filename=''):
+        
+        # file name
+        ind = str(1)
+        no = 'o22'+'_map'+ind+'.json'
+        map_name = 'maps/'+no
+        rospack = rospkg.RosPack()
+        pkg_path = rospack.get_path('apf')
+        filename = os.path.join(pkg_path, map_name)
+
+        # load the JSON file
+        with open(filename, "r") as file:
+            data = json.load(file)
+
+        # area
+        lim = data['lim']
+        self.lim = lim
+        self.x_min = data['x_min']
+        self.y_min = data['y_min']
+        self.x_max = data['lim']
+        self.y_max = data['lim']
+
+        # obstacles
+        self.x_obst = data['x_obst']
+        self.y_obst = data['y_obst']
+
+        # robots
+        self.robot_count = data['robot_count']
+
+        # robots
+        self.ids = data['ids']
+        self.heading = data['heading']
+        self.xs = data['xs']
+        self.ys = data['ys']
+        self.xt = data['xt']
+        self.yt = data['yt']
+
+        # # modify obstacles
+        obst_prec_d = 0.4
+        new_obst_x = []
+        new_obst_y = []
+        for i in range(len(self.x_obst)):
+            x = self.x_obst[i]
+            y = self.y_obst[i]
+            for j in range(i+1,len(self.x_obst)):
+                dist = self.distance(x, y, self.x_obst[j], self.y_obst[j])
+                if dist<2*obst_prec_d and dist>obst_prec_d:
+                    new_obst_x.append((self.x_obst[j]+x)/2)
+                    new_obst_y.append((self.y_obst[j]+y)/2)
+        
+        self.x_obst.extend(new_obst_x)
+        self.y_obst.extend(new_obst_y)
+
+
+# ----------------------------------------------------------------
 
 if __name__=="__main__":
     mi = ModelInputs()
