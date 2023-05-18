@@ -216,7 +216,7 @@ class ModelInputs():
     def random_map_2(self, ind=1):
         
         self.map_ind = ind
-        obst_n = 15
+        obst_n = 22
         robots_n = 8
         self.robot_count = robots_n
 
