@@ -213,7 +213,7 @@ class ModelInputs():
 
     def random_map_2(self):
 
-        obst_n = 22
+        obst_n = 15
         robots_n = 8
         self.robot_count = robots_n
 
@@ -272,8 +272,6 @@ class ModelInputs():
 
         # dave data as JSON
         self.save_object_attributes()
-        # data = {'robot_count': self.robot_count, 'obst_count': obst_n, \
-
 
     def distance(self, x1, y1, x2, y2):
         return np.sqrt((x1-x2)**2 + (y1-y2)**2)
@@ -281,8 +279,9 @@ class ModelInputs():
     def save_object_attributes(self):
         
         # file name
-        ind = str(1)
-        map_name = 'maps/map' + ind + '.json'
+        ind = str(12)
+        no = 'o'+str(len(self.x_obst))+'_map'+ind+'.json'
+        map_name = 'maps/'+no
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
         filename = os.path.join(pkg_path, map_name)
