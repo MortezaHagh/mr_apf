@@ -48,6 +48,7 @@ class CreateModel(object):
         
         # model inputs
         inputs = ModelInputs(map_id, path_unit, robot_count)
+        self.map_ind = inputs.map_ind
 
         #
         self.path_unit = path_unit
@@ -86,18 +87,20 @@ if __name__ == '__main__':
             self.obst_r = 0.11
             self.obst_prec_d = 0.4
     setting = Setting()
-    model = CreateModel()
-    plot_model(model, setting)
+    
+    for i in range(1, 13):
+        model = CreateModel(robot_count=i)
+        plot_model(model, setting)
 
-    # # save fig
-    # ind = str(1)
-    # o_ind = str(model.obst_count_orig)
-    # no = 'o'+o_ind+'_map'+ind
-    # map_name = 'maps/'+no #+ '_e'
-    # rospack = rospkg.RosPack()
-    # pkg_path = rospack.get_path('apf')
-    # filename = os.path.join(pkg_path, map_name)
-    # plt.savefig(filename+'.svg', format="svg", dpi=1000)
-    # plt.savefig(filename+'.png', format="png", dpi=500)
+        # save fig
+        ind = str(model.map_ind)
+        o_ind = str(model.obst_count_orig)
+        no = 'o'+o_ind+'_map'+ind
+        map_name = 'maps/'+no #+ '_e'
+        rospack = rospkg.RosPack()
+        pkg_path = rospack.get_path('apf')
+        filename = os.path.join(pkg_path, map_name)
+        plt.savefig(filename+'.svg', format="svg", dpi=1000)
+        plt.savefig(filename+'.png', format="png", dpi=500)
 
-    plt.show()
+    # plt.show()

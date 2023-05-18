@@ -12,8 +12,8 @@ class ModelInputs():
         if map_id == 1:
             # self.map_0(robot_count)
             # self.collide()
-            # self.random_map_2()
-            self.from_json_file(robot_count)
+            self.random_map_2(robot_count)
+            # self.from_json_file(robot_count)
 
         self.apply_path_unit(path_unit)
 
@@ -213,8 +213,9 @@ class ModelInputs():
         # print(self.robot_count)
 
 
-    def random_map_2(self):
-
+    def random_map_2(self, ind=1):
+        
+        self.map_ind = ind
         obst_n = 15
         robots_n = 8
         self.robot_count = robots_n
@@ -267,24 +268,26 @@ class ModelInputs():
                 yt = np.random.uniform(self.y_min, self.y_max)
                 dist = min([self.distance(x, y, xt, yt) for (x, y) in zip(all_x, all_y)])
 
-                if dist <1:
+                if dist >1:
                     dist_st = self.distance(x_rs[ii], y_rs[ii], xt, yt)
-                    if dist_st < 5:
+                    if dist_st > 5:
                         ii+=1
                         x_rt.append(xt)
                         y_rt.append(yt)
                         all_x.append(xt)
                         all_y.append(yt)
                         break
-        
         x_s = x_rs
         y_s = y_rs
         x_t = x_rt
         y_t = y_rt
 
+        # obstacles
         self.x_obst = obst_x
         self.y_obst = obst_y
-        
+        self.obst_count_orig = len(obst_x)
+
+        # robots
         self.ids = list(range(1, self.robot_count+1))
         self.heading = [0.0 for i in range(self.robot_count)]
         self.xs = x_s
@@ -293,17 +296,17 @@ class ModelInputs():
         self.yt = y_t
 
         # dave data as JSON
-        self.save_object_attributes()
+        self.save_object_attributes(ind)
 
 
     def distance(self, x1, y1, x2, y2):
         return np.sqrt((x1-x2)**2 + (y1-y2)**2)
     
 
-    def save_object_attributes(self):
+    def save_object_attributes(self, ind=1):
         
         # file name
-        ind = str(12)
+        ind = str(ind)
         no = 'o'+str(len(self.x_obst))+'_map'+ind+'.json'
         map_name = 'maps/'+no
         rospack = rospkg.RosPack()
