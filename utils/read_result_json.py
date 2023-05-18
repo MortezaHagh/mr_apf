@@ -37,15 +37,23 @@ class JsonResults:
         # Iterate over files in directory
         for filename in os.listdir(directory):
             if filename.endswith(".json"):
+                a = filename.split('_')
+                t = int(a[1][:])
+                a = filename.split('.')
+                v = int(a[0][-1])
                 file_path = os.path.join(directory, filename)
 
                 # Retrieve values for each key in the list
                 values = [self.get_json_value(file_path, key) for key in keys]
+                values.insert(0, v)
+                values.insert(0, t)
 
                 # Add the values to the file_values list
                 file_values.append(values)
 
         # Create a Pandas DataFrame using the retrieved values
+        keys.insert(0, 'version')
+        keys.insert(0, 'test')
         df = pd.DataFrame(file_values, columns=keys)
 
         # Sort the DataFrame based on the values of the first key (i.e., "name")
@@ -67,15 +75,23 @@ class JsonResults:
         # Iterate over files in directory
         for filename in os.listdir(directory):
             if filename.endswith(".json"):
+                a = filename.split('_')
+                t = int(a[1][:])
+                a = filename.split('.')
+                v = int(a[0][-1])
                 file_path = os.path.join(directory, filename)
 
                 # Retrieve values for each key in the list
                 values = [self.get_json_value(file_path, key) for key in keys]
-
+                values.insert(0, v)
+                values.insert(0, t)
+                
                 # Add the values to the file_values list
                 file_values.append(values)
 
         # Create a Pandas DataFrame using the retrieved values
+        keys.insert(0, 'version')
+        keys.insert(0, 'test')
         df = pd.DataFrame(file_values, columns=keys)
 
         # Sort the DataFrame based on the values of the first key (i.e., "name")
@@ -155,17 +171,17 @@ class JsonResults:
 
 jr = JsonResults()
 
-# # Directory containing JSON files
-# directory = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/"
-# # List of keys to retrieve values for
-# keys = ["robot_count", "mean_len", "total_len", "operation_time", "total_time"]
-# jr.create_table(directory, keys)
+# Directory containing JSON files
+directory = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/"
+# List of keys to retrieve values for
+keys = ["robot_count", "mean_len", "total_len", "operation_time", "total_time"]
+jr.create_table(directory, keys)
 
-# # dctory containing JSON files
-# directory = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/"
-# # List of keys to retrieve values for
-# keys = ["robot_count", "mean_len", "total_len", "operation_time", "total_time"]
-# jr.create_table_2(directory, keys)
+# dctory containing JSON files
+directory = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/"
+# List of keys to retrieve values for
+keys = ["robot_count", "mean_len", "total_len", "operation_time", "total_time"]
+jr.create_table_2(directory, keys)
 
 
 # #

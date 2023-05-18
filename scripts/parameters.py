@@ -34,7 +34,7 @@ class Params(object):
         self.fix_f = 4
         self.fix_f2 = 10
         self.obst_r = 0.11
-        self.prec_d = 0.06
+        self.prec_d = 0.07
         self.robot_r = 0.22
 
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57

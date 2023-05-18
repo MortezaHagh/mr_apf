@@ -217,9 +217,10 @@ class ApfMotion(object):
         if f_r < 0:
             v = 0
         else:
-            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) # + self.v_min_2
+            v = 1 * self.v_max * ((f_r / self.fix_f)**2) # + self.v_min_2
+            # v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) # + self.v_min_2
 
-        w = 4 * self.w_max * f_theta / self.fix_f
+        w = 5 * self.w_max * f_theta / self.fix_f
 
         if  f_r < -1 and abs(w)<0.05:
             w = 1*np.sign(w)
@@ -491,7 +492,7 @@ class ApfMotion(object):
                     else:
                         xc = xx1
                         yc = yy1
-                    rc = d12/np.sqrt(2)      # /np.sqrt(3) d12
+                    rc = d12/np.sqrt(3)      # /np.sqrt(3) d12
 
                 # 
                 d_tc = self.distance(self.goal_x, self.goal_y, xc, yc)
@@ -719,12 +720,12 @@ class ApfMotion(object):
                         self.stop_flag_full = True
                         # return [0, 0]
 
-            # # case hard!
-            # ad = self.angle_diff(theta_Rg,  self.theta_rg)
-            # if (nr.p) and abs(ad)<np.deg2rad(30) and d_Rg<self.goal_dist and abs(self.ad_rg_h)<np.deg2rad(40):
-            #     if abs(self.angle_diff(self.r_h,  nr.H))<np.deg2rad(90):
-            #         self.stop_flag_full = True
-            #         print(" ******************** ", self.ind)
+            # case hard!
+            ad = self.angle_diff(theta_Rg,  self.theta_rg)
+            if (nr.p) and abs(ad)<np.deg2rad(30) and d_Rg<self.goal_dist and abs(self.ad_rg_h)<np.deg2rad(40):
+                if abs(self.angle_diff(self.r_h, nr.H))<np.deg2rad(90):
+                    self.stop_flag_full = True
+                    print(" ******************** ", self.ind)
 
             # angle_turns
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H*R_coeff)

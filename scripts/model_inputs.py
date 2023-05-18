@@ -13,7 +13,7 @@ class ModelInputs():
             # self.map_0(robot_count)
             # self.collide()
             # self.random_map_2(robot_count)
-            self.from_json_file(robot_count)
+            self.from_json_file(robot_count, path_unit)
 
         self.apply_path_unit(path_unit)
 
@@ -321,7 +321,7 @@ class ModelInputs():
             json.dump(obj_dict, file)
 
 
-    def from_json_file(self, n=1):
+    def from_json_file(self, n=1, path_unit=1):
         
         # file name
         ind = str(n)
@@ -335,6 +335,9 @@ class ModelInputs():
         with open(filename, "r") as file:
             data = json.load(file)
 
+        # map index
+        self.map_ind = data['map_ind']
+
         # area
         lim = data['lim']
         self.lim = lim
@@ -342,7 +345,7 @@ class ModelInputs():
         self.y_min = data['y_min']
         self.x_max = data['lim']
         self.y_max = data['lim']
-
+        
         # obstacles
         self.obst_count_orig = len(data['x_obst'])
         self.x_obst = data['x_obst']
@@ -360,7 +363,7 @@ class ModelInputs():
         self.yt = data['yt']
 
         # modify obstacles
-        obst_prec_d = 0.4
+        obst_prec_d = 0.4/path_unit
         new_obst_x = []
         new_obst_y = []
         for i in range(len(self.x_obst)):
