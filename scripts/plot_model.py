@@ -11,7 +11,7 @@ def plot_model(model, settings):
     fig.set_size_inches(8,8)
     # ax.set_title('MRPP')
     ax.axis('equal')
-    # ax.axis("off")0
+    ax.axis("off")
     # ax.grid('on')
     ax.axis([model.map.x_min-1, model.map.x_max+1, model.map.y_min-1, model.map.y_max+1])
 

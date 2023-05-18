@@ -1,4 +1,7 @@
+import os
+import json
 import random
+import rospkg
 import numpy as np
 
 class ModelInputs():
@@ -6,9 +9,9 @@ class ModelInputs():
         print("Inputs for creating model")
 
         if map_id == 1:
-            self.map_0(robot_count)
+            # self.map_0(robot_count)
             # self.collide()
-            # self.random_map()
+            self.random_map_2()
 
         self.apply_path_unit(path_unit)
 
@@ -168,12 +171,12 @@ class ModelInputs():
 
     def random_map(self):
 
-        obst_n = 10
+        obst_n = 20
         robots_n = 10
         self.robot_count = robots_n
 
         # area
-        lim = 13
+        lim = 11
         self.lim = lim
         self.x_min = 0
         self.y_min = 0
@@ -188,13 +191,12 @@ class ModelInputs():
             for x in xx:
                 m.append([x, y])
         
-        nm = len(m)
         r_m = m[:]
         random.shuffle(r_m)
 
         obst_i = r_m[0:obst_n]
         robots_s_i = r_m[obst_n:obst_n+robots_n]
-        robots_g_i = r_m[obst_n+robots_n:robots_n+2*robots_n]
+        robots_g_i = r_m[obst_n+robots_n:obst_n+2*robots_n]
 
         self.x_obst = [o[0] for o in obst_i]
         self.y_obst = [o[1] for o in obst_i]
@@ -206,8 +208,91 @@ class ModelInputs():
         self.xt = [t[0] for t in robots_g_i]
         self.yt = [t[1] for t in robots_g_i]
 
-        # print(len(self.xs))
         # print(self.robot_count)
+
+
+    def random_map_2(self):
+
+        obst_n = 22
+        robots_n = 8
+        self.robot_count = robots_n
+
+        # area
+        lim = 9
+        self.lim = lim
+        self.x_min = 0
+        self.y_min = 0
+        self.x_max = lim
+        self.y_max = lim
+
+        # obstacles
+        xo = np.random.uniform(self.x_min, self.x_max)
+        yo = np.random.uniform(self.y_min, self.y_max)
+        obst_x = [xo]
+        obst_y = [yo]
+        while len(obst_x)<obst_n:
+            dist = 0
+            while dist < 0.5:
+                xo = np.random.uniform(self.x_min, self.x_max)
+                yo = np.random.uniform(self.y_min, self.y_max)
+                dist = min([self.distance(x, y, xo, yo) for (x, y) in zip(obst_x, obst_y)])
+            obst_x.append(xo)
+            obst_y.append(yo)
+
+        # robots start and target points
+        all_x = obst_x[:]
+        all_y = obst_y[:]
+        x_r = []
+        y_r = []
+        while len(x_r) < 2*robots_n:
+            dist = 0
+            while dist < 1:
+                xs = np.random.uniform(self.x_min, self.x_max)
+                ys = np.random.uniform(self.y_min, self.y_max)
+                dist = min([self.distance(x, y, xs, ys) for (x, y) in zip(all_x, all_y)])
+            all_x.append(xs)
+            all_y.append(ys)
+            x_r.append(xs)
+            y_r.append(ys)
+        
+        x_s = x_r[:robots_n]
+        y_s = y_r[:robots_n]
+        x_t = x_r[robots_n:2*robots_n]
+        y_t = y_r[robots_n:2*robots_n]
+
+        self.x_obst = obst_x
+        self.y_obst = obst_y
+        
+        self.ids = list(range(1, self.robot_count+1))
+        self.heading = [0.0 for i in range(self.robot_count)]
+        self.xs = x_s
+        self.ys = y_s
+        self.xt = x_t
+        self.yt = y_t
+
+        # dave data as JSON
+        self.save_object_attributes()
+        # data = {'robot_count': self.robot_count, 'obst_count': obst_n, \
+
+
+    def distance(self, x1, y1, x2, y2):
+        return np.sqrt((x1-x2)**2 + (y1-y2)**2)
+    
+    def save_object_attributes(self):
+        
+        # file name
+        ind = str(1)
+        map_name = 'maps/map' + ind + '.json'
+        rospack = rospkg.RosPack()
+        pkg_path = rospack.get_path('apf')
+        filename = os.path.join(pkg_path, map_name)
+
+        # Convert object attributes to a dictionary
+        obj_dict = vars(self)
+
+        # Save the dictionary as a JSON file
+        with open(filename, "w") as file:
+            json.dump(obj_dict, file)
 
 if __name__=="__main__":
     mi = ModelInputs()
