@@ -244,9 +244,9 @@ class ModelInputs():
         # robots start and target points
         all_x = obst_x[:]
         all_y = obst_y[:]
-        x_r = []
-        y_r = []
-        while len(x_r) < 2*robots_n:
+        x_rs = []
+        y_rs = []
+        while len(x_rs) < robots_n:
             dist = 0
             while dist < 1:
                 xs = np.random.uniform(self.x_min, self.x_max)
@@ -254,13 +254,33 @@ class ModelInputs():
                 dist = min([self.distance(x, y, xs, ys) for (x, y) in zip(all_x, all_y)])
             all_x.append(xs)
             all_y.append(ys)
-            x_r.append(xs)
-            y_r.append(ys)
+            x_rs.append(xs)
+            y_rs.append(ys)
+
+        ii = 0
+        x_rt = []
+        y_rt = []
+        while len(x_rt) < robots_n:
+            dist = 0
+            while True:
+                xt = np.random.uniform(self.x_min, self.x_max)
+                yt = np.random.uniform(self.y_min, self.y_max)
+                dist = min([self.distance(x, y, xt, yt) for (x, y) in zip(all_x, all_y)])
+
+                if dist <1:
+                    dist_st = self.distance(x_rs[ii], y_rs[ii], xt, yt)
+                    if dist_st < 5:
+                        ii+=1
+                        x_rt.append(xt)
+                        y_rt.append(yt)
+                        all_x.append(xt)
+                        all_y.append(yt)
+                        break
         
-        x_s = x_r[:robots_n]
-        y_s = y_r[:robots_n]
-        x_t = x_r[robots_n:2*robots_n]
-        y_t = y_r[robots_n:2*robots_n]
+        x_s = x_rs
+        y_s = y_rs
+        x_t = x_rt
+        y_t = y_rt
 
         self.x_obst = obst_x
         self.y_obst = obst_y
@@ -275,9 +295,11 @@ class ModelInputs():
         # dave data as JSON
         self.save_object_attributes()
 
+
     def distance(self, x1, y1, x2, y2):
         return np.sqrt((x1-x2)**2 + (y1-y2)**2)
     
+
     def save_object_attributes(self):
         
         # file name
@@ -294,7 +316,6 @@ class ModelInputs():
         # Save the dictionary as a JSON file
         with open(filename, "w") as file:
             json.dump(obj_dict, file)
-
 
 
     def from_json_file(self, n=1):

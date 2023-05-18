@@ -217,9 +217,9 @@ class ApfMotion(object):
         if f_r < 0:
             v = 0
         else:
-            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
+            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) # + self.v_min_2
 
-        w = 3 * self.w_max * f_theta / self.fix_f
+        w = 4 * self.w_max * f_theta / self.fix_f
 
         if  f_r < -1 and abs(w)<0.05:
             w = 1*np.sign(w)
@@ -286,8 +286,8 @@ class ApfMotion(object):
     def detect_group(self):
 
         #
-        c_r = 3.0       # 2.5 3.0      # param 1
-        c_radius = 3.5  # 2.5          # param 3 
+        c_r = 2.5       # 2.5 3.0      # param 1
+        c_radius = 1.5  # 2.5          # param 3 
         is_goal_close = False
         self.stop_flag_multi = False
 
@@ -616,7 +616,10 @@ class ApfMotion(object):
 
     def compute_multi_force(self, nr):
         nr_force = [0, 0]
-            
+
+        if (nr.r_start<nr.d):
+            return nr_force
+
         # force 
         coeff = 1
         f1 = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2

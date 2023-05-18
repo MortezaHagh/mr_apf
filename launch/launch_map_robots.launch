@@ -31,6 +31,9 @@
 
   <include file="$(find apf)/launch/launch_states_publisher.launch"/> 
 
+  <!-- path planning -->
+  <node pkg="apf" name="main" type="new_apf_init.py" output="screen"/>
+
   <!-- Load RVIZ -->
   <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d /home/piotr/mori_ws/src/mr_apf/rviz/apf_arviz.rviz" />
 
