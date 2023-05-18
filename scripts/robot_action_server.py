@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 
-# pyright: reportMissingImports=false
-
 import rospy
 import actionlib
 from apf_motion_4_3 import ApfMotion # apf_motion_4_0 - apf_motion_4_2 - apf_motion_4_3

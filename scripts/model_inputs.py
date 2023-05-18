@@ -4,6 +4,7 @@ import random
 import rospkg
 import numpy as np
 
+
 class ModelInputs():
     def __init__(self, map_id=1, path_unit=1.0, robot_count = 1):
         print("Inputs for creating model")
@@ -12,7 +13,7 @@ class ModelInputs():
             # self.map_0(robot_count)
             # self.collide()
             # self.random_map_2()
-            self.from_json_file()
+            self.from_json_file(robot_count)
 
         self.apply_path_unit(path_unit)
 
@@ -296,11 +297,11 @@ class ModelInputs():
 
 
 
-    def from_json_file(self, filename=''):
+    def from_json_file(self, n=1):
         
         # file name
-        ind = str(1)
-        no = 'o22'+'_map'+ind+'.json'
+        ind = str(n)
+        no = 'o15'+'_map'+ind+'.json'
         map_name = 'maps/'+no
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
@@ -319,6 +320,7 @@ class ModelInputs():
         self.y_max = data['lim']
 
         # obstacles
+        self.obst_count_orig = len(data['x_obst'])
         self.x_obst = data['x_obst']
         self.y_obst = data['y_obst']
 
@@ -333,7 +335,7 @@ class ModelInputs():
         self.xt = data['xt']
         self.yt = data['yt']
 
-        # # modify obstacles
+        # modify obstacles
         obst_prec_d = 0.4
         new_obst_x = []
         new_obst_y = []

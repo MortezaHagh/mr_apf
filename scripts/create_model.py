@@ -58,6 +58,7 @@ class CreateModel(object):
         self.map = map
 
         # Obstacles
+        self.obst_count_orig = inputs.obst_count_orig
         self.obst = Obstacles(map, inputs, path_unit)
 
         # Robot
@@ -87,17 +88,16 @@ if __name__ == '__main__':
     setting = Setting()
     model = CreateModel()
     plot_model(model, setting)
-    
 
-    # save fig
-    ind = str(1)
-    o_ind = str(model.obst.count)
-    no = 'o'+o_ind+'_map'+ind
-    map_name = 'maps/'+no + '_e'
-    rospack = rospkg.RosPack()
-    pkg_path = rospack.get_path('apf')
-    filename = os.path.join(pkg_path, map_name)
-    plt.savefig(filename+'.svg', format="svg", dpi=1000)
-    plt.savefig(filename+'.png', format="png", dpi=500)
+    # # save fig
+    # ind = str(1)
+    # o_ind = str(model.obst_count_orig)
+    # no = 'o'+o_ind+'_map'+ind
+    # map_name = 'maps/'+no #+ '_e'
+    # rospack = rospkg.RosPack()
+    # pkg_path = rospack.get_path('apf')
+    # filename = os.path.join(pkg_path, map_name)
+    # plt.savefig(filename+'.svg', format="svg", dpi=1000)
+    # plt.savefig(filename+'.png', format="png", dpi=500)
 
     plt.show()
