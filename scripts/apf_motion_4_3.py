@@ -152,7 +152,7 @@ class ApfMotion(object):
 
             if self.ind==2:
                 break
-            
+
             # detect and group
             self.detect_group()
 

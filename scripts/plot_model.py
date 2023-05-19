@@ -29,9 +29,9 @@ def plot_model(model, settings):
 
     # # Obstacles
     thetas = np.linspace(0, np.pi*2, 20)
-    ax.plot(model.obst.x, model.obst.y, 'o',  markersize=5,
+    ax.plot(model.obst.x[0:2], model.obst.y[0:2], 'o',  markersize=5,
             markeredgecolor='k', markerfacecolor='k')
-    for i in range(model.obst.count):
+    for i in range(model.obst.count-3):
             xor = [model.obst.x[i]+obst_prec_d*np.cos(t) for t in thetas]
             yor = [model.obst.y[i]+obst_prec_d*np.sin(t) for t in thetas]
             xdng = [model.obst.x[i]+obs_r*np.cos(t) for t in thetas]

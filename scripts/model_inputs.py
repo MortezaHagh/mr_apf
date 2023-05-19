@@ -187,28 +187,33 @@ class ModelInputs():
         self.map_ind = 1
         
         # obstacles
-        xc2 = [3.0, 4.0]
+        xc2 = [3.1, 3.9]
         yc2 = [3.5, 3.5]
 
         self.x_obst = xc2
         self.y_obst = yc2
         self.obst_count_orig = len(self.x_obst)
 
-        # self.modify_obst()
+        self.modify_obst()
 
         # robots
         self.robot_count = 2
 
         # robots
 
-        # 1
+        # # 1
+        # xs = [3.5] #[3.5, 3.5] 
+        # ys = [1.0] #[1.0, 3.5]
+        # xt = [3.5] #[3.5, 3.5]
+        # yt = [6.0] #[6.0, 3.5]
+        # self.heading = [np.pi/2] #[np.pi/2, -np.pi/2]
         xs = [3.5, 3.5] 
         ys = [1.0, 3.5]
         xt = [3.5, 3.5]
         yt = [6.0, 3.5]
         self.heading = [np.pi/2, -np.pi/2]
 
-        robot_count = 2
+        robot_count = self.robot_count
         self.ids = list(range(1,robot_count+1))
         self.xs = [xs[i] for i in range(robot_count)]
         self.ys = [ys[i] for i in range(robot_count)]
