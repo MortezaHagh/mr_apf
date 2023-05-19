@@ -4,9 +4,10 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
         - /Status1
         - /TF1/Frames1
+        - /robot_data2
+        - /Marker2
       Splitter Ratio: 0.7441176176071167
     Tree Height: 726
   - Class: rviz/Selection
@@ -513,7 +514,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.019999999552965164
       Style: Flat Squares
-      Topic: /r7/robot_data
+      Topic: /r6/robot_data
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -536,10 +537,10 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /r12/arrowsf
+      Marker Topic: /r6/arrowsf
       Name: Marker
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -606,5 +607,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1267
-  X: 67
+  X: 321
   Y: 27

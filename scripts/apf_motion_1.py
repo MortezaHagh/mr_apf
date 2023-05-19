@@ -161,9 +161,9 @@ class ApfMotion(object):
         if f_r < 0:
             v = 0
         else:
-            v = 1 * self.v_max * ((f_r / self.fix_f)**2 + (f_r / self.fix_f) / 4) + self.v_min_2
+            v = 1 * self.v_max * ((f_r / self.fix_f)**2) + self.v_min_2
 
-        w = 2 * self.w_max * f_theta / self.fix_f ###change
+        w = 3 * self.w_max * f_theta / self.fix_f ###change
 
         if  f_r < -1 and abs(w)<0.05:
             w = 1*np.sign(w)
@@ -218,7 +218,7 @@ class ApfMotion(object):
         dy = self.goal_y - self.r_y
         goal_dist = np.sqrt(dx**2 + dy**2)
         f = self.zeta * goal_dist
-        f = max(f, 1) ###change
+        f = max(f, self.fix_f) ###change
         # f = self.fix_f
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta

@@ -325,7 +325,7 @@ class ModelInputs():
         
         # file name
         ind = str(n)
-        no = 'o15'+'_map'+ind+'.json'
+        no = 'o22'+'_map'+ind+'.json'
         map_name = 'maps/'+no
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
@@ -371,7 +371,7 @@ class ModelInputs():
             y = self.y_obst[i]
             for j in range(i+1,len(self.x_obst)):
                 dist = self.distance(x, y, self.x_obst[j], self.y_obst[j])
-                if dist<2*obst_prec_d and dist>obst_prec_d:
+                if dist<1.65*obst_prec_d and dist>obst_prec_d:
                     new_obst_x.append((self.x_obst[j]+x)/2)
                     new_obst_y.append((self.y_obst[j]+y)/2)
         

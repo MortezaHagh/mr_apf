@@ -176,7 +176,7 @@ class ApfMotion(object):
                     self.v = 0
                     # self.w = 0
                     if abs(self.w) < (np.deg2rad(2)):
-                        self.v = min(self.v, self.v_min_2)
+                        self.v = self.v_min_2
                 
                 if self.stop_flag_full:
                     print(self.ind, "stop_flag_full")
@@ -380,7 +380,7 @@ class ApfMotion(object):
                         nnr.p = robots_priority[i]>0
                         nnr.stop = True
                         nnr.reached = True
-                        nnr.r_prec = nr.r_prec/1.5
+                        nnr.r_prec = nr.r_prec/1.0
                         nnr.r_half = 1.5 * nnr.r_prec
                         nnr.r_start = 2 * nnr.r_prec
                         nnr.z = 4 * self.fix_f * nnr.r_prec**4
@@ -713,7 +713,7 @@ class ApfMotion(object):
 
             # stops
             if (nr.d< nr.r_prec):
-                if (abs(nr.h_rR)<(np.pi/2)): # +np.pi/10
+                if (abs(nr.h_rR)<(np.pi/4)): # +np.pi/10
                     self.stop_flag_robots = True
                 if (not nr.reached) and (not nr.stop): # and nr.p:
                     if abs(ad_rR_h)<np.pi/2 and abs(ad_Rr_H)>np.pi/2:
