@@ -8,10 +8,12 @@ import numpy as np
 class ModelInputs():
     def __init__(self, map_id=1, path_unit=1.0, robot_count = 1):
         print("Inputs for creating model")
+        self.path_unit = path_unit
 
         if map_id == 1:
             # self.map_0(robot_count)
-            self.collide()
+            # self.collide()
+            self.obstacles()
             # self.random_map_2(robot_count)
             # self.from_json_file(robot_count, path_unit)
 
@@ -33,8 +35,8 @@ class ModelInputs():
         self.yt = [y * path_unit for y in self.yt]
 
 
-
     def map_0(self, robot_n):
+
         # area
         lim = 13
         self.lim = lim
@@ -42,6 +44,7 @@ class ModelInputs():
         self.y_min = 0
         self.x_max = lim
         self.y_max = lim
+        self.map_ind = 1
 
         # obstacles
         xc1 = [3, 3, 5, 5, 7, 7, 9, 9, 11, 11]
@@ -55,6 +58,8 @@ class ModelInputs():
 
         # self.x_obst = xc2
         # self.y_obst = yc2
+
+        self.obst_count_orig = len(self.x_obst)
 
         # robots
         self.robot_count = robot_n
@@ -117,7 +122,7 @@ class ModelInputs():
     def collide(self, robot_n=2):
         
         # area
-        lim = 13
+        lim = 7
         self.lim = lim
         self.x_min = 0
         self.y_min = 0
@@ -134,29 +139,26 @@ class ModelInputs():
 
         self.x_obst = [] # xc2
         self.y_obst = [] # yc2
+        self.obst_count_orig = 0
 
         # robots
         self.robot_count = 2
 
         # robots
 
-        # 1
-        xs = [3, 7] 
-        ys = [0, 0]
-        xt = [7, 3]
-        yt = [0, 0]
-        # xs = [3, 7] 
-        # ys = [0, 0.1]
-        # xt = [7, 3]
-        # yt = [0, 0.0]
-        self.heading = [0.0 , 3.14]
+        # # 1
+        # xs = [2, 5] 
+        # ys = [4, 4]
+        # xt = [6, 1]
+        # yt = [4, 4]
+        # self.heading = [0.0 , 3.14]
 
-        # # 2
-        # xs = [0, 0] 
-        # ys = [0, 2]
-        # xt = [4, 4]
-        # yt = [2, 0]
-        # self.heading = [0.0 , 0.0]
+        # 2
+        xs = [2, 2] 
+        ys = [2, 5]
+        xt = [5, 5]
+        yt = [5, 2]
+        self.heading = [0.0 , 0.0]
         
         # # 3
         # xs = [0, 0] 
@@ -164,6 +166,47 @@ class ModelInputs():
         # xt = [5, 3]
         # yt = [1, 2]
         # self.heading = [0.0 , 0.0]
+
+        robot_count = 2
+        self.ids = list(range(1,robot_count+1))
+        self.xs = [xs[i] for i in range(robot_count)]
+        self.ys = [ys[i] for i in range(robot_count)]
+        self.xt = [xt[i] for i in range(robot_count)]
+        self.yt = [yt[i] for i in range(robot_count)]
+
+
+    def obstacles(self, robot_n=2):
+        
+        # area
+        lim = 7
+        self.lim = lim
+        self.x_min = 0
+        self.y_min = 0
+        self.x_max = lim
+        self.y_max = lim
+        self.map_ind = 1
+        
+        # obstacles
+        xc2 = [3.0, 4.0]
+        yc2 = [3.5, 3.5]
+
+        self.x_obst = xc2
+        self.y_obst = yc2
+        self.obst_count_orig = len(self.x_obst)
+
+        # self.modify_obst()
+
+        # robots
+        self.robot_count = 2
+
+        # robots
+
+        # 1
+        xs = [3.5, 3.5] 
+        ys = [1.0, 3.5]
+        xt = [3.5, 3.5]
+        yt = [6.0, 3.5]
+        self.heading = [np.pi/2, -np.pi/2]
 
         robot_count = 2
         self.ids = list(range(1,robot_count+1))
@@ -377,6 +420,30 @@ class ModelInputs():
                     new_obst_x.append((self.x_obst[j]+x)/2)
                     new_obst_y.append((self.y_obst[j]+y)/2)
         
+        self.x_obst.extend(new_obst_x)
+        self.y_obst.extend(new_obst_y)
+
+
+    def modify_obst(self, path_unit=1.0):
+        # modify obstacles
+        obst_prec_d = 0.4/self.path_unit
+        print("obst_prec_d", obst_prec_d)
+        new_obst_x = []
+        new_obst_y = []
+        for i in range(len(self.x_obst)):
+            x = self.x_obst[i]
+            y = self.y_obst[i]
+            for j in range(i+1,len(self.x_obst)):
+                dist = self.distance(x, y, self.x_obst[j], self.y_obst[j])
+                if dist<1.99*obst_prec_d and dist>obst_prec_d:
+                    xxm = (self.x_obst[j]+x)/2.0
+                    yym = (self.y_obst[j]+y)/2.0
+                    new_obst_x.append((x+xxm)/2.0)
+                    new_obst_y.append((y+yym)/2.0)
+                    new_obst_x.append((self.x_obst[j]+xxm)/2.0)
+                    new_obst_y.append((self.y_obst[j]+yym)/2.0)
+                    new_obst_x.append(xxm)
+                    new_obst_y.append(yym)
         self.x_obst.extend(new_obst_x)
         self.y_obst.extend(new_obst_y)
 

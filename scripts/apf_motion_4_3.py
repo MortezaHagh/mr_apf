@@ -10,7 +10,7 @@ from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 
 # from shapely.geometry.polygon import Polygon
-from shapely.geometry import Point, shape, MultiPoint
+from shapely.geometry import Point, shape, MultiPoint # type: ignore
 
 
 class NewRobots:
@@ -147,9 +147,12 @@ class ApfMotion(object):
     # --------------------------  go_to_goal  ---------------------------#
 
     def go_to_goal(self):
-
+        
         while self.goal_dist > self.goal_dis_tresh and not rospy.is_shutdown():
 
+            if self.ind==2:
+                break
+            
             # detect and group
             self.detect_group()
 

@@ -18,6 +18,7 @@ def plot_model(model, settings):
     # robots start and target nodes
     colors = plt.cm.get_cmap('rainbow', len(model.robots))
     for i, robot in enumerate(model.robots):
+        if i==1: break
         ax.plot(robot.xs, robot.ys, marker='s', markersize=10,
                 markeredgecolor=colors(i), markerfacecolor=colors(i))
         ax.plot(robot.xt, robot.yt, marker='p', markersize=10,
