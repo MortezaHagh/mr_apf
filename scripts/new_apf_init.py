@@ -24,7 +24,7 @@ class Run():
 
         # test name and version
         version = 1
-        self.test_id = 2
+        self.test_id = 3
         self.test_name = "T" + str(self.test_id) + "_v" + str(version)
 
         # # results path
