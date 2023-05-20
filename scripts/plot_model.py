@@ -18,7 +18,6 @@ def plot_model(model, settings):
     # robots start and target nodes
     colors = plt.cm.get_cmap('rainbow', len(model.robots))
     for i, robot in enumerate(model.robots):
-        if i==1: break
         ax.plot(robot.xs, robot.ys, marker='s', markersize=10,
                 markeredgecolor=colors(i), markerfacecolor=colors(i))
         ax.plot(robot.xt, robot.yt, marker='p', markersize=10,
@@ -29,9 +28,9 @@ def plot_model(model, settings):
 
     # # Obstacles
     thetas = np.linspace(0, np.pi*2, 20)
-    ax.plot(model.obst.x[0:2], model.obst.y[0:2], 'o',  markersize=5,
+    ax.plot(model.obst.x, model.obst.y, 'o',  markersize=5,
             markeredgecolor='k', markerfacecolor='k')
-    for i in range(model.obst.count-3):
+    for i in range(model.obst.count):
             xor = [model.obst.x[i]+obst_prec_d*np.cos(t) for t in thetas]
             yor = [model.obst.y[i]+obst_prec_d*np.sin(t) for t in thetas]
             xdng = [model.obst.x[i]+obs_r*np.cos(t) for t in thetas]

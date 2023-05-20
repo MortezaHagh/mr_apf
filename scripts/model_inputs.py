@@ -175,52 +175,6 @@ class ModelInputs():
         self.yt = [yt[i] for i in range(robot_count)]
 
 
-    def obstacles(self, robot_n=2):
-        
-        # area
-        lim = 7
-        self.lim = lim
-        self.x_min = 0
-        self.y_min = 0
-        self.x_max = lim
-        self.y_max = lim
-        self.map_ind = 1
-        
-        # obstacles
-        xc2 = [3.1, 3.9]
-        yc2 = [3.5, 3.5]
-
-        self.x_obst = xc2
-        self.y_obst = yc2
-        self.obst_count_orig = len(self.x_obst)
-
-        self.modify_obst()
-
-        # robots
-        self.robot_count = 2
-
-        # robots
-
-        # # 1
-        # xs = [3.5] #[3.5, 3.5] 
-        # ys = [1.0] #[1.0, 3.5]
-        # xt = [3.5] #[3.5, 3.5]
-        # yt = [6.0] #[6.0, 3.5]
-        # self.heading = [np.pi/2] #[np.pi/2, -np.pi/2]
-        xs = [3.5, 3.5] 
-        ys = [1.0, 3.5]
-        xt = [3.5, 3.5]
-        yt = [6.0, 3.5]
-        self.heading = [np.pi/2, -np.pi/2]
-
-        robot_count = self.robot_count
-        self.ids = list(range(1,robot_count+1))
-        self.xs = [xs[i] for i in range(robot_count)]
-        self.ys = [ys[i] for i in range(robot_count)]
-        self.xt = [xt[i] for i in range(robot_count)]
-        self.yt = [yt[i] for i in range(robot_count)]
-
-
     def random_map(self):
 
         obst_n = 20
@@ -451,6 +405,93 @@ class ModelInputs():
                     new_obst_y.append(yym)
         self.x_obst.extend(new_obst_x)
         self.y_obst.extend(new_obst_y)
+
+    
+    def obstacles(self, robot_n=2):
+        
+        # area
+        lim = 7
+        self.lim = lim
+        self.x_min = 0
+        self.y_min = 0
+        self.x_max = lim
+        self.y_max = lim
+        self.map_ind = 1
+        
+        # obstacles
+        xc2 = [3.1, 3.9]
+        yc2 = [3.5, 3.5]
+
+        self.x_obst = xc2
+        self.y_obst = yc2
+        self.obst_count_orig = len(self.x_obst)
+
+        self.modify_obst()
+
+        # robots
+        self.robot_count = 2
+
+        # robots
+
+        # # 1
+        # xs = [3.5] #[3.5, 3.5] 
+        # ys = [1.0] #[1.0, 3.5]
+        # xt = [3.5] #[3.5, 3.5]
+        # yt = [6.0] #[6.0, 3.5]
+        # self.heading = [np.pi/2] #[np.pi/2, -np.pi/2]
+        xs = [3.5, 3.5] 
+        ys = [1.0, 3.5]
+        xt = [3.5, 3.5]
+        yt = [6.0, 3.5]
+        self.heading = [np.pi/2, -np.pi/2]
+
+        robot_count = self.robot_count
+        self.ids = list(range(1,robot_count+1))
+        self.xs = [xs[i] for i in range(robot_count)]
+        self.ys = [ys[i] for i in range(robot_count)]
+        self.xt = [xt[i] for i in range(robot_count)]
+        self.yt = [yt[i] for i in range(robot_count)]
+
+    
+    def obstacles2(self, robot_n=2):
+        
+        # area
+        lim = 7
+        self.lim = lim
+        self.x_min = 0
+        self.y_min = 0
+        self.x_max = lim
+        self.y_max = lim
+        self.map_ind = 1
+        
+        # obstacles
+        xc2 = [3.5]
+        yc2 = [3.5]
+
+        self.x_obst = xc2
+        self.y_obst = yc2
+        self.obst_count_orig = len(self.x_obst)
+
+        self.modify_obst()
+
+        # robots
+        self.robot_count = 1
+
+        # robots
+
+        # 1
+        xs = [3.5] #[3.5, 3.5] 
+        ys = [1.0] #[1.0, 3.5]
+        xt = [3.5] #[3.5, 3.5]
+        yt = [6.0] #[6.0, 3.5]
+        self.heading = [np.pi/2] #[np.pi/2, -np.pi/2]
+
+        robot_count = self.robot_count
+        self.ids = list(range(1,robot_count+1))
+        self.xs = [xs[i] for i in range(robot_count)]
+        self.ys = [ys[i] for i in range(robot_count)]
+        self.xt = [xt[i] for i in range(robot_count)]
+        self.yt = [yt[i] for i in range(robot_count)]
 
 
 # ----------------------------------------------------------------

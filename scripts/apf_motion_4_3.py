@@ -150,9 +150,6 @@ class ApfMotion(object):
         
         while self.goal_dist > self.goal_dis_tresh and not rospy.is_shutdown():
 
-            if self.ind==2:
-                break
-
             # detect and group
             self.detect_group()
 
