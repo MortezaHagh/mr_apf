@@ -11,9 +11,9 @@ class ModelInputs():
         self.path_unit = path_unit
 
         if map_id == 1:
-            self.map_0(robot_count)
+            # self.map_0(robot_count)
             # self.collide()
-            # self.obstacles()
+            self.obstacles2()
             # self.random_map_2(robot_count)
             # self.from_json_file(robot_count, path_unit)
 
@@ -386,7 +386,6 @@ class ModelInputs():
     def modify_obst(self, path_unit=1.0):
         # modify obstacles
         obst_prec_d = 0.4/self.path_unit
-        print("obst_prec_d", obst_prec_d)
         new_obst_x = []
         new_obst_y = []
         for i in range(len(self.x_obst)):
@@ -472,7 +471,7 @@ class ModelInputs():
         self.y_obst = yc2
         self.obst_count_orig = len(self.x_obst)
 
-        self.modify_obst()
+        # self.modify_obst()
 
         # robots
         self.robot_count = 1
@@ -481,9 +480,9 @@ class ModelInputs():
 
         # 1
         xs = [3.5] #[3.5, 3.5] 
-        ys = [1.0] #[1.0, 3.5]
+        ys = [2.5] #[1.0, 3.5] //////
         xt = [3.5] #[3.5, 3.5]
-        yt = [6.0] #[6.0, 3.5]
+        yt = [5.0] #[6.0, 3.5]
         self.heading = [np.pi/2] #[np.pi/2, -np.pi/2]
 
         robot_count = self.robot_count

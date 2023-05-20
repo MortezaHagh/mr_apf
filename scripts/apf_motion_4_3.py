@@ -166,6 +166,10 @@ class ApfMotion(object):
                 # calculate forces
                 [f_r, f_theta, phi] = self.forces()
 
+                self.tensor_force()
+                self.rate.sleep()
+                continue
+
                 # calculate velocities
                 self.cal_vel(f_r, f_theta, phi)
                 self.v_lin.append(self.v)
@@ -725,7 +729,6 @@ class ApfMotion(object):
             if (nr.p) and abs(ad)<np.deg2rad(30) and d_Rg<self.goal_dist and abs(self.ad_rg_h)<np.deg2rad(40):
                 if abs(self.angle_diff(self.r_h, nr.H))<np.deg2rad(90):
                     self.stop_flag_full = True
-                    print(" ******************** ", self.ind)
 
             # angle_turns
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H*R_coeff)
@@ -799,7 +802,7 @@ class ApfMotion(object):
 
             coeff = 1
             theta_ = 20
-            if abs(ad_h_ro)<np.deg2rad(theta_): # or abs(ad_h_ro)>np.deg2rad(180-theta_)):
+            if abs(ad_h_ro)<np.deg2rad(theta_):
                 ad_rg_ro = self.angle_diff(self.theta_rg,  theta_ro)
                 coeff = np.sign(ad_rg_ro*ad_h_ro)
             # angle_turn_o = theta_ro + (np.pi/2)*np.sign(ad_h_ro)
@@ -921,13 +924,13 @@ class ApfMotion(object):
 
         # Define the center coordinates and radius of the circle
         center_x, center_y = self.obs_x[0], self.obs_y[0]
-        radius = self.obst_prec_d/5
-        radius2 = self.obst_prec_d+0.1
+        radius = self.obst_prec_d/1.5
+        radius2 = self.obst_prec_d*1.9
 
         # # Define the range of x and y values
         x_min, x_max = self.obs_x[0]-1, self.obs_x[0]+1    # self.model.map.x_min, self.model.map.x_max
         y_min, y_max = self.obs_y[0]-1, self.obs_y[0]+1    # self.model.map.y_min, self.model.map.y_max
-        x_step, y_step = 0.02, 0.02
+        x_step, y_step = 0.08, 0.08
 
         # Create the grid of x and y values
         x = np.arange(x_min, x_max + x_step, x_step)
@@ -961,15 +964,15 @@ class ApfMotion(object):
 
         Fx = np.zeros(X_outside.shape)
         Fy = np.zeros(Y_outside.shape)
-        print(X_outside.shape, Y_outside.shape)
+        thetaF = np.zeros(Y_outside.shape)
         
         for i in range(X_outside.shape[0]):
             for j in range(X_outside.shape[1]):
                 if X_outside[i,j]==np.nan or Y_outside[i,j]==np.nan:
-                    Fx[i,j], Fy[i,j] =  np.nan, np.nan
+                    Fx[i,j], Fy[i,j], thetaF[i, j] =  np.nan, np.nan, np.nan
                 else:
                     Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j])
-
+                    thetaF[i, j] = np.arctan2(Fy[i,j], Fx[i,j])
         # # Compute the force components (Fx and Fy) based on the partial derivatives of f(x, y)
         # Fx, Fy = self.f_obstacle_tensor(x, y)
 
@@ -980,58 +983,117 @@ class ApfMotion(object):
         force_tensor = np.stack((Fx, Fy), axis=-1)
 
         # Normalize the force vectors to have a constant length of 0.5
-        normalized_force_tensor = force_tensor / force_magnitude[..., None] * 0.5
+        normalized_force_tensor = force_tensor / force_magnitude[..., None] * 1.0
+        
+        fig, ax = plt.subplots(1, 1)
 
         # Plot the force vectors using the quiver function with color based on the magnitude
-        plt.quiver(X_outside,
-                Y_outside,
-                force_tensor[..., 0],
-                force_tensor[..., 1],
+        w = 0.005 * 1  # just example..
+        quiver = ax.quiver(X_outside,
+                Y_outside, 3*np.cos(thetaF), 3*np.sin(thetaF),
                 force_magnitude,
-                cmap="coolwarm")
-        plt.colorbar()
-        plt.xlim(x_min, x_max)
-        plt.ylim(y_min, y_max)
-        plt.xlabel("x")
-        plt.ylabel("y")
-        plt.title("Force Tensor Illustration")
+                cmap="coolwarm", width = w, scale=100, headlength=3, headaxislength=2, linewidths=w) #scale = 0.9 ,headwidth=3, headlength=6, headaxislength=4)
+                # normalized_force_tensor[..., 0],
+                # normalized_force_tensor[..., 1], width = w)
+
+        cbar = plt.colorbar(quiver)
+        # plt.colorbar()
+        
+        # Target Point
+        ax.plot(self.goal_x, self.goal_y, 'go', label='Target Point')
+
+        # obstcale circles
+        thetas = np.linspace(0, np.pi*2, 100)
+        xp = [self.obs_x[0]+ self.obst_prec_d*np.cos(t) for t in thetas]
+        yp = [self.obs_y[0]+ self.obst_prec_d*np.sin(t) for t in thetas]
+        ax.plot(xp, yp, '-k', linewidth=2, label='prec')
+        xs = [self.obs_x[0]+ self.obst_start_d*np.cos(t) for t in thetas]
+        ys = [self.obs_y[0]+ self.obst_start_d*np.sin(t) for t in thetas]
+        ax.plot(xs, ys, '--k', linewidth=2, label='start')
+
+        font = {'family': 'sans-serif', 'size': 12}  # Specify font family and size
+        plt.rc('font', **font)
+
+        ax.set_xlim(x_min, x_max)
+        ax.set_ylim(y_min, self.goal_y+0.3)
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_aspect('equal', 'box')
+        # ax.legend()
+
+        # Save fig
+        save_tensor_path = '/home/piotr/mori_ws/src/mr_apf/Results-APF/Tensor/Tensor_' + str(1)
+        plt.savefig(save_tensor_path+'.svg', format='svg', dpi=1000)
+        plt.savefig(save_tensor_path+'.png', format='png', dpi=1000)
+        
+        # plt.title("Force Tensor Illustration")
         plt.show()
 
     def f_obstacle_tensor(self, x, y):
+        
+        # r_g
+        dx = self.goal_x - x
+        dy = self.goal_y - y
+        theta_rg = np.arctan2(dy, dx)
+        
         r_h = 0
         obs_f = [0, 0]
         f_obsts_inds = [0]
+
         for i in f_obsts_inds:
             dy = (self.obs_y[i] - y)
             dx = (self.obs_x[i] - x)
             d_ro = np.sqrt(dx**2 + dy**2)
 
             theta_ro = np.arctan2(dy, dx)
+
+            r_h = theta_ro + 0.001
+
+            ad_rg_h = self.angle_diff(theta_rg, r_h)
+            self.ad_rg_h = ad_rg_h
+
             ad_h_ro = self.angle_diff(r_h, theta_ro)
             
-            if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
-                self.stop_flag_robots = True
+            if (d_ro < self.obst_half_d):
+                self.near_obst = True
+
+            dx = self.goal_x - self.obs_x[i]
+            dy = self.goal_y - self.obs_y[i]
+            theta_og = np.arctan2(dy, dx)
+            theta_or = theta_ro - np.pi
+            ad_og_or = self.angle_diff(theta_og, theta_or)
+            target_other_side = False
+            if abs(ad_og_or)>np.pi/4:
+                target_other_side = True
 
             coeff = 1
-            if (abs(ad_h_ro)<(10*np.pi/180)):
-                ad_rg_ro = self.angle_diff(self.theta_rg,  theta_ro)
+            theta_ = 20
+            if abs(ad_h_ro)<np.deg2rad(theta_):
+                ad_rg_ro = self.angle_diff(theta_rg,  theta_ro)
                 coeff = np.sign(ad_rg_ro*ad_h_ro)
             angle_turn_t = theta_ro + (np.pi/2)*np.sign(ad_h_ro)*coeff
             ad_c_t = self.angle_diff(angle_turn_t, r_h)
 
-            theta_or = theta_ro + np.pi 
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
-            o_force = [f * np.cos(theta_or), f * np.sin(theta_or)]
+            o_force = [f * -np.cos(ad_h_ro), f * np.sin(ad_h_ro)]
+
+            ft = f + 0.5
+            templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
+
+            if target_other_side:
+                if (self.obst_prec_d<d_ro and d_ro<self.obst_half_d):
+                        o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
+                elif (self.obst_half_d<d_ro):
+                    if (abs(ad_h_ro)<np.pi/2):
+                            o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
             
-            ft = f + 2
-            templt = [ft * np.cos(angle_turn_t), ft * np.sin(angle_turn_t)]
+            # rotation
+            rotation_matrix = np.array([[np.cos(r_h), -np.sin(r_h)],
+                                [np.sin(r_h), np.cos(r_h)]])
+            rotated_vector = np.dot(rotation_matrix, np.array(o_force))
 
-            # if (self.obst_prec_d<d_ro):
-            #     if (abs(ad_h_ro)<np.pi/2):
-            #             o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
-
-            obs_f[0] += round(o_force[0], 4)
-            obs_f[1] += round(o_force[1], 4)
+            obs_f[0] += round(rotated_vector[0], 3)
+            obs_f[1] += round(rotated_vector[1], 3)
 
         return obs_f[0], obs_f[1]
 
