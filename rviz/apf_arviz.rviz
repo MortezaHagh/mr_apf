@@ -119,10 +119,6 @@ Visualization Manager:
           Value: false
         r3/odom:
           Value: false
-        r3/wheel_left_link:
-          Value: false
-        r3/wheel_right_link:
-          Value: false
         r4/base_footprint:
           Value: false
         r4/base_link:
@@ -135,23 +131,11 @@ Visualization Manager:
           Value: false
         r4/odom:
           Value: true
-        r4/wheel_left_link:
-          Value: false
-        r4/wheel_right_link:
-          Value: false
-        r5/base_footprint:
-          Value: true
         r5/odom:
-          Value: true
-        r6/base_footprint:
           Value: true
         r6/odom:
           Value: true
-        r7/base_footprint:
-          Value: true
         r7/odom:
-          Value: true
-        r8/base_footprint:
           Value: true
         r8/odom:
           Value: true
@@ -204,43 +188,17 @@ Visualization Manager:
                   r2/wheel_right_link:
                     {}
             r3/odom:
-              r3/base_footprint:
-                r3/base_link:
-                  r3/caster_back_left_link:
-                    {}
-                  r3/caster_back_right_link:
-                    {}
-                  r3/imu_link:
-                    {}
-                  r3/wheel_left_link:
-                    {}
-                  r3/wheel_right_link:
-                    {}
+              {}
             r4/odom:
-              r4/base_footprint:
-                r4/base_link:
-                  r4/caster_back_left_link:
-                    {}
-                  r4/caster_back_right_link:
-                    {}
-                  r4/imu_link:
-                    {}
-                  r4/wheel_left_link:
-                    {}
-                  r4/wheel_right_link:
-                    {}
+              {}
             r5/odom:
-              r5/base_footprint:
-                {}
+              {}
             r6/odom:
-              r6/base_footprint:
-                {}
+              {}
             r7/odom:
-              r7/base_footprint:
-                {}
+              {}
             r8/odom:
-              r8/base_footprint:
-                {}
+              {}
             r9/odom:
               {}
       Update Interval: 0
@@ -540,7 +498,7 @@ Visualization Manager:
       Marker Topic: /r6/arrowsf
       Name: Marker
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -607,5 +565,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1267
-  X: 321
+  X: 653
   Y: 27

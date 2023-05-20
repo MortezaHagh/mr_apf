@@ -922,17 +922,24 @@ class ApfMotion(object):
     def tensor_force(self):
         import matplotlib.pyplot as plt
 
+        # obstacles
+        obs_x = self.obs_x[:1]
+        obs_y = self.obs_x[:1]
+
         # Define the center coordinates and radius of the circle
-        center_x, center_y = self.obs_x[0], self.obs_y[0]
+        # center_x, center_y = obs_x[0], obs_y[0]
+        center_x, center_y = np.mean(obs_x), np.mean(obs_y)
         radius = self.obst_prec_d/1.5
         radius2 = self.obst_prec_d*1.9
 
         # # Define the range of x and y values
-        x_min, x_max = self.obs_x[0]-1, self.obs_x[0]+1
-        y_min, y_max = self.obs_y[0]-1, self.obs_y[0]+1
+        # x_min, x_max = obs_x[0]-1, obs_x[0]+1
+        # y_min, y_max = obs_y[0]-1, obs_y[0]+1
+        x_min, x_max = min(obs_x)-1, max(obs_x)+1
+        y_min, y_max = min(obs_y)-1, max(obs_y)+1 
         x_step, y_step = 0.08, 0.08
 
-        # -------------------------------------------------
+        # ------------------------------------------------- xy method
         
         # Create the grid of x and y values
         x = np.arange(x_min, x_max + x_step, x_step)
@@ -974,7 +981,7 @@ class ApfMotion(object):
         # Normalize the force vectors to have a constant length of 0.5
         normalized_force_tensor = force_tensor / force_magnitude[..., None] * 1.0
 
-        # -------------------------------------------------
+        # ------------------------------------------------- rt method
 
         # # r
         # r_min, r_max = self.obst_prec_d/1.5, self.obst_prec_d*1.9
@@ -1027,24 +1034,26 @@ class ApfMotion(object):
         w = 0.005 * 1  # just example..
         quiver = ax.quiver(X, Y, 3*np.cos(thetaF), 3*np.sin(thetaF),
                 force_magnitude,
-                cmap="coolwarm", width = w, scale=100, headlength=3, headaxislength=2, linewidths=w) #scale = 0.9 ,headwidth=3, headlength=6, headaxislength=4)
+                cmap="coolwarm", width = w, scale=100, headlength=3, headaxislength=2, linewidths=w)
                 # normalized_force_tensor[..., 0],
                 # normalized_force_tensor[..., 1], width = w)
 
-        cbar = plt.colorbar(quiver)
         # plt.colorbar()
+        cbar = plt.colorbar(quiver)
         
         # Target Point
         ax.plot(self.goal_x, self.goal_y, 'go', label='Target Point')
-
+        
         # obstcale circles
-        thetas = np.linspace(0, np.pi*2, 100)
-        xp = [self.obs_x[0]+ self.obst_prec_d*np.cos(t) for t in thetas]
-        yp = [self.obs_y[0]+ self.obst_prec_d*np.sin(t) for t in thetas]
-        ax.plot(xp, yp, '-k', linewidth=2, label='prec')
-        xs = [self.obs_x[0]+ self.obst_start_d*1.01*np.cos(t) for t in thetas]
-        ys = [self.obs_y[0]+ self.obst_start_d*1.01*np.sin(t) for t in thetas]
-        ax.plot(xs, ys, '--k', linewidth=2, label='start')
+        for xo, yo in zip(obs_x, obs_y):
+            ax.plot(xo, yo, 'ok') #, marker_color='k', marker_size=5)
+            thetas = np.linspace(0, np.pi*2, 100)
+            xp = [xo+ self.obst_prec_d*np.cos(t) for t in thetas]
+            yp = [yo+ self.obst_prec_d*np.sin(t) for t in thetas]
+            ax.plot(xp, yp, '-k', linewidth=2, label='prec')
+            xs = [xo+ self.obst_start_d*1.01*np.cos(t) for t in thetas]
+            ys = [yo+ self.obst_start_d*1.01*np.sin(t) for t in thetas]
+            ax.plot(xs, ys, '--k', linewidth=2, label='start')
 
         font = {'family': 'sans-serif', 'size': 12}  # Specify font family and size
         plt.rc('font', **font)
@@ -1064,6 +1073,7 @@ class ApfMotion(object):
         # plt.title("Force Tensor Illustration")
         plt.show()
 
+
     def f_obstacle_tensor(self, x, y):
         
         # r_g
@@ -1073,7 +1083,7 @@ class ApfMotion(object):
         
         r_h = 0
         obs_f = [0, 0]
-        f_obsts_inds = [0]
+        f_obsts_inds = [0,1]
 
         for i in f_obsts_inds:
             dy = (self.obs_y[i] - y)
