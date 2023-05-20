@@ -930,42 +930,85 @@ class ApfMotion(object):
         # # Define the range of x and y values
         x_min, x_max = self.obs_x[0]-1, self.obs_x[0]+1
         y_min, y_max = self.obs_y[0]-1, self.obs_y[0]+1
-        # x_step, y_step = 0.08, 0.08
+        x_step, y_step = 0.08, 0.08
 
         # -------------------------------------------------
         
-        # Fx = np.zeros(X_outside.shape)
-        # Fy = np.zeros(Y_outside.shape)
-        # thetaF = np.zeros(Y_outside.shape)
+        # Create the grid of x and y values
+        x = np.arange(x_min, x_max + x_step, x_step)
+        y = np.arange(y_min, y_max + y_step, y_step)
+        X, Y = np.meshgrid(x, y, indexing='ij')
 
-        # # Create the grid of x and y values
-        # x = np.arange(x_min, x_max + x_step, x_step)
-        # y = np.arange(y_min, y_max + y_step, y_step)
-        # X, Y = np.meshgrid(x, y, indexing='ij')
+        # Compute the distance of each point from the center of the circle
+        dist = np.sqrt((X - center_x)**2 + (Y - center_y)**2)
 
-        # # Compute the distance of each point from the center of the circle
-        # dist = np.sqrt((X - center_x)**2 + (Y - center_y)**2)
+        # Create a Boolean mask indicating whether each point is outside the circle
+        outside_circle1 = radius < dist
+        outside_circle2 = dist < radius2
+        outside_circle = np.logical_and(outside_circle1, outside_circle2)
 
-        # # Create a Boolean mask indicating whether each point is outside the circle
-        # outside_circle1 = radius < dist
-        # outside_circle2 = dist < radius2
-        # outside_circle = np.logical_and(outside_circle1, outside_circle2)
+        X[outside_circle == False] = np.nan
+        Y[outside_circle == False] = np.nan
 
-        # X[outside_circle == False] = np.nan
-        # Y[outside_circle == False] = np.nan
+        X_outside = X
+        Y_outside = Y
 
-        # X_outside = X
-        # Y_outside = Y
+        Fx = np.zeros(X_outside.shape)
+        Fy = np.zeros(Y_outside.shape)
+        thetaF = np.zeros(Y_outside.shape)
         
-        # for i in range(X_outside.shape[0]):
-        #     for j in range(X_outside.shape[1]):
-        #         if X_outside[i,j]==np.nan or Y_outside[i,j]==np.nan:
-        #             Fx[i,j], Fy[i,j], thetaF[i, j] =  np.nan, np.nan, np.nan
-        #         else:
-        #             Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j])
-        #             thetaF[i, j] = np.arctan2(Fy[i,j], Fx[i,j])
-        # # Compute the force components (Fx and Fy) based on the partial derivatives of f(x, y)
-        # Fx, Fy = self.f_obstacle_tensor(x, y)
+        for i in range(X_outside.shape[0]):
+            for j in range(X_outside.shape[1]):
+                if X_outside[i,j]==np.nan or Y_outside[i,j]==np.nan:
+                    Fx[i,j], Fy[i,j], thetaF[i, j] =  np.nan, np.nan, np.nan
+                else:
+                    Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j])
+                    thetaF[i, j] = np.arctan2(Fy[i,j], Fx[i,j])
+        
+        # Compute the magnitude of the force vectors
+        force_magnitude = np.sqrt(Fx**2 + Fy**2)
+
+        # Create the force tensor by combining the force components (Fx and Fy) into a 2x2 matrix
+        force_tensor = np.stack((Fx, Fy), axis=-1)
+
+        # Normalize the force vectors to have a constant length of 0.5
+        normalized_force_tensor = force_tensor / force_magnitude[..., None] * 1.0
+
+        # -------------------------------------------------
+
+        # # r
+        # r_min, r_max = self.obst_prec_d/1.5, self.obst_prec_d*1.9
+        # t_min, t_max = 0, np.pi*2
+        # r_n = 10
+        # t_n = 30 *(1+r_max/r_max)
+        # r = np.linspace(r_min, r_max, r_n)
+        # t = np.linspace(t_min, t_max, t_n) + np.pi*2/t_n
+
+        # X, Y = np.meshgrid(r, t, indexing='ij')
+
+        # Fx = np.empty(X.shape)
+        # Fy = np.empty(Y.shape)
+        # thetaF = np.empty(Y.shape)
+        # Fx[:] = np.nan
+        # Fy[:] = np.nan
+        # thetaF[:] = np.nan
+
+        # i = -1
+        # for rr in r:
+        #     j = -1
+        #     i += 1
+        #     t_n = 30 *(1+rr/r_max)
+        #     t = np.linspace(t_min, t_max, t_n) + np.pi*2/t_n
+        #     for tt in t:
+        #         j+=1
+        #         xx = center_x + rr*np.cos(tt)
+        #         yy = center_y + rr*np.sin(tt)
+        #         fx, fy =  self.f_obstacle_tensor(xx, yy)
+        #         X[i,j] = xx
+        #         Y[i,j] = yy
+        #         Fx[i, j] = fx
+        #         Fy[i, j] = fy
+        #         thetaF[i, j] = np.arctan2(fy, fx)
 
         # # Compute the magnitude of the force vectors
         # force_magnitude = np.sqrt(Fx**2 + Fy**2)
@@ -975,51 +1018,6 @@ class ApfMotion(object):
 
         # # Normalize the force vectors to have a constant length of 0.5
         # normalized_force_tensor = force_tensor / force_magnitude[..., None] * 1.0
-
-        # -------------------------------------------------
-
-        # r
-        r_min, r_max = self.obst_prec_d/1.5, self.obst_prec_d*1.9
-        t_min, t_max = 0, np.pi*2
-        r_n = 10
-        t_n = 30 *(1+r_max/r_max)
-        r = np.linspace(r_min, r_max, r_n)
-        t = np.linspace(t_min, t_max, t_n) + np.pi*2/t_n
-
-        X, Y = np.meshgrid(r, t, indexing='ij')
-
-        Fx = np.empty(X.shape)
-        Fy = np.empty(Y.shape)
-        thetaF = np.empty(Y.shape)
-        Fx[:] = np.nan
-        Fy[:] = np.nan
-        thetaF[:] = np.nan
-
-        i = -1
-        for rr in r:
-            j = -1
-            i += 1
-            t_n = 30 *(1+rr/r_max)
-            t = np.linspace(t_min, t_max, t_n) + np.pi*2/t_n
-            for tt in t:
-                j+=1
-                xx = center_x + rr*np.cos(tt)
-                yy = center_y + rr*np.sin(tt)
-                fx, fy =  self.f_obstacle_tensor(xx, yy)
-                X[i,j] = xx
-                Y[i,j] = yy
-                Fx[i, j] = fx
-                Fy[i, j] = fy
-                thetaF[i, j] = np.arctan2(fy, fx)
-
-        # Compute the magnitude of the force vectors
-        force_magnitude = np.sqrt(Fx**2 + Fy**2)
-
-        # Create the force tensor by combining the force components (Fx and Fy) into a 2x2 matrix
-        force_tensor = np.stack((Fx, Fy), axis=-1)
-
-        # Normalize the force vectors to have a constant length of 0.5
-        normalized_force_tensor = force_tensor / force_magnitude[..., None] * 1.0
 
         # -------------------------------------------------
         
@@ -1044,8 +1042,8 @@ class ApfMotion(object):
         xp = [self.obs_x[0]+ self.obst_prec_d*np.cos(t) for t in thetas]
         yp = [self.obs_y[0]+ self.obst_prec_d*np.sin(t) for t in thetas]
         ax.plot(xp, yp, '-k', linewidth=2, label='prec')
-        xs = [self.obs_x[0]+ self.obst_start_d*1.1*np.cos(t) for t in thetas]
-        ys = [self.obs_y[0]+ self.obst_start_d*1.1*np.sin(t) for t in thetas]
+        xs = [self.obs_x[0]+ self.obst_start_d*1.01*np.cos(t) for t in thetas]
+        ys = [self.obs_y[0]+ self.obst_start_d*1.01*np.sin(t) for t in thetas]
         ax.plot(xs, ys, '--k', linewidth=2, label='start')
 
         font = {'family': 'sans-serif', 'size': 12}  # Specify font family and size
@@ -1059,7 +1057,7 @@ class ApfMotion(object):
         # ax.legend()
 
         # Save fig
-        save_tensor_path = '/home/piotr/mori_ws/src/mr_apf/Results-APF/Tensor/Tensor_mrt_' + str(1)
+        save_tensor_path = '/home/piotr/mori_ws/src/mr_apf/Results-APF/Tensor/Tensor_mxy_' + str(1)
         plt.savefig(save_tensor_path+'.svg', format='svg', dpi=1000)
         plt.savefig(save_tensor_path+'.png', format='png', dpi=1000)
         
