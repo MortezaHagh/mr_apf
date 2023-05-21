@@ -149,6 +149,9 @@ class ApfMotion(object):
     def go_to_goal(self):
         
         while self.goal_dist > self.goal_dis_tresh and not rospy.is_shutdown():
+            
+            if self.ind == 2:
+                break
 
             # detect and group
             self.detect_group()
@@ -923,8 +926,8 @@ class ApfMotion(object):
         import matplotlib.pyplot as plt
 
         # obstacles
-        obs_x = self.obs_x[:1]
-        obs_y = self.obs_x[:1]
+        obs_x = self.obs_x[:2]
+        obs_y = self.obs_y[:2]
 
         # Define the center coordinates and radius of the circle
         # center_x, center_y = obs_x[0], obs_y[0]
@@ -937,7 +940,7 @@ class ApfMotion(object):
         # y_min, y_max = obs_y[0]-1, obs_y[0]+1
         x_min, x_max = min(obs_x)-1, max(obs_x)+1
         y_min, y_max = min(obs_y)-1, max(obs_y)+1 
-        x_step, y_step = 0.08, 0.08
+        x_step, y_step = 0.04, 0.04
 
         # ------------------------------------------------- xy method
         
@@ -946,16 +949,16 @@ class ApfMotion(object):
         y = np.arange(y_min, y_max + y_step, y_step)
         X, Y = np.meshgrid(x, y, indexing='ij')
 
-        # Compute the distance of each point from the center of the circle
-        dist = np.sqrt((X - center_x)**2 + (Y - center_y)**2)
+        # # Compute the distance of each point from the center of the circle
+        # dist = np.sqrt((X - center_x)**2 + (Y - center_y)**2)
 
-        # Create a Boolean mask indicating whether each point is outside the circle
-        outside_circle1 = radius < dist
-        outside_circle2 = dist < radius2
-        outside_circle = np.logical_and(outside_circle1, outside_circle2)
+        # # Create a Boolean mask indicating whether each point is outside the circle
+        # outside_circle1 = radius < dist
+        # outside_circle2 = dist < radius2
+        # outside_circle = np.logical_and(outside_circle1, outside_circle2)
 
-        X[outside_circle == False] = np.nan
-        Y[outside_circle == False] = np.nan
+        # X[outside_circle == False] = np.nan
+        # Y[outside_circle == False] = np.nan
 
         X_outside = X
         Y_outside = Y
@@ -970,6 +973,9 @@ class ApfMotion(object):
                     Fx[i,j], Fy[i,j], thetaF[i, j] =  np.nan, np.nan, np.nan
                 else:
                     Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j])
+                    fr_x,fr_y = self.robot_force_tensor(X_outside[i,j], Y_outside[i,j])
+                    Fx[i,j] += fr_x
+                    Fy[i,j] += fr_y
                     thetaF[i, j] = np.arctan2(Fy[i,j], Fx[i,j])
         
         # Compute the magnitude of the force vectors
@@ -1142,6 +1148,133 @@ class ApfMotion(object):
 
         return obs_f[0], obs_f[1]
 
+
+    def robot_force_tensor(self, x, y):
+
+        rotated_vector = [0, 0]
+        if len(self.new_robots)>0:
+            
+            nr_force = [0, 0]
+            nr = self.new_robots[0]
+            
+            dx = nr.x - x
+            dy = nr.y - y
+            nr.d = np.sqrt(dx**2 + dy**2)
+            nr.theta_rR = np.arctan2(dy, dx)
+            r_h = nr.theta_rR - 0.001 # ///////////////
+            nr.h_rR = self.angle_diff(r_h, nr.theta_rR)
+
+            # r_g
+            dx = self.goal_x - x
+            dy = self.goal_y - y
+            theta_rg = np.arctan2(dy, dx)
+
+            
+            if (nr.d< nr.r_start):
+
+                # # near_robots
+                # if (nr.d<nr.r_half):
+                #     self.near_robots = True
+
+                #
+                templ2 = []
+                templ3 = []
+                templ3_2 = []
+                nr_force = []
+
+                # target_other_side
+                dx = self.goal_x - nr.x
+                dy = self.goal_y - nr.y
+                d_Rg = self.distance(self.goal_x, self.goal_y, nr.x, nr.y)
+                theta_Rg = np.arctan2(dy, dx)
+                theta_Rr = nr.theta_rR - np.pi
+                ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
+                target_other_side = False
+                if abs(ad_Rg_Rr)>np.pi/3:
+                    target_other_side = True
+
+                # r_coeff, angle_turn_r
+                r_coeff = 1
+                theta_ = 10
+                ad_h_rR = nr.h_rR
+                if abs(ad_h_rR)<np.deg2rad(theta_):
+                    ad_rg_rR = self.angle_diff(self.theta_rg,  nr.theta_rR)
+                    r_coeff = np.sign(ad_rg_rR*nr.h_rR)
+
+                # R_coeff, angle_turn_R
+                R_coeff = 1
+                flag_rR = True
+                ad_Rr_H = self.angle_diff((nr.theta_rR - np.pi), nr.H)
+                ad_rR_h = self.angle_diff(nr.theta_rR, r_h)
+                if (ad_Rr_H*ad_rR_h)<0:
+                    if nr.p:
+                        self.stop_flag_robots
+                        R_coeff = -1
+                    #     print(self.ind, " ==== ")
+                    # if abs(ad_rR_h)>abs(ad_Rr_H):
+                    #     R_coeff = -1
+                    #     flag_rR = False
+
+                # stops
+                if (nr.d< nr.r_prec):
+                    if (abs(nr.h_rR)<(np.pi/4)): # +np.pi/10
+                        self.stop_flag_robots = True
+                    if (not nr.reached) and (not nr.stop): # and nr.p:
+                        if abs(ad_rR_h)<np.pi/2 and abs(ad_Rr_H)>np.pi/2:
+                            self.stop_flag_full = True
+                            # return [0, 0]
+
+                # case hard!
+                ad = self.angle_diff(theta_Rg,  theta_rg)
+                if (nr.p) and abs(ad)<np.deg2rad(30) and d_Rg<self.goal_dist and abs(self.ad_rg_h)<np.deg2rad(40):
+                    if abs(self.angle_diff(r_h, nr.H))<np.deg2rad(90):
+                        self.stop_flag_full = True
+
+                # angle_turns
+                angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H*R_coeff)
+                ad_C_h = self.angle_diff(angle_turn_R, r_h)
+                angle_turn_r = nr.theta_rR + (np.pi/2)*np.sign(ad_h_rR)*r_coeff
+                ad_c_h = self.angle_diff(angle_turn_r, r_h)
+
+                # forces
+                f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
+                fl = f + 0
+                nr_force = [fl * -np.cos(ad_h_rR), fl * np.sin(ad_h_rR)]
+
+                f2 = f + 2
+                f2_2 = f + 4
+                templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
+                templ2_2 = [f2_2 * np.cos(ad_C_h), f2_2 * np.sin(ad_C_h)]
+
+                f3 = f + 2 #tocheck
+                f3_2 = f + 4 
+                templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
+                templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
+                
+                # adjust heading
+                if target_other_side:
+                    if (nr.r_half<nr.d<nr.r_start):
+                        if (not nr.reached) and (not nr.stop):
+                            if (flag_rR and abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
+                                nr_force = [templ2[0]+nr_force[0], templ2[1]+nr_force[1]]
+                        else:
+                            if (abs(ad_h_rR)<(np.pi/2)):
+                                nr_force = [templ3[0]+nr_force[0], templ3[1]+nr_force[1]]
+
+                    elif (nr.r_prec <nr.d<nr.r_half):
+                        if (not nr.reached) and (not nr.stop):
+                            if (flag_rR and abs(ad_h_rR)<np.pi/2 and abs(ad_Rr_H)<np.pi/2):
+                                nr_force = [templ2_2[0]+nr_force[0], templ2_2[1]+nr_force[1]]
+                        else:
+                            if True: #(abs(ad_h_rR)<(np.pi/2)):
+                                nr_force = [templ3_2[0]+nr_force[0], templ3_2[1]+nr_force[1]]
+            
+            # rotation
+            rotation_matrix = np.array([[np.cos(r_h), -np.sin(r_h)],
+                                [np.sin(r_h), np.cos(r_h)]])
+            rotated_vector = np.dot(rotation_matrix, np.array(nr_force))
+            
+        return rotated_vector
 
 # # to do:
 # near_obstacles
