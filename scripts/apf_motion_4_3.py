@@ -925,8 +925,8 @@ class ApfMotion(object):
     def tensor_force(self):
         import matplotlib.pyplot as plt
 
-        flag_xy = True
-        flag_robot = False
+        flag_xy = False
+        flag_robot = True
         # --------------------------------------------------- robot
         # center_x = self.new_robots[0].x
         # center_y = self.new_robots[0].y
@@ -935,7 +935,7 @@ class ApfMotion(object):
 
         # --------------------------------------------------- obstacles
         # obstacles
-        N = 1
+        N = 2
         or_radius_ind = [1 for o in range(N)]
         obs_x = self.obs_x[:N]
         obs_y = self.obs_y[:N]
@@ -993,6 +993,7 @@ class ApfMotion(object):
             Fy = np.zeros(Y_outside.shape)
             thetaF = np.zeros(Y_outside.shape)
             ft_x,ft_y = 0, 0
+            fr_x,fr_y = 0, 0
             for i in range(X_outside.shape[0]):
                 for j in range(X_outside.shape[1]):
                     if X_outside[i,j]==np.nan or Y_outside[i,j]==np.nan:
@@ -1000,7 +1001,7 @@ class ApfMotion(object):
                     else:
                         r_h = self.cal_theta(X_outside[i,j], Y_outside[i,j], N)
                         Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j], N, r_h)
-                        fr_x,fr_y = self.robot_force_tensor(X_outside[i,j], Y_outside[i,j], r_h)
+                        if flag_robot: fr_x,fr_y = self.robot_force_tensor(X_outside[i,j], Y_outside[i,j], r_h)
                         # ft_x,ft_y = self.tensor_target(X_outside[i,j], Y_outside[i,j], r_h)
                         Fx[i,j] += (fr_x + ft_x)
                         Fy[i,j] += (fr_y + ft_y)
@@ -1017,7 +1018,6 @@ class ApfMotion(object):
 
         else:
             # r
-            r_min, r_max = self.obst_prec_d/1.5, self.obst_prec_d*1.9
             t_min, t_max = 0, np.pi*2
             r_n = 10
             t_n = 30 *(1+r_max/r_max)
@@ -1035,6 +1035,7 @@ class ApfMotion(object):
 
             i = -1
             ft_x,ft_y = 0, 0
+            fr_x,fr_y = 0, 0
             for rr in r:
                 j = -1
                 i += 1
@@ -1046,7 +1047,7 @@ class ApfMotion(object):
                     yy = center_y + rr*np.sin(tt)
                     r_h = self.cal_theta(xx, yy, N)
                     fx, fy =  self.f_obstacle_tensor(xx, yy, N, r_h)
-                    fr_x,fr_y = self.robot_force_tensor(xx, yy, r_h)
+                    if flag_robot: fr_x,fr_y = self.robot_force_tensor(xx, yy, r_h)
                     # ft_x,ft_y = self.tensor_target(xx, yy, r_h)
                     X[i,j] = xx
                     Y[i,j] = yy
@@ -1163,12 +1164,12 @@ class ApfMotion(object):
             ft = f + 0.5
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
 
-            # if target_other_side:
-            #     if (self.obst_prec_d<d_ro and d_ro<self.obst_half_d):
-            #             o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
-            #     elif (self.obst_half_d<d_ro):
-            #         if (abs(ad_h_ro)<np.pi/2):
-            #                 o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
+            if target_other_side:
+                if (self.obst_prec_d<d_ro and d_ro<self.obst_half_d):
+                        o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
+                elif (self.obst_half_d<d_ro):
+                    if (abs(ad_h_ro)<np.pi/2):
+                            o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
             
             # rotation
             rotation_matrix = np.array([[np.cos(r_h), -np.sin(r_h)],
@@ -1340,20 +1341,20 @@ class ApfMotion(object):
 
 
     def cal_theta(self, x, y, N):
-        obs_x = self.obs_x[:N]
-        obs_y = self.obs_y[:N]
-        dx = np.array(obs_x) - x
-        dy = np.array(obs_y) - y
-        d = np.sqrt(dx * dx + dy * dy)
-        ind = np.argmin(d)
-        dx = dx[ind]
-        dy = dy[ind]
+        # obs_x = self.obs_x[:N]
+        # obs_y = self.obs_y[:N]
+        # dx = np.array(obs_x) - x
+        # dy = np.array(obs_y) - y
+        # d = np.sqrt(dx * dx + dy * dy)
+        # ind = np.argmin(d)
+        # dx = dx[ind]
+        # dy = dy[ind]
         
-        # dx = self.new_robots[0].x - x
-        # dy = self.new_robots[0].y - y
+        dx = self.new_robots[0].x - x
+        dy = self.new_robots[0].y - y
 
         theta_ro = np.arctan2(dy, dx)
-        r_h = theta_ro +0.001
+        r_h = theta_ro + 0.001
 
         return r_h
 
