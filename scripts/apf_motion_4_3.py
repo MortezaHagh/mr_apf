@@ -925,6 +925,8 @@ class ApfMotion(object):
     def tensor_force(self):
         import matplotlib.pyplot as plt
 
+        flag_xy = True
+        flag_robot = True
         # --------------------------------------------------- robot
         # center_x = self.new_robots[0].x
         # center_y = self.new_robots[0].y
@@ -938,9 +940,10 @@ class ApfMotion(object):
         obs_x = self.obs_x[:N]
         obs_y = self.obs_y[:N]
 
-        or_radius_ind.append(2)
-        obs_x.append(self.new_robots[0].x)
-        obs_y.append(self.new_robots[0].y)
+        if flag_robot:
+            or_radius_ind.append(2)
+            obs_x.append(self.new_robots[0].x)
+            obs_y.append(self.new_robots[0].y)
 
         # Define the center coordinates and radius of the circle
         # center_x, center_y = obs_x[0], obs_y[0]
@@ -956,106 +959,106 @@ class ApfMotion(object):
         y_min, y_max = min(obs_y)-1, max(obs_y)+1 
         x_step, y_step = 0.06, 0.06
 
-        # ------------------------------------------------- xy method
+        # --------------------------------------------------------------------------------------------------
         
-        # Create the grid of x and y values
-        x = np.arange(x_min, x_max + x_step, x_step)
-        y = np.arange(y_min, y_max + y_step, y_step)
-        X, Y = np.meshgrid(x, y, indexing='ij')
-        outside_circle = np.ones(X.shape)
-        
-        for j in range(2):
-            for jj, ox, oy in zip(range(N+1), obs_x, obs_y):
-                if jj == N: radius = self.new_robots[0].r_prec * 0.8
-                dist = np.sqrt((X - ox)**2 + (Y - oy)**2)
-                check_in = dist > radius
-                outside_circle = np.logical_and(check_in, outside_circle)
+        if flag_xy:
+            # Create the grid of x and y values
+            x = np.arange(x_min, x_max + x_step, x_step)
+            y = np.arange(y_min, y_max + y_step, y_step)
+            X, Y = np.meshgrid(x, y, indexing='ij')
+            outside_circle = np.ones(X.shape)
             
-            temp = np.zeros(X.shape)
-            for jj, ox, oy in zip(range(N+1), obs_x, obs_y):
-                if jj == N: break # radius2 = self.new_robots[0].r_prec*1.9
-                dist = np.sqrt((X - ox)**2 + (Y - oy)**2)
-                outside_circle2 = dist < radius2
-                temp = np.logical_or(temp, outside_circle2)
+            for j in range(2):
+                for jj, ox, oy in zip(range(N+1), obs_x, obs_y):
+                    if jj == N: radius = self.new_robots[0].r_prec * 0.6
+                    dist = np.sqrt((X - ox)**2 + (Y - oy)**2)
+                    check_in = dist > radius
+                    outside_circle = np.logical_and(check_in, outside_circle)
+                
+                temp = np.zeros(X.shape)
+                for jj, ox, oy in zip(range(N+1), obs_x, obs_y):
+                    if jj == N: break # radius2 = self.new_robots[0].r_prec*1.9
+                    dist = np.sqrt((X - ox)**2 + (Y - oy)**2)
+                    outside_circle2 = dist < radius2
+                    temp = np.logical_or(temp, outside_circle2)
 
-        outside_circle = np.logical_and(outside_circle, temp)
-        X[outside_circle == False] = np.nan
-        Y[outside_circle == False] = np.nan
+            outside_circle = np.logical_and(outside_circle, temp)
+            X[outside_circle == False] = np.nan
+            Y[outside_circle == False] = np.nan
 
-        X_outside = X
-        Y_outside = Y
+            X_outside = X
+            Y_outside = Y
 
-        Fx = np.zeros(X_outside.shape)
-        Fy = np.zeros(Y_outside.shape)
-        thetaF = np.zeros(Y_outside.shape)
-        
-        for i in range(X_outside.shape[0]):
-            for j in range(X_outside.shape[1]):
-                if X_outside[i,j]==np.nan or Y_outside[i,j]==np.nan:
-                    Fx[i,j], Fy[i,j], thetaF[i, j] =  np.nan, np.nan, np.nan
-                else:
-                    Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j], N)
-                    fr_x,fr_y = self.robot_force_tensor(X_outside[i,j], Y_outside[i,j])
-                    Fx[i,j] += fr_x
-                    Fy[i,j] += fr_y
-                    thetaF[i, j] = np.arctan2(Fy[i,j], Fx[i,j])
-        
-        # Compute the magnitude of the force vectors
-        force_magnitude = np.sqrt(Fx**2 + Fy**2)
+            Fx = np.zeros(X_outside.shape)
+            Fy = np.zeros(Y_outside.shape)
+            thetaF = np.zeros(Y_outside.shape)
+            
+            for i in range(X_outside.shape[0]):
+                for j in range(X_outside.shape[1]):
+                    if X_outside[i,j]==np.nan or Y_outside[i,j]==np.nan:
+                        Fx[i,j], Fy[i,j], thetaF[i, j] =  np.nan, np.nan, np.nan
+                    else:
+                        Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j], N)
+                        fr_x,fr_y = self.robot_force_tensor(X_outside[i,j], Y_outside[i,j])
+                        Fx[i,j] += fr_x
+                        Fy[i,j] += fr_y
+                        thetaF[i, j] = np.arctan2(Fy[i,j], Fx[i,j])
+            
+            # Compute the magnitude of the force vectors
+            force_magnitude = np.sqrt(Fx**2 + Fy**2)
 
-        # Create the force tensor by combining the force components (Fx and Fy) into a 2x2 matrix
-        force_tensor = np.stack((Fx, Fy), axis=-1)
+            # Create the force tensor by combining the force components (Fx and Fy) into a 2x2 matrix
+            force_tensor = np.stack((Fx, Fy), axis=-1)
 
-        # Normalize the force vectors to have a constant length of 0.5
-        normalized_force_tensor = force_tensor / force_magnitude[..., None] * 1.0
+            # Normalize the force vectors to have a constant length of 0.5
+            normalized_force_tensor = force_tensor / force_magnitude[..., None] * 1.0
 
-        # ------------------------------------------------- rt method
+        else:
+            # r
+            r_min, r_max = self.obst_prec_d/1.5, self.obst_prec_d*1.9
+            t_min, t_max = 0, np.pi*2
+            r_n = 10
+            t_n = 30 *(1+r_max/r_max)
+            r = np.linspace(r_min, r_max, r_n)
+            t = np.linspace(t_min, t_max, t_n) + np.pi*2/t_n
 
-        # # r
-        # r_min, r_max = self.obst_prec_d/1.5, self.obst_prec_d*1.9
-        # t_min, t_max = 0, np.pi*2
-        # r_n = 10
-        # t_n = 30 *(1+r_max/r_max)
-        # r = np.linspace(r_min, r_max, r_n)
-        # t = np.linspace(t_min, t_max, t_n) + np.pi*2/t_n
+            X, Y = np.meshgrid(r, t, indexing='ij')
 
-        # X, Y = np.meshgrid(r, t, indexing='ij')
+            Fx = np.empty(X.shape)
+            Fy = np.empty(Y.shape)
+            thetaF = np.empty(Y.shape)
+            Fx[:] = np.nan
+            Fy[:] = np.nan
+            thetaF[:] = np.nan
 
-        # Fx = np.empty(X.shape)
-        # Fy = np.empty(Y.shape)
-        # thetaF = np.empty(Y.shape)
-        # Fx[:] = np.nan
-        # Fy[:] = np.nan
-        # thetaF[:] = np.nan
+            i = -1
+            for rr in r:
+                j = -1
+                i += 1
+                t_n = 30 *(1+rr/r_max)
+                t = np.linspace(t_min, t_max, t_n) + np.pi*2/t_n
+                for tt in t:
+                    j+=1
+                    xx = center_x + rr*np.cos(tt)
+                    yy = center_y + rr*np.sin(tt)
+                    fx, fy =  self.f_obstacle_tensor(xx, yy, N)
+                    fr_x,fr_y = self.robot_force_tensor(xx, yy)
+                    X[i,j] = xx
+                    Y[i,j] = yy
+                    Fx[i, j] = fx + fr_x
+                    Fy[i, j] = fy + fr_y
+                    thetaF[i, j] = np.arctan2(fy, fx)
 
-        # i = -1
-        # for rr in r:
-        #     j = -1
-        #     i += 1
-        #     t_n = 30 *(1+rr/r_max)
-        #     t = np.linspace(t_min, t_max, t_n) + np.pi*2/t_n
-        #     for tt in t:
-        #         j+=1
-        #         xx = center_x + rr*np.cos(tt)
-        #         yy = center_y + rr*np.sin(tt)
-        #         fx, fy =  self.f_obstacle_tensor(xx, yy, N)
-        #         fr_x,fr_y = self.robot_force_tensor(xx, yy)
-        #         X[i,j] = xx
-        #         Y[i,j] = yy
-        #         Fx[i, j] = fx + fr_x
-        #         Fy[i, j] = fy + fr_y
-        #         thetaF[i, j] = np.arctan2(fy, fx)
+            # Compute the magnitude of the force vectors
+            force_magnitude = np.sqrt(Fx**2 + Fy**2)
 
-        # # Compute the magnitude of the force vectors
-        # force_magnitude = np.sqrt(Fx**2 + Fy**2)
+            # Create the force tensor by combining the force components (Fx and Fy) into a 2x2 matrix
+            force_tensor = np.stack((Fx, Fy), axis=-1)
 
-        # # Create the force tensor by combining the force components (Fx and Fy) into a 2x2 matrix
-        # force_tensor = np.stack((Fx, Fy), axis=-1)
+            # Normalize the force vectors to have a constant length of 0.5
+            normalized_force_tensor = force_tensor / force_magnitude[..., None] * 1.0
 
-        # # Normalize the force vectors to have a constant length of 0.5
-        # normalized_force_tensor = force_tensor / force_magnitude[..., None] * 1.0
-
-        # -------------------------------------------------
+        # --------------------------------------------------------------------------------------------------
         
         fig, ax = plt.subplots(1, 1)
 
@@ -1184,7 +1187,7 @@ class ApfMotion(object):
             dy = nr.y - y
             nr.d = np.sqrt(dx**2 + dy**2)
             nr.theta_rR = np.arctan2(dy, dx)
-            r_h = nr.theta_rR - 0.001 # ///////////////
+            r_h = nr.theta_rR - 0.001           # ///////////////
             nr.h_rR = self.angle_diff(r_h, nr.theta_rR)
 
             # r_g
@@ -1276,6 +1279,7 @@ class ApfMotion(object):
                 
                 # adjust heading
                 if target_other_side:
+                    if self.ind==1: print("case 0, ===========")
                     if (nr.r_half<nr.d<nr.r_start):
                         if (not nr.reached) and (not nr.stop):
                             if (flag_rR and abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):

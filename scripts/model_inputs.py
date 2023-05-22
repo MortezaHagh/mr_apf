@@ -428,20 +428,19 @@ class ModelInputs():
         # self.modify_obst()
 
         # robots
-        self.robot_count = 2
-
-        # robots
-
         # # 1
         # xs = [3.5] #[3.5, 3.5] 
         # ys = [1.0] #[1.0, 3.5]
         # xt = [3.5] #[3.5, 3.5]
         # yt = [6.0] #[6.0, 3.5]
+        # self.robot_count = 1
         # self.heading = [np.pi/2] #[np.pi/2, -np.pi/2]
+        
         xs = [3.5, 3.5] 
         ys = [2.3, 3.5]
         xt = [3.5, 3.5]
         yt = [6.0, 3.5]
+        self.robot_count = 2
         self.heading = [np.pi/2, -np.pi/2]
 
         robot_count = self.robot_count
