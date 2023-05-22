@@ -940,7 +940,7 @@ class ApfMotion(object):
         # y_min, y_max = obs_y[0]-1, obs_y[0]+1
         x_min, x_max = min(obs_x)-1, max(obs_x)+1
         y_min, y_max = min(obs_y)-1, max(obs_y)+1 
-        x_step, y_step = 0.04, 0.04
+        x_step, y_step = 0.06, 0.06
 
         # ------------------------------------------------- xy method
         
@@ -948,17 +948,23 @@ class ApfMotion(object):
         x = np.arange(x_min, x_max + x_step, x_step)
         y = np.arange(y_min, y_max + y_step, y_step)
         X, Y = np.meshgrid(x, y, indexing='ij')
+        outside_circle = np.ones(X.shape)
+        
+        for j in range(2):
+            for ox, oy in zip(obs_x, obs_y):
+                dist = np.sqrt((X - ox)**2 + (Y - oy)**2)
+                check_in = dist > radius
+                outside_circle = np.logical_and(check_in, outside_circle)
 
-        # # Compute the distance of each point from the center of the circle
-        # dist = np.sqrt((X - center_x)**2 + (Y - center_y)**2)
+            temp = np.zeros(X.shape)
+            for ox, oy in zip(obs_x, obs_y):
+                dist = np.sqrt((X - ox)**2 + (Y - oy)**2)
+                outside_circle2 = dist < radius2
+                temp = np.logical_or(temp, outside_circle2)
 
-        # # Create a Boolean mask indicating whether each point is outside the circle
-        # outside_circle1 = radius < dist
-        # outside_circle2 = dist < radius2
-        # outside_circle = np.logical_and(outside_circle1, outside_circle2)
-
-        # X[outside_circle == False] = np.nan
-        # Y[outside_circle == False] = np.nan
+        outside_circle = np.logical_and(outside_circle, temp)
+        X[outside_circle == False] = np.nan
+        Y[outside_circle == False] = np.nan
 
         X_outside = X
         Y_outside = Y
