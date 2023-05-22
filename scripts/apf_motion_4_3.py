@@ -949,7 +949,7 @@ class ApfMotion(object):
         # center_x, center_y = obs_x[0], obs_y[0]
         center_x, center_y = np.mean(obs_x), np.mean(obs_y)
         radius = self.obst_prec_d/1.5
-        radius2 = self.obst_prec_d*1.9
+        radius2 = self.obst_prec_d*1.99
         r_min, r_max = self.obst_prec_d/1.5, self.obst_prec_d*1.9
         
         # # Define the range of x and y values
@@ -998,10 +998,12 @@ class ApfMotion(object):
                     if X_outside[i,j]==np.nan or Y_outside[i,j]==np.nan:
                         Fx[i,j], Fy[i,j], thetaF[i, j] =  np.nan, np.nan, np.nan
                     else:
-                        Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j], N)
-                        fr_x,fr_y = self.robot_force_tensor(X_outside[i,j], Y_outside[i,j])
-                        Fx[i,j] += fr_x
-                        Fy[i,j] += fr_y
+                        r_h = self.cal_theta(X_outside[i,j], Y_outside[i,j], N)
+                        Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j], N, r_h)
+                        fr_x,fr_y = self.robot_force_tensor(X_outside[i,j], Y_outside[i,j], r_h)
+                        ft_x,ft_y = self.tensor_target(X_outside[i,j], Y_outside[i,j], r_h)
+                        Fx[i,j] += (fr_x + ft_x)
+                        Fy[i,j] += (fr_y + ft_y)
                         thetaF[i, j] = np.arctan2(Fy[i,j], Fx[i,j])
             
             # Compute the magnitude of the force vectors
@@ -1041,12 +1043,14 @@ class ApfMotion(object):
                     j+=1
                     xx = center_x + rr*np.cos(tt)
                     yy = center_y + rr*np.sin(tt)
-                    fx, fy =  self.f_obstacle_tensor(xx, yy, N)
-                    fr_x,fr_y = self.robot_force_tensor(xx, yy)
+                    r_h = self.cal_theta(xx, yy, N)
+                    fx, fy =  self.f_obstacle_tensor(xx, yy, N, r_h)
+                    fr_x,fr_y = self.robot_force_tensor(xx, yy, r_h)
+                    ft_x,ft_y = self.tensor_target(xx, yy, r_h)
                     X[i,j] = xx
                     Y[i,j] = yy
-                    Fx[i, j] = fx + fr_x
-                    Fy[i, j] = fy + fr_y
+                    Fx[i, j] = fx + fr_x + ft_x
+                    Fy[i, j] = fy + fr_y + ft_y
                     thetaF[i, j] = np.arctan2(fy, fx)
 
             # Compute the magnitude of the force vectors
@@ -1106,14 +1110,14 @@ class ApfMotion(object):
         plt.show()
 
 
-    def f_obstacle_tensor(self, x, y, N):
+    def f_obstacle_tensor(self, x, y, N, h):
         
         # r_g
         dx = self.goal_x - x
         dy = self.goal_y - y
         theta_rg = np.arctan2(dy, dx)
         
-        r_h = 0
+        r_h = h
         obs_f = [0, 0]
         f_obsts_inds = list(range(N))
 
@@ -1124,7 +1128,7 @@ class ApfMotion(object):
 
             theta_ro = np.arctan2(dy, dx)
 
-            r_h = theta_ro * (1+0.01)
+            # r_h = theta_ro * (1+0.01)
             ad_h_ro = self.angle_diff(r_h, theta_ro)
             
             # if abs(ad_h_ro)<np.deg2rad(5):
@@ -1140,7 +1144,7 @@ class ApfMotion(object):
             theta_or = theta_ro - np.pi
             ad_og_or = self.angle_diff(theta_og, theta_or)
             target_other_side = False
-            if abs(ad_og_or)>np.pi/4:
+            if abs(ad_og_or)>np.pi/8:
                 target_other_side = True
 
             coeff = 1
@@ -1152,6 +1156,7 @@ class ApfMotion(object):
             ad_c_t = self.angle_diff(angle_turn_t, r_h)
 
             f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
+            f = f + 1
             o_force = [f * -np.cos(ad_h_ro), f * np.sin(ad_h_ro)]
 
             ft = f + 0.5
@@ -1175,9 +1180,11 @@ class ApfMotion(object):
         return obs_f[0], obs_f[1]
 
 
-    def robot_force_tensor(self, x, y):
-
+    def robot_force_tensor(self, x, y, h):
+        
+        r_h = h
         rotated_vector = [0, 0]
+
         if len(self.new_robots)>0:
             
             nr_force = [0, 0]
@@ -1187,7 +1194,7 @@ class ApfMotion(object):
             dy = nr.y - y
             nr.d = np.sqrt(dx**2 + dy**2)
             nr.theta_rR = np.arctan2(dy, dx)
-            r_h = nr.theta_rR - 0.001           # ///////////////
+            # r_h = nr.theta_rR - 0.001           # ///////////////
             nr.h_rR = self.angle_diff(r_h, nr.theta_rR)
 
             # r_g
@@ -1216,7 +1223,7 @@ class ApfMotion(object):
                 theta_Rr = nr.theta_rR - np.pi
                 ad_Rg_Rr = self.angle_diff(theta_Rg, theta_Rr)
                 target_other_side = False
-                if abs(ad_Rg_Rr)>np.pi/3:
+                if abs(ad_Rg_Rr)>np.pi/8:
                     target_other_side = True
 
                 # r_coeff, angle_turn_r
@@ -1264,7 +1271,7 @@ class ApfMotion(object):
 
                 # forces
                 f = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-                fl = f + 0
+                fl = f + 0.5
                 nr_force = [fl * -np.cos(ad_h_rR), fl * np.sin(ad_h_rR)]
 
                 f2 = f + 2
@@ -1279,7 +1286,7 @@ class ApfMotion(object):
                 
                 # adjust heading
                 if target_other_side:
-                    if self.ind==1: print("case 0, ===========")
+                    # if self.ind==1: print("case 0, ===========")
                     if (nr.r_half<nr.d<nr.r_start):
                         if (not nr.reached) and (not nr.stop):
                             if (flag_rR and abs(ad_h_rR)<np.pi/2) and (abs(ad_Rr_H)<(np.pi/2)):
@@ -1302,6 +1309,53 @@ class ApfMotion(object):
             rotated_vector = np.dot(rotation_matrix, np.array(nr_force))
             
         return rotated_vector
+
+
+    def tensor_target(self, x, y, theta):
+        r_h =  theta
+        # r_g
+        dx = self.goal_x - x
+        dy = self.goal_y - y
+        goal_dist = np.sqrt(dx**2 + dy**2)
+        # f = self.zeta * goal_dist            
+        f = self.fix_f
+        if goal_dist<0.5:
+            f = 2*f
+        theta_rg = np.arctan2(dy, dx)
+        ad_rg_h = self.angle_diff(theta_rg, r_h)
+        self.ad_rg_h = ad_rg_h
+        self.theta_rg = theta_rg
+        self.goal_dist = goal_dist
+        self.goal_theta = theta_rg
+        fx = round(f * np.cos(ad_rg_h), 3)
+        fy = round(f * np.sin(ad_rg_h), 3)
+        target_f = [fx, fy]
+
+        # rotation
+        rotation_matrix = np.array([[np.cos(r_h), -np.sin(r_h)],
+                            [np.sin(r_h), np.cos(r_h)]])
+        rotated_vector = np.dot(rotation_matrix, np.array(target_f))
+        return rotated_vector
+
+
+    def cal_theta(self, x, y, N):
+        # obs_x = self.obs_x[:N]
+        # obs_y = self.obs_y[:N]
+        # dx = np.array(obs_x) - x
+        # dy = np.array(obs_y) - y
+        # d = np.sqrt(dx * dx + dy * dy)
+        # ind = np.argmin(d)
+        # dx = dx[ind]
+        # dy = dy[ind]
+        
+        dx = self.new_robots[0].x - x
+        dy = self.new_robots[0].y - y
+
+        theta_ro = np.arctan2(dy, dx)
+        r_h = theta_ro +0.001
+
+        return r_h
+
 
 # # to do:
 # obstalce - robot join
