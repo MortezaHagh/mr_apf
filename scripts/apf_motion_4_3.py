@@ -925,16 +925,30 @@ class ApfMotion(object):
     def tensor_force(self):
         import matplotlib.pyplot as plt
 
+        # --------------------------------------------------- robot
+        # center_x = self.new_robots[0].x
+        # center_y = self.new_robots[0].y
+        # r_min = self.new_robots[0].r_prec/1.5
+        # r_max = self.new_robots[0].r_prec*1.9
+
+        # --------------------------------------------------- obstacles
         # obstacles
-        obs_x = self.obs_x[:2]
-        obs_y = self.obs_y[:2]
+        N = 2
+        or_radius_ind = [1 for o in range(N)]
+        obs_x = self.obs_x[:N]
+        obs_y = self.obs_y[:N]
+
+        or_radius_ind.append(2)
+        obs_x.append(self.new_robots[0].x)
+        obs_y.append(self.new_robots[0].y)
 
         # Define the center coordinates and radius of the circle
         # center_x, center_y = obs_x[0], obs_y[0]
         center_x, center_y = np.mean(obs_x), np.mean(obs_y)
         radius = self.obst_prec_d/1.5
         radius2 = self.obst_prec_d*1.9
-
+        r_min, r_max = self.obst_prec_d/1.5, self.obst_prec_d*1.9
+        
         # # Define the range of x and y values
         # x_min, x_max = obs_x[0]-1, obs_x[0]+1
         # y_min, y_max = obs_y[0]-1, obs_y[0]+1
@@ -951,13 +965,15 @@ class ApfMotion(object):
         outside_circle = np.ones(X.shape)
         
         for j in range(2):
-            for ox, oy in zip(obs_x, obs_y):
+            for jj, ox, oy in zip(range(N+1), obs_x, obs_y):
+                if jj == N: radius = self.new_robots[0].r_prec * 0.8
                 dist = np.sqrt((X - ox)**2 + (Y - oy)**2)
                 check_in = dist > radius
                 outside_circle = np.logical_and(check_in, outside_circle)
-
+            
             temp = np.zeros(X.shape)
-            for ox, oy in zip(obs_x, obs_y):
+            for jj, ox, oy in zip(range(N+1), obs_x, obs_y):
+                if jj == N: break # radius2 = self.new_robots[0].r_prec*1.9
                 dist = np.sqrt((X - ox)**2 + (Y - oy)**2)
                 outside_circle2 = dist < radius2
                 temp = np.logical_or(temp, outside_circle2)
@@ -978,7 +994,7 @@ class ApfMotion(object):
                 if X_outside[i,j]==np.nan or Y_outside[i,j]==np.nan:
                     Fx[i,j], Fy[i,j], thetaF[i, j] =  np.nan, np.nan, np.nan
                 else:
-                    Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j])
+                    Fx[i,j], Fy[i,j] =  self.f_obstacle_tensor(X_outside[i,j], Y_outside[i,j], N)
                     fr_x,fr_y = self.robot_force_tensor(X_outside[i,j], Y_outside[i,j])
                     Fx[i,j] += fr_x
                     Fy[i,j] += fr_y
@@ -1022,11 +1038,12 @@ class ApfMotion(object):
         #         j+=1
         #         xx = center_x + rr*np.cos(tt)
         #         yy = center_y + rr*np.sin(tt)
-        #         fx, fy =  self.f_obstacle_tensor(xx, yy)
+        #         fx, fy =  self.f_obstacle_tensor(xx, yy, N)
+        #         fr_x,fr_y = self.robot_force_tensor(xx, yy)
         #         X[i,j] = xx
         #         Y[i,j] = yy
-        #         Fx[i, j] = fx
-        #         Fy[i, j] = fy
+        #         Fx[i, j] = fx + fr_x
+        #         Fy[i, j] = fy + fr_y
         #         thetaF[i, j] = np.arctan2(fy, fx)
 
         # # Compute the magnitude of the force vectors
@@ -1057,7 +1074,7 @@ class ApfMotion(object):
         ax.plot(self.goal_x, self.goal_y, 'go', label='Target Point')
         
         # obstcale circles
-        for xo, yo in zip(obs_x, obs_y):
+        for xo, yo in zip(obs_x[:N], obs_y[:N]):
             ax.plot(xo, yo, 'ok') #, marker_color='k', marker_size=5)
             thetas = np.linspace(0, np.pi*2, 100)
             xp = [xo+ self.obst_prec_d*np.cos(t) for t in thetas]
@@ -1086,7 +1103,7 @@ class ApfMotion(object):
         plt.show()
 
 
-    def f_obstacle_tensor(self, x, y):
+    def f_obstacle_tensor(self, x, y, N):
         
         # r_g
         dx = self.goal_x - x
@@ -1095,7 +1112,7 @@ class ApfMotion(object):
         
         r_h = 0
         obs_f = [0, 0]
-        f_obsts_inds = [0,1]
+        f_obsts_inds = list(range(N))
 
         for i in f_obsts_inds:
             dy = (self.obs_y[i] - y)
@@ -1283,6 +1300,7 @@ class ApfMotion(object):
         return rotated_vector
 
 # # to do:
-# near_obstacles
-# if multiple multi_robot_circle, only the closest one.
 # obstalce - robot join
+# obstacle class - with type and radiuses
+# add obstacle between obstacles
+# ellipse obstacles
