@@ -13,7 +13,7 @@ class ModelInputs():
         if map_id == 1:
             # self.map_0(robot_count)
             # self.collide()
-            self.obstacles()
+            self.obstacles1()
             # self.random_map_2(robot_count)
             # self.from_json_file(robot_count, path_unit)
 
@@ -406,7 +406,7 @@ class ModelInputs():
         self.y_obst.extend(new_obst_y)
 
     
-    def obstacles(self, robot_n=2):
+    def obstacles2(self, robot_n=2):
         
         # area
         lim = 7
@@ -451,7 +451,7 @@ class ModelInputs():
         self.yt = [yt[i] for i in range(robot_count)]
 
     
-    def obstacles2(self, robot_n=2):
+    def obstacles1(self, robot_n=2):
         
         # area
         lim = 7
@@ -479,9 +479,9 @@ class ModelInputs():
 
         # 1
         xs = [3.5] #[3.5, 3.5] 
-        ys = [2.5] #[1.0, 3.5] //////
+        ys = [2.3] #[1.0, 3.5] //////
         xt = [3.5] #[3.5, 3.5]
-        yt = [5.0] #[6.0, 3.5]
+        yt = [6.0] #[6.0, 3.5]
         self.heading = [np.pi/2] #[np.pi/2, -np.pi/2]
 
         robot_count = self.robot_count
