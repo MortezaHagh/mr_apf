@@ -925,7 +925,7 @@ class ApfMotion(object):
     def tensor_force(self):
         import matplotlib.pyplot as plt
 
-        flag_xy = False
+        flag_xy = True
         flag_robot = True
         # --------------------------------------------------- robot
         # center_x = self.new_robots[0].x
@@ -1341,17 +1341,17 @@ class ApfMotion(object):
 
 
     def cal_theta(self, x, y, N):
-        # obs_x = self.obs_x[:N]
-        # obs_y = self.obs_y[:N]
-        # dx = np.array(obs_x) - x
-        # dy = np.array(obs_y) - y
-        # d = np.sqrt(dx * dx + dy * dy)
-        # ind = np.argmin(d)
-        # dx = dx[ind]
-        # dy = dy[ind]
+        obs_x = self.obs_x[:N]
+        obs_y = self.obs_y[:N]
+        dx = np.array(obs_x) - x
+        dy = np.array(obs_y) - y
+        d = np.sqrt(dx * dx + dy * dy)
+        ind = np.argmin(d)
+        dx = dx[ind]
+        dy = dy[ind]
         
-        dx = self.new_robots[0].x - x
-        dy = self.new_robots[0].y - y
+        # dx = self.new_robots[0].x - x
+        # dy = self.new_robots[0].y - y
 
         theta_ro = np.arctan2(dy, dx)
         r_h = theta_ro + 0.001
