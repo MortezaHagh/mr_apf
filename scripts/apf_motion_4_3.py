@@ -3,6 +3,7 @@
 import copy
 import rospy
 import numpy as np
+import matplotlib.pyplot as plt
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from visualization import Viusalize
@@ -912,8 +913,6 @@ class ApfMotion(object):
     # --------------------------------------------------------------------------------------#
 
     def tensor_force(self):
-        import matplotlib.pyplot as plt
-
         flag_xy = True
         flag_robot = True
         # --------------------------------------------------- robot
@@ -1345,70 +1344,8 @@ class ApfMotion(object):
         theta_ro = np.arctan2(dy, dx)
         r_h = theta_ro + 0.001
 
-        return r_h
+        return r_h                        
 
-
-    def plot_f_obstacle(self):
-        obs_f = [0, 0]
-        self.obs_f = [0, 0]
-        self.near_obst = False
-
-        for i in self.f_obsts_inds:
-            dy = (self.obs_y[i] - self.r_y)
-            dx = (self.obs_x[i] - self.r_x)
-            d_ro = np.sqrt(dx**2 + dy**2)
-
-            theta_ro = np.arctan2(dy, dx)
-            ad_h_ro = self.angle_diff(self.r_h, theta_ro)
-
-            if (d_ro < self.obst_half_d):
-                self.near_obst = True
-
-            # if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
-            #     self.stop_flag_obsts = True
-
-            dx = self.goal_x - self.obs_x[i]
-            dy = self.goal_y - self.obs_y[i]
-            theta_og = np.arctan2(dy, dx)
-            theta_or = theta_ro - np.pi
-            ad_og_or = self.angle_diff(theta_og, theta_or)
-            target_other_side = False
-            if abs(ad_og_or)>np.pi/4:
-                target_other_side = True
-
-            coeff = 1
-            theta_ = 20
-            if abs(ad_h_ro)<np.deg2rad(theta_):
-                ad_rg_ro = self.angle_diff(self.theta_rg,  theta_ro)
-                coeff = np.sign(ad_rg_ro*ad_h_ro)
-            # angle_turn_o = theta_ro + (np.pi/2)*np.sign(ad_h_ro)
-            # ad_c_o = self.angle_diff(angle_turn_o, self.r_h)
-            angle_turn_t = theta_ro + (np.pi/2)*np.sign(ad_h_ro)*coeff
-            ad_c_t = self.angle_diff(angle_turn_t, self.r_h)
-
-
-            f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
-            o_force = [f * -np.cos(ad_h_ro), f * np.sin(ad_h_ro)]
-
-            # fo = f + 2
-            # templo = [fo * np.cos(ad_c_o), fo * np.sin(ad_c_o)]
-            
-            ft = f + 3
-            templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
-
-            if target_other_side:
-                if (self.obst_prec_d<d_ro and d_ro<self.obst_half_d):
-                        o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
-                elif (self.obst_half_d<d_ro):
-                    if (abs(ad_h_ro)<np.pi/2):
-                            o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
-
-            obs_f[0] += round(o_force[0], 3)
-            obs_f[1] += round(o_force[1], 3)
-
-        coeff_f = 1
-        self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
-        self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
 
 
 # # to do:
