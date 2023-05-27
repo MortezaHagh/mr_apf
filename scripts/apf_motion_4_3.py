@@ -65,7 +65,7 @@ class ApfMotion(object):
         # # tensor force
         # self.tensor_force()
 
-    # --------------------------  init  ---------------------------#
+    # --------------------------  init  ------------------------------------------------#
 
     def init(self, model, robot, init_params):
         # preallocation
@@ -137,14 +137,14 @@ class ApfMotion(object):
         self.goal_dis_tresh = 0.06              # init_params.dis_tresh     # distance thresh to finish
         self.theta_thresh = np.deg2rad(30)      # init_params.theta_thresh  # for velocity calculation
 
-    # --------------------------  exec_cb  ---------------------------#
+    # --------------------------  exec_cb  ---------------------------------------------#
 
     def exec_cb(self):
         self.go_to_goal()
         self.is_reached = True
         return
 
-    # --------------------------  go_to_goal  ---------------------------#
+    # --------------------------  go_to_goal  -------------------------------------------#
 
     def go_to_goal(self):
         
@@ -219,7 +219,7 @@ class ApfMotion(object):
         self.pose_client(req)
         self.stop()
 
-    # -----------------------  cal_vel  ----------------------------#
+    # -----------------------  cal_vel  ---------------------------------------------#
 
     def cal_vel(self, f_r, f_theta, theta):
 
@@ -252,7 +252,7 @@ class ApfMotion(object):
         self.v = v
         self.w = w
 
-    # -----------------------  forces  ----------------------------#
+    # -----------------------  forces  ----------------------------------------------#
 
     def forces(self):
 
@@ -291,7 +291,7 @@ class ApfMotion(object):
 
         return [f_r, f_theta, phi]
 
-    # -----------------------  detect_group  ----------------------------#
+    # -----------------------  detect_group  -----------------------------------------#
 
     def detect_group(self):
 
@@ -576,7 +576,7 @@ class ApfMotion(object):
         #     rc = do_max
         return xy  #rc
 
-    # -----------------------  f_target  ----------------------------#
+    # -----------------------  f_target  ------------------------------------------------#
 
     def f_target(self):
         # r_g
@@ -597,7 +597,7 @@ class ApfMotion(object):
         fy = round(f * np.sin(ad_rg_h), 3)
         self.target_f = [fx, fy]
 
-    # -----------------------  f_robots  ----------------------------#
+    # -----------------------  f_robots  -------------------------------------------------#
 
     def f_robots(self):
         
@@ -622,7 +622,7 @@ class ApfMotion(object):
         self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
         self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
 
-    # -----------------------  compute_robot_force  ----------------------------#
+    # -----------------------  compute_robot_force  --------------------------------------#
 
     def compute_multi_force(self, nr):
         nr_force = [0, 0]
@@ -775,7 +775,7 @@ class ApfMotion(object):
                             nr_force = [templ3_2[0]+nr_force[0], templ3_2[1]+nr_force[1]]
         return nr_force
 
-    # -----------------------  f_obstacle  ----------------------------#
+    # -----------------------  f_obstacle  -------------------------------------------------#
 
     def f_obstacle(self):
         obs_f = [0, 0]
@@ -867,7 +867,7 @@ class ApfMotion(object):
         self.r_y = position.y
         self.r_h = orientation[2]
 
-    # ---------------------------------------------------------#
+    # ---------------------------------------------------------------------------------------#
 
     def map(self):
         # robot target:
@@ -878,19 +878,6 @@ class ApfMotion(object):
         self.obs_y = self.model.obst.y
         self.obs_count = self.model.obst.count
         self.obs_ind_main = [i for i in range(self.model.obst.count)]
-
-    # [-pi pi]
-    def modify_angle(self, theta):
-        theta_mod = (theta + np.pi) % (2 * np.pi) - np.pi
-        return theta_mod
-    
-    # [0 2*pi]
-    def mod_angle(self, theta):
-        if theta < 0:
-            theta = theta + 2 * np.pi
-        elif theta > 2 * np.pi:
-            theta = theta - 2 * np.pi
-        return theta
     
     def angle_diff(self, a1, a2):
         ad = a1 - a2
@@ -922,7 +909,7 @@ class ApfMotion(object):
             else:
                 self.vs.arrow_f(self.r_x, self.r_y, theta, self.ns)
 
-    # --------------------------------------------------#
+    # --------------------------------------------------------------------------------------#
 
     def tensor_force(self):
         import matplotlib.pyplot as plt
@@ -1359,6 +1346,69 @@ class ApfMotion(object):
         r_h = theta_ro + 0.001
 
         return r_h
+
+
+    def plot_f_obstacle(self):
+        obs_f = [0, 0]
+        self.obs_f = [0, 0]
+        self.near_obst = False
+
+        for i in self.f_obsts_inds:
+            dy = (self.obs_y[i] - self.r_y)
+            dx = (self.obs_x[i] - self.r_x)
+            d_ro = np.sqrt(dx**2 + dy**2)
+
+            theta_ro = np.arctan2(dy, dx)
+            ad_h_ro = self.angle_diff(self.r_h, theta_ro)
+
+            if (d_ro < self.obst_half_d):
+                self.near_obst = True
+
+            # if (d_ro < self.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
+            #     self.stop_flag_obsts = True
+
+            dx = self.goal_x - self.obs_x[i]
+            dy = self.goal_y - self.obs_y[i]
+            theta_og = np.arctan2(dy, dx)
+            theta_or = theta_ro - np.pi
+            ad_og_or = self.angle_diff(theta_og, theta_or)
+            target_other_side = False
+            if abs(ad_og_or)>np.pi/4:
+                target_other_side = True
+
+            coeff = 1
+            theta_ = 20
+            if abs(ad_h_ro)<np.deg2rad(theta_):
+                ad_rg_ro = self.angle_diff(self.theta_rg,  theta_ro)
+                coeff = np.sign(ad_rg_ro*ad_h_ro)
+            # angle_turn_o = theta_ro + (np.pi/2)*np.sign(ad_h_ro)
+            # ad_c_o = self.angle_diff(angle_turn_o, self.r_h)
+            angle_turn_t = theta_ro + (np.pi/2)*np.sign(ad_h_ro)*coeff
+            ad_c_t = self.angle_diff(angle_turn_t, self.r_h)
+
+
+            f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
+            o_force = [f * -np.cos(ad_h_ro), f * np.sin(ad_h_ro)]
+
+            # fo = f + 2
+            # templo = [fo * np.cos(ad_c_o), fo * np.sin(ad_c_o)]
+            
+            ft = f + 3
+            templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
+
+            if target_other_side:
+                if (self.obst_prec_d<d_ro and d_ro<self.obst_half_d):
+                        o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
+                elif (self.obst_half_d<d_ro):
+                    if (abs(ad_h_ro)<np.pi/2):
+                            o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
+
+            obs_f[0] += round(o_force[0], 3)
+            obs_f[1] += round(o_force[1], 3)
+
+        coeff_f = 1
+        self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
+        self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
 
 
 # # to do:
