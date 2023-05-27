@@ -11,9 +11,9 @@ class ModelInputs():
         self.path_unit = path_unit
 
         if map_id == 1:
-            # self.map_0(robot_count)
+            self.map_0(robot_count)
             # self.collide()
-            self.obstacles2()
+            # self.obstacles2()
             # self.random_map_2(robot_count)
             # self.from_json_file(robot_count, path_unit)
 
@@ -53,11 +53,11 @@ class ModelInputs():
         xc2 = xc1*2
         yc2 = yc1 + [y+6 for y in yc1]
     
-        self.x_obst = []
-        self.y_obst = []
+        # self.x_obst = []
+        # self.y_obst = []
 
-        # self.x_obst = xc2
-        # self.y_obst = yc2
+        self.x_obst = xc2
+        self.y_obst = yc2
 
         self.obst_count_orig = len(self.x_obst)
 

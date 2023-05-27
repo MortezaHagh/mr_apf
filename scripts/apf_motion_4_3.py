@@ -150,8 +150,9 @@ class ApfMotion(object):
         
         while self.goal_dist > self.goal_dis_tresh and not rospy.is_shutdown():
             
-            if self.ind == 2:
-                break
+            # # for plot tensors
+            # if self.ind == 2:
+            #     break
 
             # detect and group
             self.detect_group()
@@ -169,9 +170,10 @@ class ApfMotion(object):
                 # calculate forces
                 [f_r, f_theta, phi] = self.forces()
 
-                self.tensor_force()
-                self.rate.sleep()
-                continue
+                # # plot tensors
+                # self.tensor_force()
+                # self.rate.sleep()
+                # continue
 
                 # calculate velocities
                 self.cal_vel(f_r, f_theta, phi)

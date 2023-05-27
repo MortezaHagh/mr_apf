@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Status1
-        - /TF1/Frames1
         - /robot_data2
         - /Marker2
       Splitter Ratio: 0.7441176176071167
@@ -119,6 +118,10 @@ Visualization Manager:
           Value: false
         r3/odom:
           Value: false
+        r3/wheel_left_link:
+          Value: false
+        r3/wheel_right_link:
+          Value: false
         r4/base_footprint:
           Value: false
         r4/base_link:
@@ -188,7 +191,18 @@ Visualization Manager:
                   r2/wheel_right_link:
                     {}
             r3/odom:
-              {}
+              r3/base_footprint:
+                r3/base_link:
+                  r3/caster_back_left_link:
+                    {}
+                  r3/caster_back_right_link:
+                    {}
+                  r3/imu_link:
+                    {}
+                  r3/wheel_left_link:
+                    {}
+                  r3/wheel_right_link:
+                    {}
             r4/odom:
               {}
             r5/odom:
