@@ -9,7 +9,7 @@ class Plot3D:
 
         # test name and version
         version = 1
-        self.test_id = 3
+        self.test_id = 7
         self.test_name = "T" + str(self.test_id) + "_v" + str(version)
         
         # create model
@@ -44,32 +44,35 @@ class Plot3D:
 
     def plot_f_obstacle(self):
             
-            x_step = 0.1
-            y_step = 0.1
+            x_step = 0.05
+            y_step = 0.05
             x = np.arange(self.model.map.x_min, self.model.map.x_max, x_step)
             y = np.arange(self.model.map.y_min, self.model.map.y_max, y_step)
             X, Y = np.meshgrid(x, y, indexing='ij')
             Z = np.zeros(X.shape)
-
+            
             for i in range(X.shape[0]):
                 for j in range(X.shape[1]):
                     xx = X[i,j]
                     yy = Y[i,j]
 
-                    for i in range(self.model.obst.count):
-                        dy = (self.model.obst.y[i] - yy)
-                        dx = (self.model.obst.x[i] - xx)
+                    for k in range(self.model.obst.count):
+                        dy = (self.model.obst.y[k] - yy)
+                        dx = (self.model.obst.x[k] - xx)
                         d_ro = np.sqrt(dx**2 + dy**2)
 
                         f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
-                        f = min(f, 5)
-                        f = max(f, 0)
+                        # f = min(f, 5)
+                        # f = max(f, 0)
                         Z[i,j] += f
+
+                    Z[i,j] = min(Z[i,j], 5)
+                    Z[i,j] = max(Z[i,j], 0)
             
             fig = plt.figure()
             # fig, ax = plt.subplots(1,1)
             ax = plt.axes(projection='3d')
-            ax.contour3D(X, Y, Z, 50, cmap='binary')
+            ax.contour3D(X, Y, Z, 150, cmap='binary')
             ax.set_xlabel('x')
             ax.set_ylabel('y')
             ax.set_zlabel('z')
