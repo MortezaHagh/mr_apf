@@ -40,7 +40,7 @@ class Plot3D:
         self.robot_r = 0.22 / self.path_unit
 
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
-        self.obst_start_d = 10 * self.obst_prec_d
+        self.obst_start_d = 15 * self.obst_prec_d
         self.obst_half_d = 1.5 * self.obst_prec_d
         self.obst_z = 4 * self.fix_f * self.obst_prec_d**4
 
@@ -54,7 +54,7 @@ class Plot3D:
             
             x_step = 0.01
             y_step = 0.01
-            x = np.arange(self.model.map.x_min-2, self.model.map.x_max+2, x_step)
+            x = np.arange(self.model.map.x_min-2, self.model.map.x_max+5, x_step)
             y = np.arange(self.model.map.y_min-2, self.model.map.y_max+2, y_step)
             X, Y = np.meshgrid(x, y, indexing='ij')
             Z = np.zeros(X.shape)
@@ -70,6 +70,8 @@ class Plot3D:
                         d_ro = np.sqrt(dx**2 + dy**2)
 
                         f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
+                        if f>4:
+                            f = 4 + f * 10/1000
                         # f = min(f, 5)
                         f = max(f, 0)
                         Z[i,j] += f
@@ -81,28 +83,45 @@ class Plot3D:
                     dx = (10 - xx)
                     d_ro = np.sqrt(dx**2 + dy**2)
                     f = self.zeta * 2/d_ro
-                    f += (self.zeta * (15-d_ro)) * (2/20)
+                    # if f>5:
+                    #      f = 5 + f /10
+                    f += (self.zeta * (15-d_ro)) * (8/20)
                     f = -f
                     f = max(f, -10)
                     f = min(f, 0)
                     Z[i,j] += f
 
-                    Z[i,j] = min(Z[i,j], 3)
-                    Z[i,j] = max(Z[i,j], -5)
+                    Z[i,j] = min(Z[i,j], 4)
+                    Z[i,j] = max(Z[i,j], -10)
 
             fig = plt.figure()
             # fig, ax = plt.subplots(1,1)
             ax = plt.axes(projection='3d')
 
-            ax.plot_surface(X, Y, Z,cmap='viridis', edgecolor='none')
+            ax.plot_surface(X, Y-2, Z,cmap='viridis', edgecolor='none')
             ax.set_title('Surface plot')
 
             # ax.contour3D(X, Y, Z, 50, cmap='binary')
-            ax.set_xlabel('x')
-            ax.set_ylabel('y')
-            ax.set_zlabel('z')
-            ax.set_xlim((self.model.map.x_min-5, self.model.map.x_max+5))
-            ax.set_ylim((self.model.map.y_min-5, self.model.map.y_max+5))
+            # ax.set_xlabel('x')
+            # ax.set_ylabel('y')
+            # ax.set_zlabel('z')
+            ax.set_xlim3d(self.model.map.x_min-7, self.model.map.x_max+9)
+            ax.set_ylim3d(self.model.map.y_min-7, self.model.map.y_max+3)
+            ax.set_zlim3d(-6, 20)
+            # ax.set_xlim((self.model.map.x_min-5, self.model.map.x_max+5))
+            # ax.set_ylim((self.model.map.y_min-5, self.model.map.y_max+5))
+            # Hide grid lines
+            ax.grid(False)
+            # Remove the axis
+            plt.axis('off')
+            # Hide axes ticks
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.set_zticks([])
+            # Make panes transparent
+            ax.xaxis.pane.fill = False # Left pane
+            ax.yaxis.pane.fill = False # Right pane
+
             plt.savefig(self.save_path+'.png', format='png', dpi=1000)
             plt.savefig(self.save_path+'.svg', format='svg', dpi=1000)
             plt.show()
