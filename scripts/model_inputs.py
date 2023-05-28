@@ -329,7 +329,7 @@ class ModelInputs():
         
         # file name
         ind = str(n)
-        no = 'o22'+'_map'+ind+'.json'
+        no = 'o15'+'_map'+ind+'.json'
         map_name = 'maps/'+no
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
