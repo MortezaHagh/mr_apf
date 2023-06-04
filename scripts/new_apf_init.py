@@ -23,8 +23,8 @@ class Run():
     def __init__(self):
 
         # test name and version
-        version = 1
-        self.test_id = 3
+        version = 0
+        self.test_id = 1
         self.test_name = "T" + str(self.test_id) + "_v" + str(version)
 
         # # results path
