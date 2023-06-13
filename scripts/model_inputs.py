@@ -11,9 +11,9 @@ class ModelInputs():
         self.path_unit = path_unit
 
         if map_id == 1:
-            # self.map_0(robot_count)
+            self.map_0(robot_count)
             # self.collide()
-            self.obstacles2()
+            # self.obstacles2()
             # self.random_map_2(robot_count)
             # self.from_json_file(robot_count, path_unit)
 
