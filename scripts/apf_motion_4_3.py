@@ -288,8 +288,8 @@ class ApfMotion(object):
     def detect_group(self):
 
         #
-        c_r = 2.5       # 2.5 3.0      # param 1
-        c_radius = 2.5  # 2.5          # param 3 
+        c_r = 2.5       # 2.5 3.0      #$ param 1
+        c_radius = 2.5  # 2.5          #$ param 3 
         is_goal_close = False
         self.stop_flag_multi = False
 
@@ -381,7 +381,7 @@ class ApfMotion(object):
                         nnr.p = robots_priority[i]>0
                         nnr.stop = True
                         nnr.reached = True
-                        nnr.r_prec = nr.r_prec/1.5 # to check
+                        nnr.r_prec = nr.r_prec/1.5          #$
                         nnr.r_half = 1.5 * nnr.r_prec
                         nnr.r_start = 2 * nnr.r_prec
                         nnr.z = 4 * self.fix_f * nnr.r_prec**4
@@ -493,7 +493,7 @@ class ApfMotion(object):
                     else:
                         xc = xx1
                         yc = yy1
-                    rc = d12/np.sqrt(2)      # /np.sqrt(3) d12 // to check
+                    rc = d12/np.sqrt(2)      # /np.sqrt(3) d12 #$
 
                 # 
                 d_tc = self.distance(self.goal_x, self.goal_y, xc, yc)
@@ -619,7 +619,7 @@ class ApfMotion(object):
     def compute_multi_force(self, nr):
         nr_force = [0, 0]
 
-        # to check
+        #tocheck #todo
         if (nr.r_start<nr.d):
             return nr_force
 
