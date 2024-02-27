@@ -40,7 +40,6 @@ class Obstacles(object):
         self.y = [y*path_unit  for y in inputs.y_obst]
         self.count = len(self.x)
 
-# ---------------------------- CreateModel ----------------------------------
 class CreateModel(object):
     def __init__(self, map_id=1, path_unit=1.0, robot_count = 1):
 

@@ -39,8 +39,6 @@ class Run():
         while not rospy.is_shutdown():
             rate.sleep()
     
-# -----------------------plotting - shutdown_hook---------------------------#
-
     def plotting(self):
         # map
         params = Params()

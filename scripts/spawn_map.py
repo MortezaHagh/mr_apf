@@ -45,8 +45,6 @@ class Initialize(object):
         return robots_initial
 
 
-# --------------------------------------------------------------------------------------------
-
 def Spawning(model, path_unit=1.0):
     
     # get data

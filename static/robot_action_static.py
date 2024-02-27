@@ -66,8 +66,6 @@ class InitRobotAcion(object):
         self.ac_ = actionlib.SimpleActionServer(self.ac_name, ApfAction, self.exec_cb)
         self.ac_.start()
 
-    # --------------------------  exec_cb  ---------------------------#
-
     def exec_cb(self, goal):
         # move
         self.go_to_goal()
@@ -78,8 +76,6 @@ class InitRobotAcion(object):
         self.res.path_y = self.path_y
         self.ac_.set_succeeded(self.res)
         return
-
-    # --------------------------  go_to_goal  ---------------------------#
 
     def go_to_goal(self):
         self.get_robot()
@@ -111,7 +107,6 @@ class InitRobotAcion(object):
 
             self.rate.sleep()
 
-    # -----------------------  cal_vel  ----------------------------#
 
     def cal_vel(self, f_r, f_theta, theta):
 
@@ -129,7 +124,6 @@ class InitRobotAcion(object):
         self.v = v
         self.w = w
 
-    # -----------------------  forces  ----------------------------#
     def forces(self):
         self.f_target()
         f_r = self.target_f[0]
@@ -204,7 +198,6 @@ class InitRobotAcion(object):
                 self.obs_f[0] += round(templ[0], 2)
                 self.obs_f[1] += round(templ[1], 2)
 
-    # -------------------------  get_robot, modify_angle  ------------------------------#
 
     def get_robot(self):
         self.r_x = self.model.robots[self.ind].xs

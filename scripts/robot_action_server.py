@@ -44,8 +44,6 @@ class InitRobotAcion(object):
         self._as.start()
         print(self.name_s + ": Robot Action Server (" + self.ac_name + ") has started.")
 
-    # ---------------------   goal_callback   --------------------- #
-
     def goal_callback(self, goal):
 
         print(self.name_s + ": Robot Action Server (" + self.ac_name + ") is called.")
@@ -88,8 +86,6 @@ class InitRobotAcion(object):
         else:
             rospy.loginfo('%s: Failed' % self.ac_name)
             self._as.set_aborted(self.result)
-
-    # ---------------------------- get_odom- shutdown -------------------------------- #
 
     def get_odom(self):
         topic_msg = None

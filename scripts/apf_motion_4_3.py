@@ -66,8 +66,6 @@ class ApfMotion(object):
         # # tensor force
         # self.tensor_force()
 
-    # --------------------------  init  ------------------------------------------------#
-
     def init(self, model, robot, init_params):
         # preallocation
         self.r_x = 0
@@ -138,14 +136,10 @@ class ApfMotion(object):
         self.goal_dis_tresh = 0.06              # init_params.dis_tresh     # distance thresh to finish
         self.theta_thresh = np.deg2rad(30)      # init_params.theta_thresh  # for velocity calculation
 
-    # --------------------------  exec_cb  ---------------------------------------------#
-
     def exec_cb(self):
         self.go_to_goal()
         self.is_reached = True
         return
-
-    # --------------------------  go_to_goal  -------------------------------------------#
 
     def go_to_goal(self):
         
@@ -211,8 +205,6 @@ class ApfMotion(object):
         self.pose_client(req)
         self.stop()
 
-    # -----------------------  cal_vel  ---------------------------------------------#
-
     def cal_vel(self, f_r, f_theta, theta):
 
         if f_r < 0:
@@ -243,8 +235,6 @@ class ApfMotion(object):
 
         self.v = v
         self.w = w
-
-    # -----------------------  forces  ----------------------------------------------#
 
     def forces(self):
 
@@ -282,8 +272,6 @@ class ApfMotion(object):
         # self.force_tt.append(self.target_f[1])
 
         return [f_r, f_theta, phi]
-
-    # -----------------------  detect_group  -----------------------------------------#
 
     def detect_group(self):
 
@@ -568,8 +556,6 @@ class ApfMotion(object):
         #     rc = do_max
         return xy  #rc
 
-    # -----------------------  f_target  ------------------------------------------------#
-
     def f_target(self):
         # r_g
         dx = self.goal_x - self.r_x
@@ -588,8 +574,6 @@ class ApfMotion(object):
         fx = round(f * np.cos(ad_rg_h), 3)
         fy = round(f * np.sin(ad_rg_h), 3)
         self.target_f = [fx, fy]
-
-    # -----------------------  f_robots  -------------------------------------------------#
 
     def f_robots(self):
         
@@ -613,8 +597,6 @@ class ApfMotion(object):
         coeff_f = 1
         self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
         self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
-
-    # -----------------------  compute_robot_force  --------------------------------------#
 
     def compute_multi_force(self, nr):
         nr_force = [0, 0]
@@ -767,8 +749,6 @@ class ApfMotion(object):
                         if True: #(abs(ad_h_rR)<(np.pi/2)):
                             nr_force = [templ3_2[0]+nr_force[0], templ3_2[1]+nr_force[1]]
         return nr_force
-
-    # -----------------------  f_obstacle  -------------------------------------------------#
 
     def f_obstacle(self):
         obs_f = [0, 0]

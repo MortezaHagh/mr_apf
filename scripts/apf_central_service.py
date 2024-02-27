@@ -20,8 +20,6 @@ class Robot(object):
         self.heading = heading
         self.priority = id
 
-    # -------------------------------- InitRobotService -------------------------- #
-
 class InitRobotService(object):
     def __init__(self, model, init_srv_name):
 
@@ -42,8 +40,6 @@ class InitRobotService(object):
         init_apf__srv_name = init_srv_name
         self.robot_srv = rospy.Service(init_apf__srv_name, InitRobot, self.apf_srv_callback)
         print("Central Service Server (init_apf_srv) is created. ")
-
-    # -------------------------------- robot_srv_callback -------------------------- #
 
     def apf_srv_callback(self, req):
 

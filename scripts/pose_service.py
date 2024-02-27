@@ -29,8 +29,6 @@ class PoseService(object):
         # service
         self.srv = rospy.Service(pose_srv_name, SharePoses2, self.pose_cb)
 
-    # ------------------------------- callback
-
     def pose_cb(self, req):
         req_i = req.ind
         resp = SharePoses2Response()
@@ -66,8 +64,6 @@ class PoseService(object):
         resp.count = self.count-1
         
         return resp
-    
-        # -----------------------------------------------
     
     def cal_priorities(self, xy, req_i):
         priorities = []

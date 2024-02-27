@@ -74,8 +74,6 @@ class Run():
         init_srv_name = "init_apf_srv"
         self.rsrv = InitRobotService(self.model, init_srv_name)
 
-        # ------------------------- call_init_service - SendGoal - status  ----------------------------
-
         # calling services
         call_apf_service(self.model.robots_i.ids)
         rate.sleep()
@@ -96,7 +94,6 @@ class Run():
         print("APF Mission Accomplished.")
         print(" -----------------------")
 
-        # --------------------------------- results ---------------------------------------------
         # paths and times
         for i, ac in enumerate(self.rsrv.ac_services):
             self.paths[i] = [ac.result.path_x, ac.result.path_y]
@@ -105,8 +102,6 @@ class Run():
         Results(self.paths, self.times, path_unit, self.test_name, self.result_path)
         self.data()
         self.plotting()
-
-    # ----------------------- plotting - shutdown_hook -------------------------------------#
 
     def plotting(self):
         # map
@@ -135,8 +130,6 @@ class Run():
         pass
         # print(" ----- shutting down from main -----")
 
-
-# --------------------------------- __main__ ----------------------------
 
 if __name__ == "__main__":
 

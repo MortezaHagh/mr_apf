@@ -40,8 +40,6 @@ class ApfMotion(object):
         # execute goal
         self.exec_cb()
 
-    # --------------------------  init  ---------------------------#
-
     def init(self, model, robot, init_params):
         # preallocation
         self.r_x = 0
@@ -106,14 +104,10 @@ class ApfMotion(object):
         self.dis_tresh = 0.07                   # init_params.dis_tresh     # distance thresh to finish
         self.theta_thresh = 30 * np.pi / 180    # init_params.theta_thresh  # for velocity calculation
 
-    # --------------------------  exec_cb  ---------------------------#
-
     def exec_cb(self):
         self.go_to_goal()
         self.is_reached = True
         return
-
-    # --------------------------  go_to_goal  ---------------------------#
 
     def go_to_goal(self):
         while self.goal_dist > self.dis_tresh and not rospy.is_shutdown():
@@ -154,8 +148,6 @@ class ApfMotion(object):
 
         self.stop()
 
-    # -----------------------  cal_vel  ----------------------------#
-
     def cal_vel(self, f_r, f_theta, theta):
 
         if f_r < 0:
@@ -185,8 +177,6 @@ class ApfMotion(object):
 
         self.v = v
         self.w = w
-
-    # -----------------------  forces  ----------------------------#
 
     def forces(self):
         self.f_target()
@@ -228,8 +218,6 @@ class ApfMotion(object):
         fy = round(f * np.sin(angle_diff), 3)
         self.target_f = [fx, fy]
 
-    # -----------------------  f_robots  ----------------------------#
-
     def f_robots(self):
         robot_flag = False
         self.stop_flag = False
@@ -266,8 +254,6 @@ class ApfMotion(object):
             self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
             self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
 
-    # -----------------------  f_obstacle  ----------------------------#
-
     def f_obstacle(self):
         obst_flag = False
         self.obs_f = [0, 0]
@@ -296,8 +282,6 @@ class ApfMotion(object):
             self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
             self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
 
-    # ------------------------- check_topic -- get_odom  ------------------------------------#
-    
     def check_topic(self):
         self.topic_msg = None
         rospy.loginfo(self.ns + " apf_motion, checking topic ...")
@@ -323,8 +307,6 @@ class ApfMotion(object):
         self.r_x = position.x
         self.r_y = position.y
         self.r_theta = orientation[2]
-
-    # ----------------  get_robot -- map -- modify_angle -- shutdown_hook -------------------#
 
     def map(self):
 

@@ -65,7 +65,6 @@ class ApfStatic(object):
 
         rospy.signal_shutdown("signal shutdown ... ")
 
-    # ----------------------- actions ----------------------------------#
 
     def manage_actions(self):
         # running action servers
@@ -81,7 +80,6 @@ class ApfStatic(object):
             client.send_goal(goal)
             self.ac_clients.append(client)
 
-    # -----------------------  manage_poses  --------------------------------#
 
     def manage_poses(self):
         robot_poses = []
@@ -90,7 +88,6 @@ class ApfStatic(object):
             robot_poses.append(pose)
         self.pose_srv.update_poses(robot_poses)
 
-    # -----------------------  plotting  --------------------------------#
 
     def plotting(self):
         fig, ax = plot_model(self.model, self.params[0])
@@ -125,7 +122,6 @@ class ApfStatic(object):
         print("-----------------------------------------")
         print(" ------ static_main shutting down ... ---")
 
-# ------------------------------------------------------------------- #
 
 
 if __name__ == "__main__":
