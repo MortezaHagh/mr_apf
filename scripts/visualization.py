@@ -81,7 +81,7 @@ class Viusalize:
         marker_array = MarkerArray()
         for i in range(self.obs_count):
             marker = Marker()
-            marker.header.frame_id = "/map"
+            marker.header.frame_id = "map"
             marker.header.stamp = rospy.Time.now()
 
             # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
@@ -218,7 +218,7 @@ class Viusalize:
         i = 0
         for k, xy in xyd.items():
             marker = Marker()
-            marker.header.frame_id = "/map"
+            marker.header.frame_id = "map"
             marker.header.stamp = rospy.Time.now()
 
             # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
@@ -307,7 +307,7 @@ class Viusalize:
 
     def arrow(self, x, y, theta):
         marker = Marker()
-        marker.header.frame_id = "/map"
+        marker.header.frame_id = "map"
         marker.header.stamp = rospy.Time.now()
 
         # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
@@ -339,7 +339,7 @@ class Viusalize:
     
     def arrow_f(self, x, y, theta, ns):
         marker = Marker()
-        marker.header.frame_id = "/map"
+        marker.header.frame_id = "map"
         marker.header.stamp = rospy.Time.now()
 
         # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3

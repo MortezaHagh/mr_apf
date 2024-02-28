@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="apf" name="main" type="new_apf_init.py" output="screen"/>
+    <node pkg="apf" name="main" type="apf_init_new.py" output="screen"/>
 
     <!-- <node pkg="apf" name="main" type="apf_init.py" output="screen"/>
     <node pkg="apf" name="call_apf_service" type="call_apf_service.py" output="screen"/>

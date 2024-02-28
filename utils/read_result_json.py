@@ -24,7 +24,7 @@ class JsonResults:
             return None
 
     def get_one_value(self, file_path, key):
-        file_path = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/res_5.json"
+        file_path = "/home/morteza/Documents/Morteza/CurrentAPF/result_apf/res_5.json"
         key = "mean_len"
         value = self.get_json_value(file_path, key)
         print(f"The value of the key '{key}' is '{value}'")
@@ -172,24 +172,24 @@ class JsonResults:
 jr = JsonResults()
 
 # Directory containing JSON files
-directory = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/"
+directory = "/home/morteza/Documents/Morteza/CurrentAPF/result_apf/"
 # List of keys to retrieve values for
 keys = ["robot_count", "mean_len", "total_len", "operation_time", "total_time"]
 jr.create_table(directory, keys)
 
 # dctory containing JSON files
-directory = "/home/piotr/Documents/Morteza/CurrentAPF/result_apf/"
+directory = "/home/morteza/Documents/Morteza/CurrentAPF/result_apf/"
 # List of keys to retrieve values for
 keys = ["robot_count", "mean_len", "total_len", "operation_time", "total_time"]
 jr.create_table_2(directory, keys)
 
 
 # #
-# directory = "/home/piotr/Documents/Morteza/CurrentAPF"
+# directory = "/home/morteza/Documents/Morteza/CurrentAPF"
 # jr.delete_files_in_directory(directory)
 
 
-# # directory = "/home/piotr/Documents/Morteza/CurrentAPF"
-# directory = '/home/piotr/Documents/Morteza/Results-APF'
+# # directory = "/home/morteza/Documents/Morteza/CurrentAPF"
+# directory = '/home/morteza/Documents/Morteza/Results-APF'
 # jr.delete_empty_subdirectories(directory)
 

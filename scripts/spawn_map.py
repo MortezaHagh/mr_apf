@@ -78,7 +78,7 @@ def Spawning(model, path_unit=1.0):
         sm.robot_namespace = '/r'+str(id)
         sm.initial_pose = robots_initial[rd]
         sm.reference_frame = reference_frame
-        # rospy.set_param('tf_prefix', '/r'+str(id))
+        rospy.set_param('tf_prefix', 'r'+str(id))
         spawn_robots_servie(sm)
         rospy.sleep(0.2)
 

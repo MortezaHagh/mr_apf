@@ -12,30 +12,30 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 odom r1/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 odom r2/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0 0 0 0 0 0 1 odom r3/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link4_broadcaster" args="0 0 0 0 0 0 1 odom r4/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link5_broadcaster" args="0 0 0 0 0 0 1 odom r5/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link6_broadcaster" args="0 0 0 0 0 0 1 odom r6/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link7_broadcaster" args="0 0 0 0 0 0 1 odom r7/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link8_broadcaster" args="0 0 0 0 0 0 1 odom r8/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link9_broadcaster" args="0 0 0 0 0 0 1 odom r9/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link10_broadcaster" args="0 0 0 0 0 0 1 odom r10/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link11_broadcaster" args="0 0 0 0 0 0 1 odom r11/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link12_broadcaster" args="0 0 0 0 0 0 1 odom r12/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link13_broadcaster" args="0 0 0 0 0 0 1 odom r13/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link14_broadcaster" args="0 0 0 0 0 0 1 odom r14/odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="link15_broadcaster" args="0 0 0 0 0 0 1 odom r15/odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 map r1/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 map r2/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0 0 0 0 0 0 1 map r3/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link4_broadcaster" args="0 0 0 0 0 0 1 map r4/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link5_broadcaster" args="0 0 0 0 0 0 1 map r5/odom 50" />
+  <!-- <node pkg="tf" type="static_transform_publisher" name="link6_broadcaster" args="0 0 0 0 0 0 1 odom r6/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link7_broadcaster" args="0 0 0 0 0 0 1 map r7/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link8_broadcaster" args="0 0 0 0 0 0 1 map r8/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link9_broadcaster" args="0 0 0 0 0 0 1 map r9/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link10_broadcaster" args="0 0 0 0 0 0 1 map r10/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link11_broadcaster" args="0 0 0 0 0 0 1 map r11/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link12_broadcaster" args="0 0 0 0 0 0 1 map r12/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link13_broadcaster" args="0 0 0 0 0 0 1 map r13/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link14_broadcaster" args="0 0 0 0 0 0 1 map r14/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link15_broadcaster" args="0 0 0 0 0 0 1 map r15/odom 50" /> -->
 
   <include file="$(find apf)/launch/launch_states_publisher.launch"/> 
 
   <!-- path planning -->
-  <node pkg="apf" name="main" type="new_apf_init.py" output="screen"/>
+  <node pkg="apf" name="main" type="apf_init_new.py" output="screen"/>
 
   <!-- Load RVIZ -->
-  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d /home/piotr/mori_ws/src/mr_apf/rviz/apf_arviz.rviz" />
+  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d /home/morteza/mo_ws/src/mr_apf/rviz/apf_arviz.rviz" />
 
   
 </launch>

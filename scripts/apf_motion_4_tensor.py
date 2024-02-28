@@ -1073,7 +1073,7 @@ class ApfMotion(object):
         # ax.legend()
 
         # Save fig
-        save_tensor_path = '/home/piotr/mori_ws/src/mr_apf/Results-APF/Tensor/Tensor_mxy_r_' + str(1)
+        save_tensor_path = '/home/morteza/mo_ws/src/mr_apf/Results-APF/Tensor/Tensor_mxy_r_' + str(1)
         plt.savefig(save_tensor_path+'.svg', format='svg', dpi=1000)
         plt.savefig(save_tensor_path+'.png', format='png', dpi=1000)
         

@@ -24,22 +24,24 @@ class Run():
 
         # test name and version
         version = 0
-        self.test_id = 4
-        self.test_name = "T" + str(self.test_id) + "_v" + str(version)
+        self.test_id = 5
+        self.test_name = "T" + str(self.test_id) + "_V" + str(version)
+        result_name = "res_" + str(self.test_id) + "_v" + str(version) + ".json"
 
         # # results path
-        # rospack = rospkg.RosPack()
-        # pkg_path = "rospack.get_path('apf')"
-        self.pred = "/home/piotr/Documents/Morteza/CurrentAPF/"
-        self.dir_f = self.pred + self.test_name + "/apf_paths"
-        self.dir_p = self.pred + self.test_name + "/apf_paths.json"
-        self.dir_t = self.pred + self.test_name + "/apf_times.json"
-        self.dir_force = self.pred + self.test_name + "/apf_forces"
-        res_pred = "res_" + str(self.test_id) + "_v" + str(version) + ".json"
-        self.result_path = "/home/piotr/Documents/Morteza/CurrentAPF" + '/result_apf/' + res_pred
+        rospack = rospkg.RosPack()
+        pkg_path = rospack.get_path('apf')
+        pred = os.path.join(pkg_path, "Results-APF/Tests")
+        self.pred = os.path.join(pred, self.test_name)
+        # self.pred = "/home/morteza/Documents/Morteza/CurrentAPF/"
+        self.dir_f = os.path.join(self.pred, "apf_paths")
+        self.dir_p = os.path.join(self.pred, "apf_paths.json")
+        self.dir_t = os.path.join(self.pred, "apf_times.json")
+        self.dir_force = os.path.join(self.pred, "apf_forces")
+        self.result_path = os.path.join(self.pred, result_name) 
 
         # Create directory
-        path = self.pred + self.test_name
+        path = self.pred
         isExist = os.path.exists(path)
         if not isExist:
             os.makedirs(path)
@@ -54,11 +56,11 @@ class Run():
         self.model = CreateModel(map_id=1,
                                  path_unit=path_unit,
                                  robot_count=robot_count)
-        
+
         # results preallocation (trajectory and time)
         self.paths = {}
         self.times = {}
-        
+
         # set path unit
         path_unit = 1.0
 
@@ -69,7 +71,7 @@ class Run():
         visualize = Viusalize(self.model)
 
         # -------------------------------------------------------------------------------------------
-        # init_robot service server 
+        # init_robot service server
         print("Initializing Central Service Server (init_apf_srv) for adding robots ... ")
         init_srv_name = "init_apf_srv"
         self.rsrv = InitRobotService(self.model, init_srv_name)

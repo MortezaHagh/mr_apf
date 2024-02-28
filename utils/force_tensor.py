@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-# sys.path.append("/home/piotr/mori_ws/src/mr_apf/scripts")
+# sys.path.append("/home/morteza/mo_ws/src/mr_apf/scripts")
 # from create_model import CreateModel
 
 

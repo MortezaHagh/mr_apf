@@ -1,0 +1,29 @@
+[
+  {
+    "mean_len": 7.72,
+    "operation_time": 42.1,
+    "lens": [
+      8.17,
+      7.27
+    ],
+    "times": [
+      42.1,
+      39.0
+    ],
+    "total_time": 81.1,
+    "total_len": 15.44
+  },
+  {
+    "headings": [
+      15.02,
+      21.27
+    ],
+    "total_heading": [
+      36.29,
+      2079.26
+    ]
+  },
+  {
+    "robot_count": 2
+  }
+]
