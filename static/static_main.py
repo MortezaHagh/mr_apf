@@ -30,7 +30,7 @@ class ApfStatic(object):
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
-        self.model = CreateModel(map_id=1)
+        self.model = CreateModel(map_id=1, robot_count=4)
         self.count = self.model.robot_count
 
         # setting - parameters

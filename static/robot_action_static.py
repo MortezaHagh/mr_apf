@@ -28,7 +28,7 @@ class InitRobotAcion(object):
         self.model = model
         self.ind = init_params.id
         self.ac_name = init_params.ac_name
-        
+
         # parameters vel
         self.v = 0
         self.w = 0
@@ -43,10 +43,10 @@ class InitRobotAcion(object):
         self.robot_r = init_params.robot_r
         self.w_coeff = init_params.w_coeff
         self.dis_tresh = init_params.dis_tresh
-        self.f_r_min = init_params.f_r_min #
-        self.f_r_max = init_params.f_r_max #
-        self.f_theta_min = init_params.f_theta_min #
-        self.f_theta_max = init_params.f_theta_max #
+        self.f_r_min = init_params.f_r_min
+        self.f_r_max = init_params.f_r_max
+        self.f_theta_min = init_params.f_theta_min
+        self.f_theta_max = init_params.f_theta_max
         self.theta_thresh = init_params.theta_thresh
         self.obs_effect_r = init_params.obs_effect_r
         self.pose_srv_name = init_params.pose_srv_name
@@ -55,7 +55,7 @@ class InitRobotAcion(object):
         # map: target and obstacles coordinates
         self.map()
 
-        # get robots start coords 
+        # get robots start coords
         self.get_robot()
 
         # pose service client
@@ -63,7 +63,7 @@ class InitRobotAcion(object):
         self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses)
 
         # action
-        self.ac_ = actionlib.SimpleActionServer(self.ac_name, ApfAction, self.exec_cb)
+        self.ac_ = actionlib.SimpleActionServer(self.ac_name, ApfAction, self.exec_cb, False)
         self.ac_.start()
 
     def exec_cb(self, goal):
@@ -107,14 +107,13 @@ class InitRobotAcion(object):
 
             self.rate.sleep()
 
-
     def cal_vel(self, f_r, f_theta, theta):
 
-        if abs(theta)>self.theta_thresh:
+        if abs(theta) > self.theta_thresh:
             v = 0 + self.v_min/10
             w = self.w_max * np.sign(theta)
         else:
-            v = self.v_max * (1- (abs(theta)/self.theta_thresh))**2 + self.v_min/10
+            v = self.v_max * (1 - (abs(theta)/self.theta_thresh))**2 + self.v_min/10
             w = theta * self.w_coeff * 0.5
         v = min(v, self.v_max)
         v = max(v, 0)
@@ -193,11 +192,10 @@ class InitRobotAcion(object):
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
-                if abs(angle_diff)>np.pi/2:
-                    templ[1] +=  abs(templ[0]) * np.sign(templ[1])
+                if abs(angle_diff) > np.pi/2:
+                    templ[1] += abs(templ[0]) * np.sign(templ[1])
                 self.obs_f[0] += round(templ[0], 2)
                 self.obs_f[1] += round(templ[1], 2)
-
 
     def get_robot(self):
         self.r_x = self.model.robots[self.ind].xs
