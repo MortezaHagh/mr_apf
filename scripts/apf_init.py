@@ -5,7 +5,7 @@ import rospy
 import rospkg
 from parameters import Params
 from matplotlib.pylab import plt
-from plot_model import plot_model
+from plotter import plot_model
 from create_model import CreateModel
 from apf_central_service import InitRobotService
 
