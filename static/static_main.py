@@ -4,7 +4,7 @@ import rospy
 import actionlib
 from parameters import Params
 from matplotlib.pylab import plt
-from plot_model import plot_model
+from plotter import plot_model
 from create_model import CreateModel
 from pose_service import PoseService
 from apf.msg import ApfAction, ApfGoal

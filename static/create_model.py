@@ -57,7 +57,7 @@ class CreateModel(object):
 # -------------------------------- __main__  -----------------------------------
 
 if __name__ == '__main__':
-    from plot_model import plot_model
+    from plotter import plot_model
     model = CreateModel()
     plot_model(model)
     plt.show()
