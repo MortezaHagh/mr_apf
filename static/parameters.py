@@ -1,8 +1,9 @@
 import numpy as np
 
+
 class Params(object):
-    def __init__(self, id=1):
-        
+    def __init__(self, id=0):
+
         self.id = id
         self.sim_params()
 
@@ -15,31 +16,47 @@ class Params(object):
     # parameters for simulation
     def sim_params(self):
         self.name_space = ''
-        self.dis_tresh = 0.05
-        self.ang_tresh0 = 0.02
-        self.ang_tresh1 = 0.2
         self.lis_topic = '/odom'
         self.cmd_topic = '/cmd_vel'
-        self.linear_max_speed = 0.2
-        self.linear_min_speed = 0.01
-        self.angular_max_speed = 1.0
-        self.angular_min_speed = 0.0
-
-        self.dt = 0.1
-        self.zeta = 1
-        self.robot_r = 1.0               # robots effective radius
-        self.danger_r = 0.25             # real obst radius
-        self.obs_effect_r = 1.0          # obstacles effective radius
-        self.goal_distance = 1000
         self.ac_name = "/apf_action"
         self.pose_srv_name = "/pose_service"
 
+        self.linear_max_speed = 0.2
+        self.linear_min_speed = 0.01 #@ 0.0
+        self.angular_max_speed = 1.0
+        self.angular_min_speed = 0.0
+        self.linear_min_speed_2 = 0.02
+
+        self.dis_tresh = 0.05
+        self.ang_tresh0 = 0.02
+        self.ang_tresh1 = 0.2
+
+        self.zeta = 1
+        self.fix_f = 4
+        self.fix_f2 = 10
+        self.obst_r = 0.11
+        self.prec_d = 0.07
+        self.robot_r = 1.0     #@ 0.22        # robots effective radius
+
+        self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
+        self.obst_start_d = self.obst_prec_d*2
+
+        self.w_coeff = 1
+        self.dis_tresh = 0.2  #@ 0.05
+        self.theta_thresh = 90*np.pi/180
+
+        self.path_unit = 1.0
+        
+        # ----------- 
+        
+        self.danger_r = 0.25             # real obst radius
+        self.obs_effect_r = 1.0          # obstacles effective radius
+        self.goal_distance = 1000
+
         self.f_r_min = 0
         self.f_r_max = 5
-        self.w_coeff = 1
         self.f_theta_min = 1
         self.f_theta_max = 5
-        self.dis_tresh = 0.2
-        self.theta_thresh = np.pi/2
 
         self.priority = id
+        self.dt = 0.1

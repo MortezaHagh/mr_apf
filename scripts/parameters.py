@@ -1,8 +1,9 @@
 import numpy as np
 
+
 class Params(object):
-    def __init__(self, id = 0):
-        
+    def __init__(self, id=0):
+
         self.id = id
         self.sim_params()
 
@@ -25,7 +26,7 @@ class Params(object):
         self.angular_max_speed = 1.0
         self.angular_min_speed = 0.0
         self.linear_min_speed_2 = 0.02
-        
+
         self.dis_tresh = 0.05
         self.ang_tresh0 = 0.02
         self.ang_tresh1 = 0.2
@@ -41,7 +42,7 @@ class Params(object):
         self.obst_start_d = self.obst_prec_d*2
 
         self.w_coeff = 1
-        self.dis_tresh = 0.05 #0.2
+        self.dis_tresh = 0.05  # 0.2
         self.theta_thresh = 90*np.pi/180
 
         self.path_unit = 1.0
