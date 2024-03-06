@@ -24,7 +24,7 @@ class Run():
 
         # test name and version
         version = 0
-        self.test_id = 5
+        self.test_id = 2
 
         # initialize
         self.initialize(version)

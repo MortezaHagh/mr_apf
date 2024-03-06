@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 
 def plot_model(model, settings):
@@ -41,14 +42,11 @@ def plot_model(model, settings):
         ax.plot(xdng, ydng, 'r')
 
     # Walls
-    ax.plot([model.map.x_min-0.5, model.map.x_min-0.5],
-            [model.map.y_min-0.5, model.map.y_max+0.5], color='k', linewidth=4)
-    ax.plot([model.map.x_min-0.5, model.map.x_max+0.5],
-            [model.map.y_max+0.5, model.map.y_max+0.5], color='k', linewidth=4)
-    ax.plot([model.map.x_max+0.5, model.map.x_max+0.5],
-            [model.map.y_max+0.5, model.map.y_min-0.5], color='k', linewidth=4)
-    ax.plot([model.map.x_max+0.5, model.map.x_min-0.5],
-            [model.map.y_min-0.5, model.map.y_min-0.5], color='k', linewidth=4)
+    lx = model.map.x_max-model.map.x_min + 1
+    ly = model.map.y_max-model.map.y_min + 1
+    rect = patches.Rectangle((model.map.x_min-0.5, model.map.y_min-0.5),
+                             lx, ly, linewidth=2, edgecolor='k', facecolor='none')
+    ax.add_patch(rect)
 
     return fig, ax
 
