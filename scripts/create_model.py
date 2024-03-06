@@ -1,13 +1,15 @@
 import os
 import rospkg
 import numpy as np
+from parameters import Params
 import matplotlib.pyplot as plt
-from model_inputs import ModelInputs
+from scripts.plotter import plot_model
+from scripts.model_inputs import ModelInputs
 
 
 class RobotI(object):
     def __init__(self, inputs, path_unit):
-        self.xs = [x*path_unit for x in inputs.xs] 
+        self.xs = [x*path_unit for x in inputs.xs]
         self.ys = [y*path_unit for y in inputs.ys]
         self.xt = [x*path_unit for x in inputs.xt]
         self.yt = [y*path_unit for y in inputs.yt]
@@ -15,7 +17,8 @@ class RobotI(object):
         self.ids = inputs.ids
         self.ns = ["/r"+str(id) for id in inputs.ids]
         self.robot_count = len(inputs.ids)
-        
+
+
 class Map(object):
     def __init__(self, inputs, path_unit):
         self.lim = inputs.lim * path_unit
@@ -23,6 +26,7 @@ class Map(object):
         self.y_min = inputs.y_min * path_unit
         self.x_max = inputs.x_max * path_unit
         self.y_max = inputs.y_max * path_unit
+
 
 class Robot(object):
     def __init__(self, xs, ys, xt, yt, heading, id, path_unit):
@@ -33,18 +37,20 @@ class Robot(object):
         self.yt = yt * path_unit
         self.heading = np.deg2rad(heading)
 
+
 class Obstacles(object):
     def __init__(self, map, inputs, path_unit):
         self.r = 0.25
-        self.x = [x*path_unit  for x in inputs.x_obst]
-        self.y = [y*path_unit  for y in inputs.y_obst]
+        self.x = [x*path_unit for x in inputs.x_obst]
+        self.y = [y*path_unit for y in inputs.y_obst]
         self.count = len(self.x)
 
+
 class CreateModel(object):
-    def __init__(self, map_id=1, path_unit=1.0, robot_count = 1):
+    def __init__(self, map_id=1, path_unit=1.0, robot_count=1):
 
         print('Create Base Model')
-        
+
         # model inputs
         inputs = ModelInputs(map_id, path_unit, robot_count)
         self.map_ind = inputs.map_ind
@@ -78,28 +84,10 @@ class CreateModel(object):
 
 # -------------------------------- __main__  -----------------------------------
 
+
 if __name__ == '__main__':
-    from plotter import plot_model
-    
-    class Setting:
-        def __init__(self):
-            self.obst_r = 0.11
-            self.obst_prec_d = 0.4
-    setting = Setting()
-    
-    for i in range(1, 13):
-        model = CreateModel(robot_count=i)
-        plot_model(model, setting)
-
-        # save fig
-        ind = str(model.map_ind)
-        o_ind = str(model.obst_count_orig)
-        no = 'o'+o_ind+'_map'+ind
-        map_name = 'maps/'+no #+ '_e'
-        rospack = rospkg.RosPack()
-        pkg_path = rospack.get_path('apf')
-        filename = os.path.join(pkg_path, map_name)
-        plt.savefig(filename+'.svg', format="svg", dpi=1000)
-        plt.savefig(filename+'.png', format="png", dpi=500)
-
-    # plt.show()
+    params = Params()
+    from create_model import CreateModel
+    model = CreateModel(map_id=1)
+    plot_model(model, params)
+    plt.show()

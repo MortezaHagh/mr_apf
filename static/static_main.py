@@ -1,13 +1,19 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
+
+import os
+import sys
+
+script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+sys.path.append(os.path.join(script_directory, '..'))
 
 import rospy
 import actionlib
 from parameters import Params
 from matplotlib.pylab import plt
-from plotter import plot_model
-from create_model import CreateModel
 from pose_service import PoseService
+from scripts.plotter import plot_model
 from apf.msg import ApfAction, ApfGoal
+from scripts.create_model import CreateModel
 from robot_action_static import InitRobotAcion
 
 
@@ -24,7 +30,7 @@ class ApfStatic(object):
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
-        self.model = CreateModel(map_id=4)
+        self.model = CreateModel(map_id=1)
         self.count = self.model.robot_count
 
         # setting - parameters
@@ -53,7 +59,7 @@ class ApfStatic(object):
             self.manage_poses()
             status = [c.get_state() > 1 for c in self.ac_clients]
             self.rate.sleep()
-            print(status) # to better
+            print(status)  # to better
 
         # results
         self.results = []
@@ -64,7 +70,6 @@ class ApfStatic(object):
         self.plotting()
 
         rospy.signal_shutdown("signal shutdown ... ")
-
 
     def manage_actions(self):
         # running action servers
@@ -80,14 +85,12 @@ class ApfStatic(object):
             client.send_goal(goal)
             self.ac_clients.append(client)
 
-
     def manage_poses(self):
         robot_poses = []
         for ac_server in self.ac_servers:
             pose = [ac_server.r_x, ac_server.r_y]
             robot_poses.append(pose)
         self.pose_srv.update_poses(robot_poses)
-
 
     def plotting(self):
         fig, ax = plot_model(self.model, self.params[0])
@@ -96,7 +99,7 @@ class ApfStatic(object):
         colors = plt.cm.get_cmap('rainbow', self.model.robot_count)
         for i, res in enumerate(self.results):
             ax.plot(res.path_x, res.path_y, color=colors(i))
-        
+
         # forces
         fig1, ax1 = plt.subplots(1, 1)
         ax1.plot(self.ac_servers[0].force_r, label="force_r")
@@ -110,7 +113,7 @@ class ApfStatic(object):
         ax2.plot(self.ac_servers[0].v_ang, label="v_ang")
         ax2.set_title("velocities")
         ax2.legend()
-        
+
         plt.show()
 
     def shutdown_hook(self):
@@ -123,8 +126,6 @@ class ApfStatic(object):
         print(" ------ static_main shutting down ... ---")
 
 
-
 if __name__ == "__main__":
     rospy.init_node("main_node")
     apf = ApfStatic()
-    

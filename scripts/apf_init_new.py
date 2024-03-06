@@ -1,6 +1,11 @@
 #! /usr/bin/env python
 
 import os
+import sys
+
+script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+sys.path.append(os.path.join(script_directory, '..'))
+
 import json
 import rospy
 import rospkg
