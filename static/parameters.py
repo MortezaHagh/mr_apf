@@ -1,7 +1,7 @@
 import numpy as np
 
 class Params(object):
-    def __init__(self, id):
+    def __init__(self, id=1):
         
         self.id = id
         self.sim_params()

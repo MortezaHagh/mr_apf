@@ -1,4 +1,5 @@
 import numpy as np
+from parameters import Params
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
@@ -66,7 +67,8 @@ def plot_forces(ac, dir_force):
 
 
 if __name__ == '__main__':
+    params = Params()
     from create_model import CreateModel
-    model = CreateModel(map_id=4)
-    plot_model(model)
+    model = CreateModel(map_id=1)
+    plot_model(model, params)
     plt.show()
