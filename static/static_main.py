@@ -16,6 +16,7 @@ from apf.msg import ApfAction, ApfGoal
 from scripts.create_model import CreateModel
 from robot_action_static import InitRobotAcion
 from scripts.visualization import Viusalize
+from typing import List
 
 
 class ApfStatic(object):
@@ -24,7 +25,8 @@ class ApfStatic(object):
         # preallocation
         self.ac_names = []
         self.ac_clients = []
-        self.ac_servers = []
+        # self.ac_servers = []
+        self.ac_servers: List[InitRobotAcion] = []
 
         # ros
         self.rate = rospy.Rate(100)
@@ -33,10 +35,10 @@ class ApfStatic(object):
         # model
         self.model = CreateModel(map_id=1, robot_count=4)
         self.count = self.model.robot_count
-        
+
         # # visualize
         # self.visualize = Viusalize(self.model)
-        
+
         # setting - parameters
         params = []
         for i in range(self.count):
@@ -48,7 +50,7 @@ class ApfStatic(object):
         # robots poses
         robot_poses = []
         for i in range(self.count):
-            pose = [self.model.robots[i].xs, self.model.robots[i].ys]
+            pose = [self.model.robots[i].xs, self.model.robots[i].ys, self.model.robots[i].heading]
             robot_poses.append(pose)
 
         # pose service
@@ -92,7 +94,7 @@ class ApfStatic(object):
     def manage_poses(self):
         robot_poses = []
         for ac_server in self.ac_servers:
-            pose = [ac_server.r_x, ac_server.r_y]
+            pose = [ac_server.r_x, ac_server.r_y, ac_server.r_theta]
             robot_poses.append(pose)
         self.pose_srv.update_poses(robot_poses)
 

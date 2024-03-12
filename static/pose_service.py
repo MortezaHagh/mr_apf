@@ -14,6 +14,7 @@ class PoseService(object):
         self.count = count
         self.x = [p[0] for p in poses]
         self.y = [p[1] for p in poses]
+        self.theta = [p[2] for p in poses]
         self.ids = [i for i in range(count)]
 
         # service
@@ -25,12 +26,14 @@ class PoseService(object):
         inds = [j for j in self.ids if j != req_i]
         resp.x = [self.x[i] for i in inds]
         resp.y = [self.y[i] for i in inds]
+        resp.theta = [self.theta[i] for i in inds]
         resp.count = self.count-1
         return resp
 
     def update_poses(self, poses):
         self.x = [p[0] for p in poses]
         self.y = [p[1] for p in poses]
+        self.theta = [p[2] for p in poses]
 
     def shutdown_hook(self):
         print("shutting down from pose service")
