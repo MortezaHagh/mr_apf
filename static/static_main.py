@@ -15,6 +15,7 @@ from scripts.plotter import plot_model
 from apf.msg import ApfAction, ApfGoal
 from scripts.create_model import CreateModel
 from robot_action_static import InitRobotAcion
+from scripts.visualization import Viusalize
 
 
 class ApfStatic(object):
@@ -32,7 +33,10 @@ class ApfStatic(object):
         # model
         self.model = CreateModel(map_id=1, robot_count=4)
         self.count = self.model.robot_count
-
+        
+        # visualize
+        self.visualize = Viusalize(self.model)
+        
         # setting - parameters
         params = []
         for i in range(self.count):

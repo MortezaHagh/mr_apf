@@ -6,6 +6,7 @@ from geometry_msgs.msg import Point32, Polygon, PolygonStamped
 from sensor_msgs.msg import PointCloud, ChannelFloat32
 from visualization_msgs.msg import Marker, MarkerArray
 from tf.transformations import quaternion_from_euler
+from parameters import Params
 
 class Viusalize:
     def __init__(self, model):
@@ -13,6 +14,7 @@ class Viusalize:
         print("Viusalize started.")
 
         self.rate = rospy.Rate(10)
+        params = Params()
 
         # obstacles
         self.obs_count = model.obst.count
@@ -21,12 +23,12 @@ class Viusalize:
         self.obst_r = 0.11
 
         # settings
-        self.zeta = 1                     
-        self.fix_f = 4
-        self.fix_f2 = 10
-        self.obst_r = 0.11
-        self.prec_d = 0.07
-        self.robot_r = 0.22             
+        self.zeta = params.zeta                     
+        self.fix_f = params.fix_f
+        self.fix_f2 = params.fix_f2
+        self.obst_r = params.obst_r
+        self.prec_d = params.prec_d
+        self.robot_r = params.robot_r             
         
         self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
         self.obst_start_d = self.obst_prec_d*2

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<launch>
+  
+  <include file="$(find init_sim)/launch/empty_world_complete.launch">
+    <arg name="world_name" value="$(find init_sim)/worlds/empty_world_1.world"/>  
+    <!-- walls3 empty_wall empty_world_1 columns1.world-->
+    
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="false"/>
+    <arg name="recording" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 map r1/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 map r2/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0 0 0 0 0 0 1 map r3/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link4_broadcaster" args="0 0 0 0 0 0 1 map r4/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link5_broadcaster" args="0 0 0 0 0 0 1 map r5/odom 50" />
+
+  <include file="$(find apf)/launch/launch_states_publisher.launch"/> 
+
+  <!-- path planning -->
+  <node pkg="apf" name="static_main" type="static_main.py" output="screen"/>
+
+  <!-- Load RVIZ -->
+  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d /home/morteza/mo_ws/src/mr_apf/rviz/apf_arviz.rviz" />
+
+  
+</launch>
