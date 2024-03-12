@@ -14,15 +14,15 @@ class PoseService(object):
         self.count = count
         self.x = [p[0] for p in poses]
         self.y = [p[1] for p in poses]
-        self.inds = [i for i in range(count)]
+        self.ids = [i for i in range(count)]
 
         # service
         rospy.Service(pose_srv_name, SharePoses, self.pose_cb)
 
     def pose_cb(self, req):
-        req_i = req.ind
+        req_i = req.id
         resp = SharePosesResponse()
-        inds = [j for j in self.inds if j != req_i]
+        inds = [j for j in self.ids if j != req_i]
         resp.x = [self.x[i] for i in inds]
         resp.y = [self.y[i] for i in inds]
         resp.count = self.count-1

@@ -26,7 +26,7 @@ class InitRobotAcion(object):
 
         # data
         self.model = model
-        self.ind = init_params.id
+        self.id = init_params.id
         self.ac_name = init_params.ac_name
 
         # parameters vel
@@ -142,7 +142,7 @@ class InitRobotAcion(object):
 
     def f_robots(self):
         req = SharePosesRequest()
-        req.ind = self.ind
+        req.id = self.id
         resp = self.pose_client(req)
         self.robot_f = [0, 0]
         for i in range(resp.count):
@@ -198,9 +198,9 @@ class InitRobotAcion(object):
                 self.obs_f[1] += round(templ[1], 2)
 
     def get_robot(self):
-        self.r_x = self.model.robots[self.ind].xs
-        self.r_y = self.model.robots[self.ind].ys
-        self.r_theta = self.model.robots[self.ind].heading
+        self.r_x = self.model.robots[self.id].xs
+        self.r_y = self.model.robots[self.id].ys
+        self.r_theta = self.model.robots[self.id].heading
 
     def modify_angle(self, theta):
         theta_mod = (theta + np.pi) % (2*np.pi) - np.pi
@@ -208,8 +208,8 @@ class InitRobotAcion(object):
 
     def map(self):
         # robot target
-        self.goal_x = self.model.robots[self.ind].xt
-        self.goal_y = self.model.robots[self.ind].yt
+        self.goal_x = self.model.robots[self.id].xt
+        self.goal_y = self.model.robots[self.id].yt
 
         # obstacles
         self.obs_count = self.model.obst.count

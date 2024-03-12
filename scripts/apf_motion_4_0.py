@@ -94,7 +94,7 @@ class ApfMotion(object):
         self.prioriy = robot.priority
 
         # params
-        self.ind = init_params.id
+        self.id = init_params.id
         self.ns = init_params.name_space
         self.topic = init_params.lis_topic
         self.cmd_topic = init_params.cmd_topic
@@ -145,7 +145,7 @@ class ApfMotion(object):
 
             if self.stop_flag_multi:
                 req = SharePoses2Request()
-                req.ind = self.ind
+                req.id = self.id
                 req.stopped = True
                 self.pose_client(req)
                 self.v = 0
@@ -167,7 +167,7 @@ class ApfMotion(object):
                 
                 if self.stop_flag_2:
                     req = SharePoses2Request()
-                    req.ind = self.ind
+                    req.id = self.id
                     req.stopped = True
                     self.pose_client(req)
                     self.v = 0
@@ -184,14 +184,14 @@ class ApfMotion(object):
             self.path_y.append(round(self.r_y, 3))
 
             n = 1
-            if self.ind==n: print("fm: ", self.stop_flag_multi, "f: ", self.stop_flag)
-            if self.ind==n: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
-            if self.ind==n: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
-            if self.ind==n: print(" ------------------------------------ ")
+            if self.id==n: print("fm: ", self.stop_flag_multi, "f: ", self.stop_flag)
+            if self.id==n: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
+            if self.id==n: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
+            if self.id==n: print(" ------------------------------------ ")
             self.rate.sleep()
 
         req = SharePoses2Request()
-        req.ind = self.ind
+        req.id = self.id
         req.reached = True
         self.pose_client(req)
         self.stop()
@@ -274,7 +274,7 @@ class ApfMotion(object):
 
         # get data
         req_poses = SharePoses2Request()
-        req_poses.ind = self.ind
+        req_poses.id = self.id
         req_poses.update = False
         req_poses.stopped = False
         resp_poses = self.pose_client(req_poses)

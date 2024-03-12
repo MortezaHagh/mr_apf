@@ -57,7 +57,7 @@ class InitRobotAcion(object):
 
         # update target coordinates in pose service
         req = SharePoses2Request()
-        req.ind = self.robot.id
+        req.id = self.robot.id
         req.xt = self.robot.xt
         req.yt = self.robot.yt
         req.update = True

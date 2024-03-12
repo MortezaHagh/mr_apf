@@ -30,7 +30,7 @@ class PoseService(object):
         self.srv = rospy.Service(pose_srv_name, SharePoses2, self.pose_cb)
 
     def pose_cb(self, req):
-        req_i = req.ind
+        req_i = req.id
         resp = SharePoses2Response()
 
         if req.update:
@@ -82,8 +82,8 @@ class PoseService(object):
 
     
     def update_goal(self, req):
-        self.xt[req.ind] = req.xt
-        self.yt[req.ind] = req.yt
+        self.xt[req.id] = req.xt
+        self.yt[req.id] = req.yt
 
 
     def get_odom(self, topic):

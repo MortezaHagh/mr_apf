@@ -1,26 +1,26 @@
 [
   {
-    "mean_len": 7.74,
+    "mean_len": 7.73,
     "operation_time": 42.2,
     "lens": [
-      8.17,
-      7.3
+      8.19,
+      7.27
     ],
     "times": [
       42.2,
-      39.1
+      39.0
     ],
-    "total_time": 81.3,
-    "total_len": 15.47
+    "total_time": 81.2,
+    "total_len": 15.46
   },
   {
     "headings": [
-      16.42,
-      23.04
+      15.62,
+      21.58
     ],
     "total_heading": [
-      39.46,
-      2260.89
+      37.2,
+      2131.4
     ]
   },
   {
