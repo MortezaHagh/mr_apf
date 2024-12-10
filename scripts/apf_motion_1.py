@@ -77,11 +77,11 @@ class ApfMotion(object):
         # parameters vel
         self.v = 0
         self.w = 0
-        self.v_max = 0.2        # init_params.linear_max_speed
-        self.v_min = 0.0        # init_params.linear_min_speed
-        self.w_min = 0.0        # init_params.angular_min_speed
-        self.w_max = 1.0        # init_params.angular_max_speed
-        self.v_min_2 = 0.05     # init_params.linear_min_speed_2
+        self.v_max = 0.2        # init_params.v_max
+        self.v_min = 0.0        # init_params.v_min
+        self.w_min = 0.0        # init_params.w_min
+        self.w_max = 1.0        # init_params.w_max
+        self.v_min_2 = 0.05     # init_params.v_min_2
 
         # settings
         self.zeta = 1
@@ -134,12 +134,16 @@ class ApfMotion(object):
             self.path_y.append(round(self.r_y, 3))
 
             n = 1
-            if self.id==n: print("f: ", self.stop_flag)
-            if self.id==n: print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
-            if self.id==n: print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
-            if self.id==n: print(" ------------------------------------ ")
+            if self.id == n:
+                print("f: ", self.stop_flag)
+            if self.id == n:
+                print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
+            if self.id == n:
+                print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
+            if self.id == n:
+                print(" ------------------------------------ ")
             self.rate.sleep()
-        
+
         req = SharePoses2Request()
         req.id = self.id
         req.reached = True
@@ -155,12 +159,12 @@ class ApfMotion(object):
         else:
             v = 1 * self.v_max * ((f_r / self.fix_f)**2) + self.v_min_2
 
-        w = 3 * self.w_max * f_theta / self.fix_f ###change
+        w = 3 * self.w_max * f_theta / self.fix_f  # change
 
-        if  f_r < -1 and abs(w)<0.05:
+        if f_r < -1 and abs(w) < 0.05:
             w = 1*np.sign(w)
-            
-        if (v<=self.v_min_2*2) and abs(w)<0.03:
+
+        if (v <= self.v_min_2*2) and abs(w) < 0.03:
             v = self.v_min_2*2
 
         # thresh_theta = np.pi/3
@@ -208,7 +212,7 @@ class ApfMotion(object):
         dy = self.goal_y - self.r_y
         goal_dist = np.sqrt(dx**2 + dy**2)
         f = self.zeta * goal_dist
-        f = max(f, self.fix_f) ###change
+        f = max(f, self.fix_f)  # change
         # f = self.fix_f
         theta = np.arctan2(dy, dx)
         angle_diff = theta - self.r_theta
@@ -238,7 +242,8 @@ class ApfMotion(object):
             if d_ro > 1 * self.robot_start_d:
                 continue
 
-            if (not resp.reached) and d_ro < self.robot_stop_d and resp.priority[i] > 0: # and abs(angle_diff) > np.pi/2:
+            # and abs(angle_diff) > np.pi/2:
+            if (not resp.reached) and d_ro < self.robot_stop_d and resp.priority[i] > 0:
                 self.stop_flag = True
                 break
 

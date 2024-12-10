@@ -32,10 +32,10 @@ class InitRobotAcion(object):
         # parameters vel
         self.v = 0
         self.w = 0
-        self.v_min = init_params.linear_min_speed
-        self.v_max = init_params.linear_max_speed
-        self.w_min = init_params.angular_min_speed
-        self.w_max = init_params.angular_max_speed
+        self.v_min = init_params.v_min
+        self.v_max = init_params.v_max
+        self.w_min = init_params.w_min
+        self.w_max = init_params.w_max
 
         # parameters & settings
         self.dt = init_params.dt
