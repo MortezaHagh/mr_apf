@@ -68,7 +68,7 @@ def plot_forces(ac, dir_force):
 
 if __name__ == '__main__':
     params = Params()
-    from create_model import CreateModel
-    model = CreateModel(map_id=1)
+    from create_model import MRSModel
+    model = MRSModel(map_id=1)
     plot_model(model, params)
     plt.show()

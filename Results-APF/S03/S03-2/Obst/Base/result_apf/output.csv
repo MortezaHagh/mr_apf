@@ -1,4 +1,4 @@
-robot_count,mean_len,total_len,operation_time,total_time
+n_robots,mean_len,total_len,operation_time,total_time
 1,8.72,8.72,65.5,65.5
 2,8.29,16.59,65.3,129.5
 3,8.37,25.11,66.32,194.77

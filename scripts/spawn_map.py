@@ -27,7 +27,7 @@ class Initialize(object):
         self.obsts = {'x': x, 'y': y, 'count': self.model.obst.count}
 
         # robots
-        robots_count = self.model.robots_i.robot_count
+        robots_count = self.model.robots_i.n_robots
         self.robots_count = robots_count
         xx = [x*self.path_unit for x in self.model.robots_i.xs]
         yy = [y*self.path_unit for y in self.model.robots_i.ys]

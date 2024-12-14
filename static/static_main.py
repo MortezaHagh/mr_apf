@@ -1,22 +1,23 @@
+""" MRPP APF 2D sim """
 #! /usr/bin/env python3
 
 import os
 import sys
+import rospy
+from typing import List
+from matplotlib.pylab import plt
+from pose_service import PoseService
+import actionlib
+from apf.msg import ApfAction, ApfGoal
+from parameters import Params
+from robot_action_static import InitRobotAcion
 
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 sys.path.append(os.path.join(script_directory, '..'))
 
-import rospy
-import actionlib
-from parameters import Params
-from matplotlib.pylab import plt
-from pose_service import PoseService
 from scripts.plotter import plot_model
-from apf.msg import ApfAction, ApfGoal
-from scripts.create_model import CreateModel
-from robot_action_static import InitRobotAcion
+from scripts.create_model import MRSModel
 from scripts.visualization import Viusalize
-from typing import List
 
 
 class ApfStatic(object):
@@ -33,8 +34,8 @@ class ApfStatic(object):
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
-        self.model = CreateModel(map_id=1, robot_count=4)
-        self.count = self.model.robot_count
+        self.model = MRSModel(map_id=1, n_robots=4)
+        self.count = self.model.n_robots
 
         # # visualize
         # self.visualize = Viusalize(self.model)
@@ -102,7 +103,7 @@ class ApfStatic(object):
         fig, ax = plot_model(self.model, self.params[0])
 
         # paths
-        colors = plt.cm.get_cmap('rainbow', self.model.robot_count)
+        colors = plt.cm.get_cmap('rainbow', self.model.n_robots)
         for i, res in enumerate(self.results):
             ax.plot(res.path_x, res.path_y, color=colors(i))
 

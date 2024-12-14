@@ -53,7 +53,7 @@ class InitRobotAcion(object):
         self.goal_distance = init_params.goal_distance
 
         # map: target and obstacles coordinates
-        self.map()
+        self.map_data()
 
         # get robots start coords
         self.get_robot()
@@ -206,7 +206,7 @@ class InitRobotAcion(object):
         theta_mod = (theta + np.pi) % (2*np.pi) - np.pi
         return theta_mod
 
-    def map(self):
+    def map_data(self):
         # robot target
         self.goal_x = self.model.robots[self.id].xt
         self.goal_y = self.model.robots[self.id].yt

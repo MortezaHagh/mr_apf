@@ -6,7 +6,7 @@ import rospkg
 from parameters import Params
 from matplotlib.pylab import plt
 from plotter import plot_model
-from create_model import CreateModel
+from create_model import MRSModel
 from apf_central_service import InitRobotService
 
 class Run():
@@ -26,8 +26,8 @@ class Run():
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
-        self.model = CreateModel(map_id=4)
-        self.count = self.model.robot_count
+        self.model = MRSModel(map_id=4)
+        self.count = self.model.n_robots
         self.paths = {}
         self.times = {}
 
@@ -45,7 +45,7 @@ class Run():
         fig, ax = plot_model(self.model, params)
 
         # paths
-        colors = plt.cm.get_cmap('rainbow', self.model.robot_count)
+        colors = plt.cm.get_cmap('rainbow', self.model.n_robots)
         for k, v in self.paths.items():
             ax.plot(v[0], v[1], color=colors(k))
         plt.savefig(self.dir_f, format="png")

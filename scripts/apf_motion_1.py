@@ -24,7 +24,7 @@ class ApfMotion(object):
         self.init(model, robot, init_params)
 
         # map: target and obstacles coordinates
-        self.map()
+        self.map_data()
 
         # /cmd_vel puplisher
         self.cmd_vel = rospy.Publisher(self.cmd_topic, Twist, queue_size=5)
@@ -313,7 +313,7 @@ class ApfMotion(object):
         self.r_y = position.y
         self.r_theta = orientation[2]
 
-    def map(self):
+    def map_data(self):
 
         # robot target
         self.goal_x = self.robot.xt

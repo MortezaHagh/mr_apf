@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # sys.path.append("/home/morteza/mo_ws/src/mr_apf/scripts")
-# from create_model import CreateModel
+# from create_model import MRSModel
 
 
 # Define the function f(x, y)

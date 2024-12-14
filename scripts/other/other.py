@@ -1,7 +1,7 @@
 def create_model_set():
     params = Params()
     for i in range(1, 13):
-        model = CreateModel(robot_count=i)
+        model = MRSModel(n_robots=i)
         plot_model(model, params)
 
         # save fig

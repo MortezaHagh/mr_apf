@@ -1,11 +1,7 @@
+""" MRPP APF 3D sim """
 #! /usr/bin/env python
 
 import os
-import sys
-
-script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
-sys.path.append(os.path.join(script_directory, '..'))
-
 import json
 import rospy
 import rospkg
@@ -15,16 +11,13 @@ from spawn_map import Spawning
 from matplotlib.pylab import plt
 from send_goals import SendGoal
 from plotter import plot_model
+from create_model import MRSModel
 from visualization import Viusalize
-# from broadcaster import BroadCast
-from plotter import plot_forces
-from create_model import CreateModel
 from call_apf_service import call_apf_service
 from apf_central_service import InitRobotService
 
 
 class Run():
-
     def __init__(self):
 
         # test name and version
@@ -36,10 +29,8 @@ class Run():
 
         # create model
         path_unit = 0.7
-        robot_count = self.test_id
-        self.model = CreateModel(map_id=1,
-                                 path_unit=path_unit,
-                                 robot_count=robot_count)
+        n_robots = self.test_id
+        self.model = MRSModel(map_id=1, path_unit=path_unit, n_robots=n_robots)
 
         # set path unit
         self.path_unit = 1.0
@@ -67,9 +58,6 @@ class Run():
 
         # final results
         self.final_results_plot()
-
-        # -------------------------------------------------------------------------------------------
-        # -------------------------------------------------------------------------------------------
 
     def initialize(self, version):
         self.test_name = "T" + str(self.test_id) + "_V" + str(version)

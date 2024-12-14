@@ -1,10 +1,9 @@
-import os
-import rospkg
+""" create model """
 import numpy as np
 from parameters import Params
 import matplotlib.pyplot as plt
-from scripts.plotter import plot_model
-from scripts.model_inputs import ModelInputs
+from plotter import plot_model
+from model_inputs import ModelInputs
 
 
 class RobotI(object):
@@ -16,7 +15,7 @@ class RobotI(object):
         self.heading = [h for h in inputs.heading]
         self.ids = inputs.ids
         self.ns = ["/r"+str(id) for id in inputs.ids]
-        self.robot_count = len(inputs.ids)
+        self.n_robots = len(inputs.ids)
 
 
 class Map(object):
@@ -39,20 +38,20 @@ class Robot(object):
 
 
 class Obstacles(object):
-    def __init__(self, map, inputs, path_unit):
+    def __init__(self, emap, inputs, path_unit):
         self.r = 0.25
         self.x = [x*path_unit for x in inputs.x_obst]
         self.y = [y*path_unit for y in inputs.y_obst]
         self.count = len(self.x)
 
 
-class CreateModel(object):
-    def __init__(self, map_id=1, path_unit=1.0, robot_count=1):
+class MRSModel(object):
+    def __init__(self, map_id=1, path_unit=1.0, n_robots=1):
 
         print('Create Base Model')
 
         # model inputs
-        inputs = ModelInputs(map_id, path_unit, robot_count)
+        inputs = ModelInputs(map_id, path_unit, n_robots)
         self.map_ind = inputs.map_ind
 
         #
@@ -60,15 +59,15 @@ class CreateModel(object):
         path_unit = 1.0
 
         # Map
-        map = Map(inputs, path_unit)
-        self.map = map
+        emap = Map(inputs, path_unit)
+        self.emap = emap
 
         # Obstacles
         self.obst_count_orig = inputs.obst_count_orig
-        self.obst = Obstacles(map, inputs, path_unit)
+        self.obst = Obstacles(emap, inputs, path_unit)
 
         # Robot
-        self.robot_count = inputs.robot_count
+        self.n_robots = inputs.n_robots
         heading = inputs.heading
         xs = inputs.xs
         ys = inputs.ys
@@ -76,7 +75,7 @@ class CreateModel(object):
         yt = inputs.yt
         self.robots = []
 
-        for i in range(self.robot_count):
+        for i in range(self.n_robots):
             self.robots.append(Robot(xs[i], ys[i], xt[i], yt[i], heading[i], i, path_unit))
 
         # robot I
@@ -87,7 +86,6 @@ class CreateModel(object):
 
 if __name__ == '__main__':
     params = Params()
-    from create_model import CreateModel
-    model = CreateModel(map_id=1)
+    model = MRSModel(map_id=1)
     plot_model(model, params)
     plt.show()

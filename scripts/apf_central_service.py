@@ -29,7 +29,7 @@ class InitRobotService(object):
         # all robots
         self.robots = []
         self.robots_id = []
-        self.robot_count = 0
+        self.n_robots = 0
         self.ac_services = []
 
         # pose service
@@ -59,8 +59,8 @@ class InitRobotService(object):
         robot = Robot(xs, ys, id, name, heading, xt, yt) 
 
         # update robotic system data
-        self.robot_count += 1
-        # self.model.robot_count += 1
+        self.n_robots += 1
+        # self.model.n_robots += 1
         self.robots_id.append(id)
         self.robots.append(robot)
 

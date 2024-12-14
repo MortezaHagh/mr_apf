@@ -6,16 +6,16 @@ import numpy as np
 
 
 class ModelInputs():
-    def __init__(self, map_id=1, path_unit=1.0, robot_count = 1):
+    def __init__(self, map_id=1, path_unit=1.0, n_robots = 1):
         print("Inputs for creating model")
         self.path_unit = path_unit
 
         if map_id == 1:
-            self.map_0(robot_count)
+            self.map_0(n_robots)
             # self.collide()
             # self.obstacles2()
-            # self.random_map_2(robot_count)
-            # self.from_json_file(robot_count, path_unit)
+            # self.random_map_2(n_robots)
+            # self.from_json_file(n_robots, path_unit)
 
         self.apply_path_unit(path_unit)
 
@@ -62,7 +62,7 @@ class ModelInputs():
         self.obst_count_orig = len(self.x_obst)
 
         # robots
-        self.robot_count = robot_n
+        self.n_robots = robot_n
 
         # robots
         xs = [1, 12, 10.3, 4, 12, 1, 6, 1, 10,1, 8, 3, 4, 6, 11] 
@@ -75,12 +75,12 @@ class ModelInputs():
         # xt = [10, 4, 4, 10, 3, 10, 6, 7, 1, 5, 2, 10, 6, 8.5, 4]
         # yt = [10, 4, 10, 4, 8, 7, 5, 7, 7, 7, 3, 12, 11, 7, 12]
 
-        self.ids = list(range(1, self.robot_count+1))
-        self.heading = [0.0 for i in range(self.robot_count)]
-        self.xs = [xs[i] for i in range(self.robot_count)]
-        self.ys = [ys[i] for i in range(self.robot_count)]
-        self.xt = [xt[i] for i in range(self.robot_count)]
-        self.yt = [yt[i] for i in range(self.robot_count)]
+        self.ids = list(range(1, self.n_robots+1))
+        self.heading = [0.0 for i in range(self.n_robots)]
+        self.xs = [xs[i] for i in range(self.n_robots)]
+        self.ys = [ys[i] for i in range(self.n_robots)]
+        self.xt = [xt[i] for i in range(self.n_robots)]
+        self.yt = [yt[i] for i in range(self.n_robots)]
     
 
     def warehouse_1(self, robot_n=1):
@@ -108,10 +108,10 @@ class ModelInputs():
 
         # robots
         robot_n = robot_n
-        self.robot_count = robot_n
+        self.n_robots = robot_n
 
         # robots
-        self.ids = list(range(1,self.robot_count+1))
+        self.ids = list(range(1,self.n_robots+1))
         self.heading = [0.0]
         self.xs = [1]
         self.ys = [1]
@@ -142,7 +142,7 @@ class ModelInputs():
         self.obst_count_orig = 0
 
         # robots
-        self.robot_count = 2
+        self.n_robots = 2
 
         # robots
 
@@ -167,19 +167,19 @@ class ModelInputs():
         # yt = [1, 2]
         # self.heading = [0.0 , 0.0]
 
-        robot_count = 2
-        self.ids = list(range(1,robot_count+1))
-        self.xs = [xs[i] for i in range(robot_count)]
-        self.ys = [ys[i] for i in range(robot_count)]
-        self.xt = [xt[i] for i in range(robot_count)]
-        self.yt = [yt[i] for i in range(robot_count)]
+        n_robots = 2
+        self.ids = list(range(1,n_robots+1))
+        self.xs = [xs[i] for i in range(n_robots)]
+        self.ys = [ys[i] for i in range(n_robots)]
+        self.xt = [xt[i] for i in range(n_robots)]
+        self.yt = [yt[i] for i in range(n_robots)]
 
 
     def random_map(self):
 
         obst_n = 20
         robots_n = 10
-        self.robot_count = robots_n
+        self.n_robots = robots_n
 
         # area
         lim = 11
@@ -207,14 +207,14 @@ class ModelInputs():
         self.x_obst = [o[0] for o in obst_i]
         self.y_obst = [o[1] for o in obst_i]
         
-        self.ids = list(range(1, self.robot_count+1))
-        self.heading = [0.0 for i in range(self.robot_count)]
+        self.ids = list(range(1, self.n_robots+1))
+        self.heading = [0.0 for i in range(self.n_robots)]
         self.xs = [s[0] for s in robots_s_i]
         self.ys = [s[1] for s in robots_s_i]
         self.xt = [t[0] for t in robots_g_i]
         self.yt = [t[1] for t in robots_g_i]
 
-        # print(self.robot_count)
+        # print(self.n_robots)
 
 
     def random_map_2(self, ind=1):
@@ -222,7 +222,7 @@ class ModelInputs():
         self.map_ind = ind
         obst_n = 22
         robots_n = 8
-        self.robot_count = robots_n
+        self.n_robots = robots_n
 
         # area
         lim = 9
@@ -292,8 +292,8 @@ class ModelInputs():
         self.obst_count_orig = len(obst_x)
 
         # robots
-        self.ids = list(range(1, self.robot_count+1))
-        self.heading = [0.0 for i in range(self.robot_count)]
+        self.ids = list(range(1, self.n_robots+1))
+        self.heading = [0.0 for i in range(self.n_robots)]
         self.xs = x_s
         self.ys = y_s
         self.xt = x_t
@@ -356,7 +356,7 @@ class ModelInputs():
         self.y_obst = data['y_obst']
 
         # robots
-        self.robot_count = data['robot_count']
+        self.n_robots = data['n_robots']
 
         # robots
         self.ids = data['ids']
@@ -433,22 +433,22 @@ class ModelInputs():
         # ys = [1.0] #[1.0, 3.5]
         # xt = [3.5] #[3.5, 3.5]
         # yt = [6.0] #[6.0, 3.5]
-        # self.robot_count = 1
+        # self.n_robots = 1
         # self.heading = [np.pi/2] #[np.pi/2, -np.pi/2]
         
         xs = [3.5, 3.5] 
         ys = [2.3, 3.5]
         xt = [3.5, 3.5]
         yt = [6.0, 3.5]
-        self.robot_count = 2
+        self.n_robots = 2
         self.heading = [np.pi/2, -np.pi/2]
 
-        robot_count = self.robot_count
-        self.ids = list(range(1,robot_count+1))
-        self.xs = [xs[i] for i in range(robot_count)]
-        self.ys = [ys[i] for i in range(robot_count)]
-        self.xt = [xt[i] for i in range(robot_count)]
-        self.yt = [yt[i] for i in range(robot_count)]
+        n_robots = self.n_robots
+        self.ids = list(range(1,n_robots+1))
+        self.xs = [xs[i] for i in range(n_robots)]
+        self.ys = [ys[i] for i in range(n_robots)]
+        self.xt = [xt[i] for i in range(n_robots)]
+        self.yt = [yt[i] for i in range(n_robots)]
 
     
     def obstacles1(self, robot_n=2):
@@ -473,7 +473,7 @@ class ModelInputs():
         # self.modify_obst()
 
         # robots
-        self.robot_count = 1
+        self.n_robots = 1
 
         # robots
 
@@ -484,12 +484,12 @@ class ModelInputs():
         yt = [6.0] #[6.0, 3.5]
         self.heading = [np.pi/2] #[np.pi/2, -np.pi/2]
 
-        robot_count = self.robot_count
-        self.ids = list(range(1,robot_count+1))
-        self.xs = [xs[i] for i in range(robot_count)]
-        self.ys = [ys[i] for i in range(robot_count)]
-        self.xt = [xt[i] for i in range(robot_count)]
-        self.yt = [yt[i] for i in range(robot_count)]
+        n_robots = self.n_robots
+        self.ids = list(range(1,n_robots+1))
+        self.xs = [xs[i] for i in range(n_robots)]
+        self.ys = [ys[i] for i in range(n_robots)]
+        self.xt = [xt[i] for i in range(n_robots)]
+        self.yt = [yt[i] for i in range(n_robots)]
 
 
 # ----------------------------------------------------------------

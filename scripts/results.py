@@ -50,10 +50,10 @@ class Results:
                         "total_len": self.total_len}
 
         heading_data = {"headings":self.headings, "total_heading":self.total_headings}      
-        robot_count = {"robot_count": len(paths)}
+        n_robots = {"n_robots": len(paths)}
         
         # # save data JSON
-        all_data = [final_data, heading_data, robot_count]
+        all_data = [final_data, heading_data, n_robots]
         with open(save_path, "w") as outfile:
             json.dump(all_data, outfile, indent=2)
             outfile.write("\n")
@@ -61,7 +61,7 @@ class Results:
         # with open(save_path, "a") as outfile:
         #     json.dump(heading_data, outfile, indent=2)
         #     outfile.write("\n")
-        #     json.dump(robot_count, outfile, indent=2)
+        #     json.dump(n_robots, outfile, indent=2)
         
         print("==================================")
         print("operation_time", self.operation_time)
