@@ -10,14 +10,14 @@ from pose_service import PoseService
 import actionlib
 from apf.msg import ApfAction, ApfGoal
 from parameters import Params
-from robot_action_static import InitRobotAcion
+from robot_action_static import RobotPlanner
 
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 sys.path.append(os.path.join(script_directory, '..'))
 
 from scripts.plotter import plot_model
 from scripts.create_model import MRSModel
-from scripts.visualization import Viusalize
+from scripts.visualization import RvizViusalizer
 
 
 class ApfStatic(object):
@@ -27,7 +27,7 @@ class ApfStatic(object):
         self.ac_names = []
         self.ac_clients = []
         # self.ac_servers = []
-        self.ac_servers: List[InitRobotAcion] = []
+        self.ac_servers: List[RobotPlanner] = []
 
         # ros
         self.rate = rospy.Rate(100)
@@ -38,7 +38,7 @@ class ApfStatic(object):
         self.count = self.model.n_robots
 
         # # visualize
-        # self.visualize = Viusalize(self.model)
+        # self.visualize = RvizViusalizer(self.model)
 
         # setting - parameters
         params = []
@@ -81,7 +81,7 @@ class ApfStatic(object):
     def manage_actions(self):
         # running action servers
         for i in range(self.count):
-            ac_server = InitRobotAcion(self.params[i], self.model)
+            ac_server = RobotPlanner(self.params[i], self.model)
             self.ac_servers.append(ac_server)
 
         # calling action servers

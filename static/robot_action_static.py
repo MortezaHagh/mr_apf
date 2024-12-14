@@ -7,7 +7,7 @@ from apf.srv import SharePoses, SharePosesRequest
 from apf.msg import ApfAction, ApfResult, ApfFeedback
 
 
-class InitRobotAcion(object):
+class RobotPlanner(object):
     def __init__(self, init_params, model):
 
         # ros

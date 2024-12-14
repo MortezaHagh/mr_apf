@@ -4,7 +4,7 @@ import rospy
 import numpy as np
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-from visualization import Viusalize
+from visualization import RvizViusalizer
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 
@@ -17,8 +17,8 @@ class ApfMotion(object):
         self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.shutdown_hook)
 
-        # Viusalize
-        self.vs = Viusalize(model)
+        # RvizViusalizer
+        self.vs = RvizViusalizer(model)
 
         # preallocation and params and setting
         self.init(model, robot, init_params)

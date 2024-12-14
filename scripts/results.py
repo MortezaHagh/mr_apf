@@ -1,105 +1,74 @@
+""" MRPP APF Results """
 #! /usr/bin/env python
 
 import json
-import rospkg
 import numpy as np
+from typing import List
+from mrapf_data import AllPlannersData, TimeData
+
 
 class Results:
-    def __init__(self, paths, times, path_unit, test_s, save_path):
-        
-        # input data
-        self.paths = paths
-        self.times = times
+    planners_data: AllPlannersData
+    path_unit: float
 
-        # preallocation
-        self.lens = []
-        self.times = []
-        # self.angles = []
-        # self.angles2 = []
-        self.total_len = 0
-        self.total_time = 0
-        # self.total_angle = 0
-        self.operation_time = 0
-        self.headings = []
-        self.total_headings = 0
-        
+    def __init__(self, planners_data: AllPlannersData, result_path: str):
+
         # settings
         self.path_unit = 1
-        self.test_name = "res_" + test_s + ".json"
+        self.data = planners_data
+        self.n = planners_data.n
 
-        # calculate len, smoothness and time for each robot
-        for k, v in paths.items():
-            self.headings.append(round(self.cal_angle(v), 2))
-            self.lens.append(round(self.cal_len(v), 2))
-            self.times.append(round(times[k][-1], 2))
-            # self.angles.append(round(angles[k], 2))
-            # self.angles2.append(angles[k])
-        
-        self.total_len = round(sum(self.lens), 2)
-        self.mean_len = round(self.total_len/len(self.lens), 2)
-        self.total_time = round(sum(self.times),2)
-        self.operation_time = max(self.times)
-        self.total_headings = [round(sum(self.headings), 2)]
-        self.total_headings.append(round(180*self.total_headings[0]/np.pi, 2)) 
-        # self.total_angle = [round(sum(self.angles2), 2)]
-        # self.total_angle.append(round(180*self.total_angle[0]/np.pi, 2)) 
+        #
+        all_lengths = []
+        all_d_headings = []
+        for i in range(self.n):
+            dx = np.diff(self.data.all_x[i]) * self.path_unit
+            dy = np.diff(self.data.all_y[i]) * self.path_unit
+            l = np.sum(np.sqrt(dx**2, dy**2))
+            h = np.arctan2(dy, dx)
+            dh = np.diff(h)
+            dh = np.sum([abs(self.angle_diff(th)) for th in h])
+            dh = np.round(dh, 2)
+            all_lengths.append(l)
+            all_d_headings.append(dh)
+        #
+        all_times = np.array([t for i, t in self.data.all_times.items()])
+        all_lengths = np.round(all_lengths, 2)
+        all_d_headings = np.round(all_d_headings, 2)
+        all_times = np.round(all_times, 2)
+
+        #  total
+        total_length = np.round(np.sum(all_lengths), 2)
+        mean_length = np.round(total_length/self.n, 2)
+        total_time = np.sum(all_times)
+        operation_time = np.max(all_times)
+        total_h = np.sum(all_d_headings)
+        total_headings = np.array([total_h, np.rad2deg(total_h)])
+        total_headings = np.round(total_headings, 2)
 
         # final data
-        final_data = {"mean_len": self.mean_len,"operation_time":self.operation_time,
-                        "lens":self.lens, "times": self.times, "total_time": self.total_time, 
-                        "total_len": self.total_len}
+        final_data = {"n_robots": self.n,
+                      "mean_length": mean_length,
+                      "total_length": total_length,
+                      "operation_time": operation_time,
+                      "total_heading": total_headings.tolist(),
+                      "all_lengths": all_lengths.tolist(),
+                      "all_times": all_times.tolist(),
+                      "total_time": total_time,
+                      "headings": all_d_headings.tolist()
+                      }
 
-        heading_data = {"headings":self.headings, "total_heading":self.total_headings}      
-        n_robots = {"n_robots": len(paths)}
-        
-        # # save data JSON
-        all_data = [final_data, heading_data, n_robots]
-        with open(save_path, "w") as outfile:
-            json.dump(all_data, outfile, indent=2)
+        # save data JSON
+        with open(result_path + "res.json", "w") as outfile:
+            json.dump(final_data, outfile, indent=2)
             outfile.write("\n")
 
-        # with open(save_path, "a") as outfile:
-        #     json.dump(heading_data, outfile, indent=2)
-        #     outfile.write("\n")
-        #     json.dump(n_robots, outfile, indent=2)
-        
         print("==================================")
-        print("operation_time", self.operation_time)
+        print("operation_time:", operation_time)
         print("==================================")
-
-
-
-    def cal_len(self, p):
-        path_len = 0
-        for i in range(len(p[0])-1):
-            x1 = p[0][i]*self.path_unit
-            y1 = p[1][i]*self.path_unit
-            x2 = p[0][i+1]*self.path_unit
-            y2 = p[1][i+1]*self.path_unit
-            path_len = path_len + self.distance(x1, x2, y1, y2)
-        return path_len
-    
 
     def distance(self, x1, x2, y1, y2):
         return round(np.sqrt((x1-x2)**2 + (y1-y2)**2), 2)
 
-    def cal_angle(self, p):
-        thetas = [0]
-        n = 1
-        for i in range(len(p[0])-1):
-            x1 = p[0][i*n]*self.path_unit
-            y1 = p[1][i*n]*self.path_unit
-            x2 = p[0][i+1]*self.path_unit  #[(i+1)*n-1]
-            y2 = p[1][i+1]*self.path_unit  #[(i+1)*n-1]
-            dx = x2-x1
-            dy = y2-y1
-            theta = round(np.arctan2(dy, dx),2)
-            thetas.append(theta)
-
-        dif_theta = [abs(self.angle_diff(thetas[i+1], thetas[i])) for i in range(len(thetas)-1)]
-        dif_theta = sum(dif_theta)
-        return dif_theta
-
-    def angle_diff(self, a1, a2):
-        da = a1 - a2
+    def angle_diff(self, da):
         return np.arctan2(np.sin(da), np.cos(da))

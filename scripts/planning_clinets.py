@@ -1,20 +1,21 @@
 #! /usr/bin/env python
 
-# pyright: reportMissingImports=false
-
 import rospy
 import actionlib
 from apf.msg import ApfAction, ApfGoal
 
 
-class SendGoal:
+class PlanningClients:
     def __init__(self, robots):
-        ids = robots.ids
+        self.ids = robots.ids
+        self.robots = robots
         self.clients = []
-        for id in ids:
+
+    def send_goals(self):
+        for id in self.ids:
             goal = ApfGoal()
-            goal.xt = robots.xt[id-1]
-            goal.yt = robots.yt[id-1]
+            goal.xt = self.robots.xt[id]
+            goal.yt = self.robots.yt[id]
             name = "/r"+str(id)+"/apf_action"
             client = actionlib.SimpleActionClient(name, ApfAction)
             client.wait_for_server()
@@ -23,17 +24,13 @@ class SendGoal:
         rospy.sleep(0.4)
 
 
-
 if __name__ == "__main__":
-
     rospy.init_node("send_goals")
-
-    xy =[[10, 10], [4, 4], [4, 10], [10, 4]]
-
-    for id in range(1,5):
+    xy = [[10, 10], [4, 4], [4, 10], [10, 4]]
+    for id in range(0, 4):
         goal = ApfGoal()
-        goal.xt = xy[id-1][0]
-        goal.yt = xy[id-1][1]
+        goal.xt = xy[id][0]
+        goal.yt = xy[id][1]
         name = "/r"+str(id)+"/apf_action"
         client = actionlib.SimpleActionClient(name, ApfAction)
         client.wait_for_server()

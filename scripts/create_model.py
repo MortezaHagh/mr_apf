@@ -1,12 +1,13 @@
-""" create model """
+""" create model based on model inputs"""
 import numpy as np
+from typing import List
 from parameters import Params
 import matplotlib.pyplot as plt
-from plotter import plot_model
+from plotter import Plotter
 from model_inputs import ModelInputs
 
 
-class RobotI(object):
+class RobotsData(object):
     def __init__(self, inputs, path_unit):
         self.xs = [x*path_unit for x in inputs.xs]
         self.ys = [y*path_unit for y in inputs.ys]
@@ -30,6 +31,7 @@ class Map(object):
 class Robot(object):
     def __init__(self, xs, ys, xt, yt, heading, id, path_unit):
         self.id = id
+        self.ns = "/r"+str(id)
         self.xs = xs * path_unit
         self.ys = ys * path_unit
         self.xt = xt * path_unit
@@ -46,6 +48,15 @@ class Obstacles(object):
 
 
 class MRSModel(object):
+    map_ind: int
+    n_robots: int
+    n_obst_orig: int
+    path_unit: float
+    emap: Map
+    obst: Obstacles
+    robots: List[Robot]
+    robots_data: RobotsData
+
     def __init__(self, map_id=1, path_unit=1.0, n_robots=1):
 
         print('Create Base Model')
@@ -55,7 +66,7 @@ class MRSModel(object):
         self.map_ind = inputs.map_ind
 
         #
-        self.path_unit = path_unit
+        # self.path_unit = path_unit
         path_unit = 1.0
 
         # Map
@@ -63,7 +74,7 @@ class MRSModel(object):
         self.emap = emap
 
         # Obstacles
-        self.obst_count_orig = inputs.obst_count_orig
+        self.n_obst_orig = inputs.n_obst_orig
         self.obst = Obstacles(emap, inputs, path_unit)
 
         # Robot
@@ -78,8 +89,8 @@ class MRSModel(object):
         for i in range(self.n_robots):
             self.robots.append(Robot(xs[i], ys[i], xt[i], yt[i], heading[i], i, path_unit))
 
-        # robot I
-        self.robots_i = RobotI(inputs, path_unit)
+        # robots Data
+        self.robots_data = RobotsData(inputs, path_unit)
 
 # -------------------------------- __main__  -----------------------------------
 
@@ -87,5 +98,5 @@ class MRSModel(object):
 if __name__ == '__main__':
     params = Params()
     model = MRSModel(map_id=1)
-    plot_model(model, params)
+    Plotter(model, params, "")
     plt.show()

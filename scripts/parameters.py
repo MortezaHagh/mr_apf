@@ -3,7 +3,6 @@ import numpy as np
 
 class Params(object):
     def __init__(self, id=0):
-
         self.id = id
         self.sim_params()
 

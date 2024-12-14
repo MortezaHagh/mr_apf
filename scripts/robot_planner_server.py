@@ -2,28 +2,25 @@
 
 import rospy
 import actionlib
-from apf_motion_4_3 import ApfMotion # apf_motion_4_3 - apf_motion_1 - apf_motion_4_0 - apf_motion_4_2 apf_motion_4_tensor
 from nav_msgs.msg import Odometry
-from apf.srv import SharePoses2, SharePoses2Request
+from apf_motion_4_3 import ApfMotion
+# apf_motion_4_3 - apf_motion_1 - apf_motion_4_0 - apf_motion_4_2 apf_motion_4_tensor
 from tf.transformations import euler_from_quaternion
+from apf.srv import SharePoses2, SharePoses2Request
+from mrapf_data import PlannerData
 from apf.msg import ApfAction, ApfResult, ApfFeedback
 
 
-class InitRobotAcion(object):
+class RobotPlanner(object):
+    p_data: PlannerData
 
     def __init__(self, model, robot, action_params):
 
-        # times
-        self.time = [0, 0, 0]
-
-        # pre
-        self.mp = 0
-
-        # attributes
-        self.robot = robot
-
-        # shared data
-        self.model = model
+        #
+        self.mp = 0  # pre
+        self.robot = robot  # attributes
+        self.model = model  # shared data
+        self.p_data = None
 
         # setting - parameters
         self.action_params = action_params
@@ -36,7 +33,7 @@ class InitRobotAcion(object):
         rospy.wait_for_service(action_params.pose_srv_name)
         self.pose_client = rospy.ServiceProxy(action_params.pose_srv_name, SharePoses2)
 
-        # action: /r#/apf_action ---------------------------------------
+        # action: /r#/apf_action ===============================================
         self.result = ApfResult()
         self.feedback = ApfFeedback()
         self.ac_name = action_params.ac_name
@@ -65,26 +62,26 @@ class InitRobotAcion(object):
 
         # self.time: [start, end, duration]
         # start time
-        self.time[0] = rospy.get_time()
+        time_start = rospy.get_time()
 
-        # motion planning   # --------------------------------------------------------------
-        self.success = False
-        self.mp = ApfMotion(self.model, self.robot, self.action_params)
-        self.success = self.mp.is_reached
+        # motion planning   # ==================================================
+        planner = ApfMotion(self.model, self.robot, self.action_params)
+        success = planner.is_reached
 
         # time
-        self.time[1] = rospy.get_time()
-        self.time[2] = round(self.time[1] - self.time[0], 2)
+        time_end = rospy.get_time()
 
         # result
-        if self.success:
+        if success:
             self.result.result = True
-            self.result.path_x = self.mp.path_x
-            self.result.path_y = self.mp.path_y
-            rospy.loginfo('%s: Succeeded' % self.ac_name)
+            self.result.path_x = planner.path_x
+            self.result.path_y = planner.path_y
+            rospy.loginfo(f'Succeeded {self.ac_name}')
             self._as.set_succeeded(self.result)
+            self.p_data = PlannerData(planner.path_x, planner.path_y)
+            self.p_data.set_time(time_start, time_end)
         else:
-            rospy.loginfo('%s: Failed' % self.ac_name)
+            rospy.loginfo(f'Failed {self.ac_name}')
             self._as.set_aborted(self.result)
 
     def get_odom(self):
@@ -94,8 +91,11 @@ class InitRobotAcion(object):
             try:
                 topic_msg = rospy.wait_for_message(self.action_params.lis_topic, Odometry, timeout=3.0)
                 rospy.logdebug(self.ac_name + ", current topic is ready.")
-            except:
-                rospy.loginfo(self.ac_name + ", current topic is not ready yet, retrying ...")
+            except rospy.ROSInterruptException as e:
+                rospy.logerr(f"ROS node was interrupted: {e}")
+            except rospy.ROSException as e:
+                rospy.logerr(f"Timeout while waiting for message: {e}")
+                rospy.loginfo(f"{self.ac_name}, current topic is not ready yet, retrying ...")
         odom = topic_msg
         quaternion = odom.pose.pose.orientation
         orientation = euler_from_quaternion([quaternion.x, quaternion.y, quaternion.z, quaternion.w])
@@ -104,7 +104,6 @@ class InitRobotAcion(object):
         self.robot.xs = position.x
         self.robot.ys = position.y
         self.robot.heading = round(orientation, 2)
-
 
     def shutdown(self):
         print(self.ac_name + ', shutting down')

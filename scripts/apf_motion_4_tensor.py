@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-from visualization import Viusalize
+from visualization import RvizViusalizer
 from apf.srv import SharePoses2, SharePoses2Request
 from tf.transformations import euler_from_quaternion
 
@@ -40,8 +40,8 @@ class ApfMotion(object):
         self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.shutdown_hook)
 
-        # Viusalize
-        self.vs = Viusalize(model)
+        # RvizViusalizer
+        self.vs = RvizViusalizer(model)
 
         # preallocation - params - setting
         self.init(model, robot, init_params)
@@ -393,7 +393,7 @@ class ApfMotion(object):
         if len(robots_inds) == 0:
             if len(multi_robots_vis) > 0:
                 self.new_robots = new_robots
-                self.vs.robot_data(multi_robots_vis, self.ns)
+                self.vs.draw_robot_circles(multi_robots_vis, self.ns)
             return
 
         # generate robots_inds_f (neighbor robots in proximity circle)
@@ -536,7 +536,7 @@ class ApfMotion(object):
             new_robots.append(multi_robots[0])
 
         self.new_robots = new_robots
-        self.vs.robot_data(multi_robots_vis, self.ns)
+        self.vs.draw_robot_circles(multi_robots_vis, self.ns)
         return
 
     def detect_obsts(self):
