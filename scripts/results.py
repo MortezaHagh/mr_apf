@@ -3,8 +3,7 @@
 
 import json
 import numpy as np
-from typing import List
-from mrapf_data import AllPlannersData, TimeData
+from mrapf_classes import AllPlannersData
 
 
 class Results:
@@ -40,7 +39,7 @@ class Results:
         #  total
         total_length = np.round(np.sum(all_lengths), 2)
         mean_length = np.round(total_length/self.n, 2)
-        total_time = np.sum(all_times)
+        total_time = np.round(np.sum(all_times), 2)
         operation_time = np.max(all_times)
         total_h = np.sum(all_d_headings)
         total_headings = np.array([total_h, np.rad2deg(total_h)])
@@ -64,7 +63,7 @@ class Results:
             outfile.write("\n")
 
         print("==================================")
-        print("operation_time:", operation_time)
+        print("[Results]: operation_time:", operation_time)
         print("==================================")
 
     def distance(self, x1, x2, y1, y2):

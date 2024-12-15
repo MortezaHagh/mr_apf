@@ -1,38 +1,27 @@
 #! /usr/bin/env python
-
 """ central service,  create RobotPlanner for each request """
 
-import rospy
-import numpy as np
 from typing import List
+import numpy as np
+import rospy
 from parameters import Params
-from pose_service import PoseService
 from create_model import MRSModel
+from pose_service import PoseService
+from mrapf_classes import PlannerRobot
 from robot_planner_server import RobotPlanner
 from apf.srv import InitRobot, InitRobotResponse, InitRobotRequest
 
 
-class Robot(object):
-    def __init__(self, xs=0, ys=0, id=0, name="r", heading=0, xt=0, yt=0):
-        self.id = id
-        self.xs = xs
-        self.ys = ys
-        self.xt = xt
-        self.yt = yt
-        self.name = name
-        self.heading = heading
-        self.priority = id
-
-
-class CentralMRAPF(object):
+class CentralMRAPF:
     n_robots: int
-    model: MRSModel
-    robots: List[Robot]
     robot_ids: List[int]
-    planners: List[RobotPlanner]
+    model: MRSModel
     pose_srv: PoseService
+    robots: List[PlannerRobot]
+    planners: List[RobotPlanner]
 
-    def __init__(self, model, central_mrapf_srv_name):
+    def __init__(self, model: MRSModel, central_mrapf_srv_name: str):
+        rospy.loginfo(f"[{self.__class__.__name__}]: Initializing Central MRAPF Path Planning Service Server.")
 
         # data
         self.model = model
@@ -49,46 +38,38 @@ class CentralMRAPF(object):
 
         # init_robot_srv Service Server
         self.robot_srv = rospy.Service(central_mrapf_srv_name, InitRobot, self.apf_srv_callback)
-        print("Central Service Server (central_mrapf_srv) is created. ")
+        rospy.loginfo(f"[{self.__class__.__name__}]: Central Service Server (central_mrapf_srv) is created. ")
 
     def apf_srv_callback(self, req: InitRobotRequest):
 
-        print("[central_mrapf_srv] is called. req id: " + str(req.id))
-
-        # request
-        id = req.id
-        xs = req.xs
-        ys = req.ys
-        xt = req.xt
-        yt = req.yt
-        name = req.name
-        ns = "/r"+str(id)
-        heading = np.deg2rad(req.theta)
+        rospy.loginfo(f"[{self.__class__.__name__}]: 'central_mrapf_srv' is called. req id: " + str(req.id))
 
         # robot object
-        robot = Robot(xs, ys, id, name, heading, xt, yt)
+        rid = req.id
+        heading = np.deg2rad(req.theta)
+        robot = PlannerRobot(req.xs, req.ys, req.id, req.name, heading, req.xt, req.yt)
 
         # update robotic system data
         self.n_robots += 1
-        self.robot_ids.append(id)
+        self.robot_ids.append(rid)
         self.robots.append(robot)
 
         # setting - parameters
-        self.name_s = '/r' + str(id)
-        action_params = Params(id)
-        action_params.set_name_space(self.name_s)
+        name_s = "/r" + str(rid)
+        action_params = Params(rid)
+        action_params.set_name_space(name_s)
 
         # update pose service
-        self.pose_srv.add_robot(id, robot.priority, action_params.lis_topic)
-        self.pose_srv.topics[id] = action_params.lis_topic
+        self.pose_srv.add_robot(rid, robot.priority, action_params.lis_topic)
+        self.pose_srv.topics[rid] = action_params.lis_topic
 
-        # motion_action action **********************************
-        print(ns + ": Creating Initial Robot Action: " + ns + "/motion_action ...")
+        # motion_action action *************************************************
+        rospy.loginfo(f"[{self.__class__.__name__}]: Creating Initial Robot Action: {name_s}/motion_action ...")
         ac = RobotPlanner(self.model, robot, action_params)
         self.planners.append(ac)
 
         # service responce
         resp = InitRobotResponse()
         resp.success = True
-        resp.id = id
+        resp.id = rid
         return resp

@@ -36,4 +36,4 @@ class PoseService(object):
         self.theta = [p[2] for p in poses]
 
     def shutdown_hook(self):
-        print("shutting down from pose service")
+        rospy.loginfo("shutting down from pose service")

@@ -1,23 +1,23 @@
 {
   "n_robots": 2,
-  "mean_length": 5.9,
-  "total_length": 11.8,
-  "operation_time": 42.2,
+  "mean_length": 5.91,
+  "total_length": 11.82,
+  "operation_time": 42.8,
   "total_heading": [
-    1197.88,
-    68633.47
+    1193.53,
+    68384.23
   ],
   "all_lengths": [
-    6.24,
-    5.56
+    6.25,
+    5.57
   ],
   "all_times": [
-    42.2,
-    39.1
+    42.8,
+    39.6
   ],
-  "total_time": 81.30000000000001,
+  "total_time": 82.4,
   "headings": [
-    272.46,
-    925.42
+    272.51,
+    921.02
   ]
 }

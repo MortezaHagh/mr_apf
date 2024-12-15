@@ -1,26 +1,28 @@
 """ create model based on model inputs"""
-import numpy as np
 from typing import List
-from parameters import Params
+import numpy as np
 import matplotlib.pyplot as plt
 from plotter import Plotter
+from parameters import Params
 from model_inputs import ModelInputs
 
 
-class RobotsData(object):
-    def __init__(self, inputs, path_unit):
+class RobotsData:
+    ids: List[int]
+
+    def __init__(self, inputs: ModelInputs, path_unit: float):
         self.xs = [x*path_unit for x in inputs.xs]
         self.ys = [y*path_unit for y in inputs.ys]
         self.xt = [x*path_unit for x in inputs.xt]
         self.yt = [y*path_unit for y in inputs.yt]
-        self.heading = [h for h in inputs.heading]
+        self.heading = list(inputs.heading)
         self.ids = inputs.ids
         self.ns = ["/r"+str(id) for id in inputs.ids]
         self.n_robots = len(inputs.ids)
 
 
-class Map(object):
-    def __init__(self, inputs, path_unit):
+class Map:
+    def __init__(self, inputs: ModelInputs, path_unit: float):
         self.lim = inputs.lim * path_unit
         self.x_min = inputs.x_min * path_unit
         self.y_min = inputs.y_min * path_unit
@@ -28,10 +30,10 @@ class Map(object):
         self.y_max = inputs.y_max * path_unit
 
 
-class Robot(object):
-    def __init__(self, xs, ys, xt, yt, heading, id, path_unit):
-        self.id = id
-        self.ns = "/r"+str(id)
+class Robot:
+    def __init__(self, xs, ys, xt, yt, heading, rid: int, path_unit: float):
+        self.id = rid
+        self.ns = "/r"+str(rid)
         self.xs = xs * path_unit
         self.ys = ys * path_unit
         self.xt = xt * path_unit
@@ -39,15 +41,15 @@ class Robot(object):
         self.heading = np.deg2rad(heading)
 
 
-class Obstacles(object):
-    def __init__(self, emap, inputs, path_unit):
+class Obstacles:
+    def __init__(self, inputs: ModelInputs, path_unit: float):
         self.r = 0.25
         self.x = [x*path_unit for x in inputs.x_obst]
         self.y = [y*path_unit for y in inputs.y_obst]
         self.count = len(self.x)
 
 
-class MRSModel(object):
+class MRSModel:
     map_ind: int
     n_robots: int
     n_obst_orig: int
@@ -57,10 +59,10 @@ class MRSModel(object):
     robots: List[Robot]
     robots_data: RobotsData
 
-    def __init__(self, map_id=1, path_unit=1.0, n_robots=1):
+    def __init__(self, map_id: int = 1, path_unit: float = 1.0, n_robots: int = 1):
 
-        print('Create Base Model')
-
+        print(f"[{self.__class__.__name__}]: Create Base Model")
+        
         # model inputs
         inputs = ModelInputs(map_id, path_unit, n_robots)
         self.map_ind = inputs.map_ind
@@ -75,7 +77,7 @@ class MRSModel(object):
 
         # Obstacles
         self.n_obst_orig = inputs.n_obst_orig
-        self.obst = Obstacles(emap, inputs, path_unit)
+        self.obst = Obstacles(inputs, path_unit)
 
         # Robot
         self.n_robots = inputs.n_robots
@@ -86,6 +88,7 @@ class MRSModel(object):
         yt = inputs.yt
         self.robots = []
 
+        # 
         for i in range(self.n_robots):
             self.robots.append(Robot(xs[i], ys[i], xt[i], yt[i], heading[i], i, path_unit))
 

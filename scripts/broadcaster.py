@@ -1,8 +1,6 @@
 #! /usr/bin/env python
-
 """ subscribes to /r#/odom and publishes tf /odom - /r#/odom"""
 
-import tf
 import rospy
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import TransformStamped
@@ -10,18 +8,18 @@ from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 
 
 class BroadCast:
-    def __init__(self, ind):
+    def __init__(self, ind: int):
         self.topic = "/r"+str(ind)+"/odom"
         self.rate = rospy.Rate(10)
         self.tf_static_broadcaster = StaticTransformBroadcaster()
 
         #
-        msg = rospy.wait_for_message(self.topic, Odometry, 2)
+        msg: Odometry = rospy.wait_for_message(self.topic, Odometry, 2)
         self.pose = msg.pose.pose.position
         self.orien = msg.pose.pose.orientation
-        rospy.Subscriber(self.topic, Odometry, self.callback, queue_size=10)
+        rospy.Subscriber(self.topic, Odometry, self.odom_callback, queue_size=10)
 
-    def callback(self, msg):
+    def odom_callback(self, msg: Odometry):
         self.pose = msg.pose.pose.position
         self.orien = msg.pose.pose.orientation
         self.make_transforms()
@@ -42,9 +40,9 @@ class BroadCast:
         self.tf_static_broadcaster.sendTransform(t)
 
 
-if __name__ == "__main__":
-    rospy.init_node("broadcasters")
-    ids = [1, 2, 3, 4]
-    for i in ids:
-        BroadCast(i)
-    rospy.spin()
+# if __name__ == "__main__":
+#     rospy.init_node("broadcasters")
+#     ids = [1, 2, 3, 4]
+#     for i in ids:
+#         BroadCast(i)
+#     rospy.spin()

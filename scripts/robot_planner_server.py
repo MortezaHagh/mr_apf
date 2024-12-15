@@ -3,18 +3,19 @@
 import rospy
 import actionlib
 from nav_msgs.msg import Odometry
-from apf_motion_4_3 import ApfMotion
-# apf_motion_4_3 - apf_motion_1 - apf_motion_4_0 - apf_motion_4_2 apf_motion_4_tensor
 from tf.transformations import euler_from_quaternion
+from planner_ros import PlannerROS
+from parameters import Params
+from mrapf_classes import PlannerRobot, PlannerData
 from apf.srv import SharePoses2, SharePoses2Request
-from mrapf_data import PlannerData
 from apf.msg import ApfAction, ApfResult, ApfFeedback
+# planner_4_3 - planner_1
 
 
-class RobotPlanner(object):
+class RobotPlanner:
     p_data: PlannerData
 
-    def __init__(self, model, robot, action_params):
+    def __init__(self, model, robot: PlannerRobot, action_params: Params):
 
         #
         self.mp = 0  # pre
@@ -39,11 +40,11 @@ class RobotPlanner(object):
         self.ac_name = action_params.ac_name
         self._as = actionlib.SimpleActionServer(self.ac_name, ApfAction, self.goal_callback, False)
         self._as.start()
-        print(self.name_s + ": Robot Action Server (" + self.ac_name + ") has started.")
+        rospy.loginfo(f"[RobotPlanner, {self.name_s}]: Robot Action Server [{self.ac_name}] has started.")
 
     def goal_callback(self, goal):
 
-        print(self.name_s + ": Robot Action Server (" + self.ac_name + ") is called.")
+        rospy.loginfo(f"[RobotPlanner, {self.name_s}]: Robot Action Server [{self.ac_name}] is called.")
 
         # goal received
         self.robot.xt = goal.xt * self.action_params.path_unit
@@ -65,7 +66,7 @@ class RobotPlanner(object):
         time_start = rospy.get_time()
 
         # motion planning   # ==================================================
-        planner = ApfMotion(self.model, self.robot, self.action_params)
+        planner = PlannerROS(self.model, self.robot, self.action_params)
         success = planner.is_reached
 
         # time
@@ -74,18 +75,18 @@ class RobotPlanner(object):
         # result
         if success:
             self.result.result = True
-            self.result.path_x = planner.path_x
-            self.result.path_y = planner.path_y
-            rospy.loginfo(f'Succeeded {self.ac_name}')
+            self.result.path_x = planner.rec.path_x
+            self.result.path_y = planner.rec.path_y
+            rospy.loginfo(f"[RobotPlanner, {self.name_s}]: Succeeded!")
             self._as.set_succeeded(self.result)
-            self.p_data = PlannerData(planner.path_x, planner.path_y)
+            self.p_data = PlannerData(planner.rec.path_x, planner.rec.path_y)
             self.p_data.set_time(time_start, time_end)
         else:
             rospy.loginfo(f'Failed {self.ac_name}')
             self._as.set_aborted(self.result)
 
     def get_odom(self):
-        topic_msg = None
+        topic_msg: Odometry = None
         rospy.loginfo(self.ac_name + ", getting topic ...")
         while topic_msg is None:
             try:
@@ -106,5 +107,5 @@ class RobotPlanner(object):
         self.robot.heading = round(orientation, 2)
 
     def shutdown(self):
-        print(self.ac_name + ', shutting down')
+        rospy.loginfo(f"[RobotPlanner, {self.name_s}]: shutting down ... ")
         # rospy.sleep(1)

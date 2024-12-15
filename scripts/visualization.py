@@ -1,44 +1,27 @@
 #! /usr/bin/env python
 
-import rospy
+from typing import List, Dict, Tuple
 import numpy as np
+import rospy
+from sensor_msgs.msg import PointCloud
 from geometry_msgs.msg import Point32, Polygon, PolygonStamped
-from sensor_msgs.msg import PointCloud, ChannelFloat32
 from visualization_msgs.msg import Marker, MarkerArray
 from tf.transformations import quaternion_from_euler
 from parameters import Params
+from create_model import MRSModel
+from mrapf_classes import ApfRobot
 
 
 class RvizViusalizer:
-    def __init__(self, model):
+    model: MRSModel
+    p: Params
 
-        print("RvizViusalizer started.")
+    def __init__(self, model: MRSModel):
 
+        rospy.loginfo("[RvizViusalizer]: Initializing RvizViusalizer ...")
+        self.p = Params()
+        self.model = model
         self.rate = rospy.Rate(10)
-        params = Params()
-
-        # obstacles
-        self.obs_count = model.obst.count
-        self.obs_x = model.obst.x
-        self.obs_y = model.obst.y
-        self.obst_r = 0.11
-
-        # settings
-        self.zeta = params.zeta
-        self.fix_f = params.fix_f
-        self.fix_f2 = params.fix_f2
-        self.obst_r = params.obst_r
-        self.prec_d = params.prec_d
-        self.robot_r = params.robot_r
-        # obst
-        self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
-        self.obst_start_d = self.obst_prec_d*2
-        self.obst_z = 4*self.fix_f*self.obst_prec_d**4
-        # robot
-        self.robot_prec_d = 2*self.robot_r + self.prec_d  # 0.64
-        self.robot_start_d = self.robot_prec_d*2
-        self.robot_stop_d = self.robot_prec_d
-        self.robot_z = 4 * self.fix_f*self.robot_prec_d**4
 
         # publishers
         self.obst_marker_pub = rospy.Publisher("/obstacles_marker", MarkerArray, queue_size=2)
@@ -55,7 +38,7 @@ class RvizViusalizer:
         self.robots_poly_pubs = {}
         self.robots_poly_pubs_2 = {}
         self.robots_arrow_pubs = {}
-        self.add_robots(model)
+        self.add_robots()
 
         # initialize obst markers and publish
         self.init_obsts()
@@ -63,23 +46,23 @@ class RvizViusalizer:
         # self.init_obsts_start()
 
         self.thetas = np.linspace(0, np.pi*2, 180)
-        print("RvizViusalizer init done.")
+        rospy.loginfo("[RvizViusalizer]: RvizViusalizer initialized.")
 
-    def add_robots(self, model):
-        for ns in model.robots_data.ns:
-            self.robots_pubs[ns] = (rospy.Publisher(ns+"/robot_data", PointCloud, queue_size=10))
-            self.robots_poly_pubs[ns] = (rospy.Publisher(ns+"/robot_poly", PolygonStamped, queue_size=10))
-            self.robots_poly_pubs_2[ns] = (rospy.Publisher(ns+"/robot_poly_2", PolygonStamped, queue_size=10))
+    def add_robots(self):
+        for ns in self.model.robots_data.ns:
+            self.robots_pubs[ns] = rospy.Publisher(ns+"/robot_data", PointCloud, queue_size=10)
+            self.robots_poly_pubs[ns] = rospy.Publisher(ns+"/robot_poly", PolygonStamped, queue_size=10)
+            self.robots_poly_pubs_2[ns] = rospy.Publisher(ns+"/robot_poly_2", PolygonStamped, queue_size=10)
             self.robots_arrow_pubs[ns] = rospy.Publisher(ns+"/arrowsf", Marker, queue_size=10)
 
-    def create_robot_circles(self, xy):
+    def create_robot_circles(self, xy: Dict[int, List[float]]):
         # self.robots_starts_circles(xy)
         self.robots_prec_circles(xy)
         self.robots_texts(xy)
 
     def init_obsts(self):
         marker_array = MarkerArray()
-        for i in range(self.obs_count):
+        for i in range(self.model.n_obst_orig):
             marker = Marker()
             marker.header.frame_id = "map"
             marker.header.stamp = rospy.Time.now()
@@ -87,8 +70,8 @@ class RvizViusalizer:
             marker.type = marker.CYLINDER
             marker.id = i+1
             # Set the scale of the marker
-            marker.scale.x = self.obst_r
-            marker.scale.y = self.obst_r
+            marker.scale.x = self.p.obst_r
+            marker.scale.y = self.p.obst_r
             marker.scale.z = 0.4
             # Set the color
             marker.color.r = 0.0
@@ -96,8 +79,8 @@ class RvizViusalizer:
             marker.color.b = 0.0
             marker.color.a = 1.0
             # Set the pose of the marker
-            marker.pose.position.x = self.obs_x[i]
-            marker.pose.position.y = self.obs_y[i]
+            marker.pose.position.x = self.model.obst.x[i]
+            marker.pose.position.y = self.model.obst.y[i]
             marker.pose.position.z = 0.4/2
             marker.pose.orientation.x = 0.0
             marker.pose.orientation.y = 0.0
@@ -112,18 +95,18 @@ class RvizViusalizer:
     def init_obsts_prec(self):
         obst_prec_points = []
         thetas = np.linspace(0, np.pi*2, 360)
-        # 
-        for i in range(self.obs_count):
+        #
+        for i in range(self.model.n_obst_orig):
             prec_circles = []
-            c_x = self.obs_x[i]
-            c_y = self.obs_y[i]
+            c_x = self.model.obst.x[i]
+            c_y = self.model.obst.y[i]
             for th in thetas:
                 p = Point32()
-                p.x = c_x + self.obst_prec_d*np.cos(th)
-                p.y = c_y + self.obst_prec_d*np.sin(th)
+                p.x = c_x + self.p.obst_prec_d*np.cos(th)
+                p.y = c_y + self.p.obst_prec_d*np.sin(th)
                 prec_circles.append(p)
             obst_prec_points.extend(prec_circles)
-        # 
+        #
         obst_prec_pc = PointCloud()
         obst_prec_pc.header.frame_id = "map"
         obst_prec_pc.points = obst_prec_points
@@ -136,71 +119,69 @@ class RvizViusalizer:
     def init_obsts_start(self):
         obst_start_points = []
         thetas = np.linspace(0, np.pi*2, 360)
-        # 
-        for i in range(self.obs_count):
+        #
+        for i in range(self.model.n_obst_orig):
             prec_circles = []
-            c_x = self.obs_x[i]
-            c_y = self.obs_y[i]
+            c_x = self.model.obst.x[i][i]
+            c_y = self.model.obst.y[i][i]
             for th in thetas:
                 p = Point32()
-                p.x = c_x + self.obst_start_d*np.cos(th)
-                p.y = c_y + self.obst_start_d*np.sin(th)
+                p.x = c_x + self.p.obst_start_d*np.cos(th)
+                p.y = c_y + self.p.obst_start_d*np.sin(th)
                 prec_circles.append(p)
             obst_start_points.extend(prec_circles)
-        # 
+        #
         obst_start_pc = PointCloud()
         obst_start_pc.header.frame_id = "map"
         obst_start_pc.points = obst_start_points
         self.publish_once(self.obst_start_pc_pub, obst_start_pc, "obst_start_pc ...")
 
-    def robots_prec_circles(self, xyd):
+    def robots_prec_circles(self, xyd: dict):
         robot_circles = []
         robot_circle = []
-        for k, xy in xyd.items():
+        for xy in xyd.values():
             c_x = xy[0]
             c_y = xy[1]
             for th in self.thetas:
                 p = Point32()
-                p.x = c_x + self.robot_prec_d*np.cos(th)
-                p.y = c_y + self.robot_prec_d*np.sin(th)
+                p.x = c_x + self.p.robot_prec_d*np.cos(th)
+                p.y = c_y + self.p.robot_prec_d*np.sin(th)
                 robot_circle.append(p)
             robot_circles.extend(robot_circle)
-        # 
+        #
         robots_prec_pc = PointCloud()
         robots_prec_pc.header.frame_id = "map"
         robots_prec_pc.points = robot_circles
         self.publish_once(self.robots_precs_pc_pub, robots_prec_pc, "robots_precs_circles ...")
 
-    def robots_starts_circles(self, xyd):
+    def robots_starts_circles(self, xyd: dict):
         robot_circles = []
         robot_circle = []
-        for k, xy in xyd.items():
+        for xy in xyd.values():
             c_x = xy[0]
             c_y = xy[1]
             for th in self.thetas:
                 p = Point32()
-                p.x = c_x + self.robot_start_d*np.cos(th)
-                p.y = c_y + self.robot_start_d*np.sin(th)
+                p.x = c_x + self.p.robot_start_d*np.cos(th)
+                p.y = c_y + self.p.robot_start_d*np.sin(th)
                 robot_circle.append(p)
             robot_circles.extend(robot_circle)
-        # 
+        #
         robots_start_pc = PointCloud()
         robots_start_pc.header.frame_id = "map"
         robots_start_pc.points = robot_circles
         self.publish_once(self.robots_starts_pc_pub, robots_start_pc, "robots_start_circles ...")
 
-    def robots_texts(self, xyd):
+    def robots_texts(self, xyd: dict):
         marker_array = MarkerArray()
-        i = 0
-        for k, xy in xyd.items():
+        for rid, xy in xyd.items():
             marker = Marker()
             marker.header.frame_id = "map"
             marker.header.stamp = rospy.Time.now()
             # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
             marker.type = marker.TEXT_VIEW_FACING
-            marker.text = "r" + str(i+1)
-            marker.id = i
-            i = i+1
+            marker.text = "r" + str(rid)
+            marker.id = rid
             # Set the scale of the marker
             marker.scale.z = 0.2
             # Set the color
@@ -217,7 +198,7 @@ class RvizViusalizer:
             marker_array.markers.append(marker)
         self.publish_once(self.robots_text_pub, marker_array, "robots_texts ...")
 
-    def draw_robot_circles(self, nrs, ns):
+    def draw_robot_circles(self, nrs: List[ApfRobot], ns):
         robot_circles = []
         circle = []
         for nr in nrs:
@@ -229,7 +210,7 @@ class RvizViusalizer:
                 p.y = c_y + nr.r_prec*np.sin(th)
                 circle.append(p)
             robot_circles.extend(circle)
-        # 
+        #
         robot_prec_pc = PointCloud()
         robot_prec_pc.header.frame_id = "map"
         robot_prec_pc.points = robot_circles
@@ -243,10 +224,10 @@ class RvizViusalizer:
                 publisher.publish(data)
                 break
             else:
-                print(notife)
+                rospy.loginfo(notife)
                 self.rate.sleep()
 
-    def robot_poly(self, pols, ns):
+    def robot_poly(self, pols: List[Tuple[float, float]], ns):
         i = -1
         for po in pols:
             i = i+1
@@ -270,38 +251,7 @@ class RvizViusalizer:
             else:
                 self.robots_poly_pubs_2[ns].publish(pol_stamp)
 
-    def arrow(self, x, y, theta):
-        marker = Marker()
-        marker.header.frame_id = "map"
-        marker.header.stamp = rospy.Time.now()
-
-        # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
-        marker.type = marker.ARROW
-
-        q = quaternion_from_euler(0, 0, theta)
-
-        marker.pose.position.x = x
-        marker.pose.position.y = y
-        marker.pose.position.z = 0
-        marker.pose.orientation.x = q[0]
-        marker.pose.orientation.y = q[1]
-        marker.pose.orientation.z = q[2]
-        marker.pose.orientation.w = q[3]
-
-        # Set the scale of the marker
-        marker.scale.x = 0.9
-        marker.scale.y = 0.1
-        marker.scale.z = 0.1
-
-        # Set the color
-        marker.color.r = 1.0
-        marker.color.g = 0.0
-        marker.color.b = 0.0
-        marker.color.a = 1.0
-
-        self.arrow_pub.publish(marker)
-
-    def arrow_f(self, x, y, theta, ns):
+    def arrow(self, x, y, theta, ns=None):
         marker = Marker()
         marker.header.frame_id = "map"
         marker.header.stamp = rospy.Time.now()
@@ -331,4 +281,7 @@ class RvizViusalizer:
         marker.color.a = 1.0
 
         # self.arrowf_pub.publish(marker)
-        self.robots_arrow_pubs[ns].publish(marker)
+        if ns is None:
+            self.arrow_pub.publish(marker)
+        else:
+            self.robots_arrow_pubs[ns].publish(marker)

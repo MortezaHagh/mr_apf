@@ -2,12 +2,12 @@
 import os
 import json
 import random
-import rospkg
-import numpy as np
 from typing import List
+import numpy as np
+import rospkg
 
 
-class ModelInputs():
+class ModelInputs:
     path_unit: float
     lim: int
     x_min: int
@@ -16,18 +16,18 @@ class ModelInputs():
     y_max: int
     map_ind: int
     n_robots: int
-    x_obst: List[float]
-    y_obst: List[float]
-    n_obst_orig: int
     ids = List[int]
-    heading = List[float]
     xs = List[float]
     ys = List[float]
     xt = List[float]
     yt = List[float]
+    n_obst_orig: int
+    x_obst: List[float]
+    y_obst: List[float]
+    heading = List[float]
 
-    def __init__(self, map_id=1, path_unit=1.0, n_robots=1):
-        print("Inputs for creating model")
+    def __init__(self, map_id: int = 1, path_unit: float = 1.0, n_robots: int = 1):
+        print(f"[{self.__class__.__name__}]Inputs for creating model")
         self.path_unit = path_unit
         #
         if map_id == 1:
@@ -40,7 +40,7 @@ class ModelInputs():
         self.ids = list(range(0, self.n_robots))
         self.apply_path_unit(path_unit)
 
-    def apply_path_unit(self, path_unit):
+    def apply_path_unit(self, path_unit: float = 1.0):
         # map
         self.lim = self.lim * path_unit
         self.x_min = self.x_min * path_unit
@@ -56,7 +56,7 @@ class ModelInputs():
         self.xt = [x * path_unit for x in self.xt]
         self.yt = [y * path_unit for y in self.yt]
 
-    def map_0(self, robot_n):
+    def map_0(self, robot_n: int):
         # area
         lim = 13
         self.lim = lim
@@ -108,7 +108,6 @@ class ModelInputs():
         self.y_obst = yc2 + yc3
 
         # robots
-        robot_n = robot_n
         self.n_robots = robot_n
 
         self.heading = [0.0]
@@ -130,8 +129,8 @@ class ModelInputs():
         # obstacles
         xc1 = [3, 3, 5, 5, 7, 7, 9, 9, 11, 11]
         yc1 = [3, 5, 3, 5, 3, 5, 3, 5, 3, 5]
-        xc2 = xc1*2
-        yc2 = yc1 + [y+6 for y in yc1]
+        # xc2 = xc1*2
+        # yc2 = yc1 + [y+6 for y in yc1]
         self.x_obst = []  # xc2
         self.y_obst = []  # yc2
         self.n_obst_orig = 0
@@ -308,7 +307,7 @@ class ModelInputs():
         with open(filename, "w") as file:
             json.dump(obj_dict, file)
 
-    def from_json_file(self, n=1, path_unit=1):
+    def from_json_file(self, n=1):
 
         # file name
         ind = str(n)
@@ -348,29 +347,25 @@ class ModelInputs():
         self.yt = data['yt']
 
         # modify obstacles
-        obst_prec_d = 0.4/path_unit
+        obst_prec_d = 0.4/self.path_unit
         new_obst_x = []
         new_obst_y = []
-        for i in range(len(self.x_obst)):
-            x = self.x_obst[i]
-            y = self.y_obst[i]
+        for i, [x, y] in enumerate(zip(self.x_obst, self.y_obst)):
             for j in range(i+1, len(self.x_obst)):
                 dist = self.distance(x, y, self.x_obst[j], self.y_obst[j])
-                if dist < 1.65*obst_prec_d and dist > obst_prec_d:
+                if obst_prec_d < dist < 1.65*obst_prec_d:
                     new_obst_x.append((self.x_obst[j]+x)/2)
                     new_obst_y.append((self.y_obst[j]+y)/2)
 
         self.x_obst.extend(new_obst_x)
         self.y_obst.extend(new_obst_y)
 
-    def modify_obst(self, path_unit=1.0):
+    def modify_obst(self):
         # modify obstacles
         obst_prec_d = 0.4/self.path_unit
         new_obst_x = []
         new_obst_y = []
-        for i in range(len(self.x_obst)):
-            x = self.x_obst[i]
-            y = self.y_obst[i]
+        for i, [x, y] in enumerate(zip(self.x_obst, self.y_obst)):
             for j in range(i+1, len(self.x_obst)):
                 dist = self.distance(x, y, self.x_obst[j], self.y_obst[j])
                 if dist < 1.99*obst_prec_d and dist > obst_prec_d:
@@ -458,8 +453,3 @@ class ModelInputs():
         self.ys = [ys[i] for i in range(n_robots)]
         self.xt = [xt[i] for i in range(n_robots)]
         self.yt = [yt[i] for i in range(n_robots)]
-
-
-if __name__ == "__main__":
-    mi = ModelInputs()
-    mi.random_map()

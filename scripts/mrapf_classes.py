@@ -8,7 +8,6 @@ class TestInfo:
     v: int
     n_robots: int
     res_file_p: str
-    okayy: str
 
     def __init__(self, v: int = 1, n_robots: int = 2):
         self.v = v
@@ -19,7 +18,6 @@ class TestInfo:
     def create_paths(self):
         # names
         folder_name = "T" + str(self.n_robots) + "_V" + str(self.v)
-        file_name = "res_" + str(self.n_robots) + "_v" + str(self.v) + ".json"
         # Create directory
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
@@ -27,7 +25,7 @@ class TestInfo:
         result_path = os.path.join(result_folder, folder_name)
         if not os.path.exists(result_path):
             os.makedirs(result_path)
-        self.res_file_p = result_path+'/'  # os.path.join(result_path, file_name)
+        self.res_file_p = result_path+'/'
 
 
 class TimeData:
@@ -94,3 +92,46 @@ class AllPlannersData:
         self.all_xy[str(self.n)] = p_data.xy
         self.all_times[str(self.n)] = p_data.time.dur
         self.n += 1
+
+
+class PlannerRobot:
+    def __init__(self, xs=0, ys=0, rid=0, name="r", heading=0, xt=0, yt=0):
+        self.id = rid
+        self.xs = xs
+        self.ys = ys
+        self.xt = xt
+        self.yt = yt
+        self.name = name
+        self.heading = heading
+        self.priority = rid
+
+
+class Records:
+    def __init__(self):
+        self.phis = []
+        self.v_lin = []
+        self.v_ang = []
+        self.path_x = []
+        self.path_y = []
+        self.force_tr = []
+        self.force_tt = []
+        self.force_or = []
+        self.force_ot = []
+
+
+class ApfRobot:
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.z = 1
+        self.d = 0
+        self.H = 0
+        self.h_rR = 0
+        self.theta_rR = 0
+        self.r_prec = 0
+        self.r_half = 0
+        self.r_start = 0
+        self.p = False
+        self.big = False
+        self.stop = False
+        self.reached = False

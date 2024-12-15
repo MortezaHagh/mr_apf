@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from parameters import Params
-from mrapf_data import AllPlannersData, PlannerData
+from mrapf_classes import AllPlannersData, PlannerData
 
 
 class Plotter:
@@ -13,6 +13,7 @@ class Plotter:
         self.save_path = save_path
         obs_r = settings.obst_r
         obst_prec_d = settings.obst_prec_d
+        emap = model.emap
 
         # figure
         fig, ax = plt.subplots(1, 1)
@@ -23,7 +24,7 @@ class Plotter:
         ax.axis('equal')
         # ax.axis("off")
         # ax.grid('on')
-        ax.axis([model.emap.x_min-1, model.emap.x_max+1, model.emap.y_min-1, model.emap.y_max+1])
+        ax.axis([emap.x_min-1, emap.x_max+1, emap.y_min-1, emap.y_max+1])
 
         # robots start and target nodes
         colors = plt.cm.get_cmap('rainbow', len(model.robots))
@@ -51,9 +52,9 @@ class Plotter:
             ax.plot(xdng, ydng, 'r')
 
         # Walls
-        lx = model.emap.x_max-model.emap.x_min + 1
-        ly = model.emap.y_max-model.emap.y_min + 1
-        rect = patches.Rectangle((model.emap.x_min-0.5, model.emap.y_min-0.5),
+        lx = emap.x_max-emap.x_min + 1
+        ly = emap.y_max-emap.y_min + 1
+        rect = patches.Rectangle((emap.x_min-0.5, emap.y_min-0.5),
                                  lx, ly, linewidth=2, edgecolor='k', facecolor='none')
         ax.add_patch(rect)
 

@@ -1,21 +1,21 @@
 """ spawn robots (and obstacles) in the world based on model data """
 #! /usr/bin/env python
 
-import tf
-import rospy
-import rospkg
 from typing import List
+import rospkg
+import rospy
+import tf
 from geometry_msgs.msg import Pose, Quaternion
 from gazebo_msgs.srv import SpawnModel, SpawnModelRequest
 from create_model import MRSModel
 
 
 class Initialize(object):
+    ids: List[int]
     model: MRSModel
     path_unit: float
-    ids: List[int]
-    all_robots: List[Pose]
     all_obsts: List[Pose]
+    all_robots: List[Pose]
 
     def __init__(self, model: MRSModel, path_unit: float = 1.0):
         self.model = model
@@ -56,7 +56,7 @@ def Spawning(model, path_unit=1.0):
     init_obj = Initialize(model, path_unit)
 
     # spawn_urdf_model service
-    print("Waiting for gazebo spawn_urdf_model services for robots...")
+    rospy.loginfo("[Spawning]: Waiting for gazebo spawn_urdf_model services for robots...")
     rospy.wait_for_service("gazebo/spawn_urdf_model")
     spawn_robots_servie = rospy.ServiceProxy("gazebo/spawn_urdf_model", SpawnModel)
 
@@ -83,13 +83,13 @@ def Spawning(model, path_unit=1.0):
         spawn_robots_servie(sm)
         rospy.sleep(0.2)
 
-    print("spawning done!")
+    rospy.loginfo("[Spawning]: spawning done!")
 
     # --------------------------------------------------------------------------
 
     # # # spawn obstacles
     # # spawn_sdf_model sercice
-    # print("Waiting for gazebo spawn_sdf_model services for obstacles...")
+    # rospy.loginfo("[Spawning]: Waiting for gazebo spawn_sdf_model services for obstacles...")
     # rospy.wait_for_service("gazebo/spawn_sdf_model")
     # spawn_obst = rospy.ServiceProxy("gazebo/spawn_sdf_model", SpawnModel)
 

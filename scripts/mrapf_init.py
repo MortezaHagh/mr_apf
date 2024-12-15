@@ -1,27 +1,27 @@
 #! /usr/bin/env python
 
 import json
-import rospy
 from typing import List
+from matplotlib.pylab import plt
+import rospy
+from plotter import Plotter
 from results import Results
 from parameters import Params
-from matplotlib.pylab import plt
-from create_model import MRSModel
-from plotter import Plotter
 from spawn_map import Spawning
+from create_model import MRSModel
 from visualization import RvizViusalizer
 from planning_clinets import PlanningClients
-from mrapf_data import TestInfo, AllPlannersData
-from central_mrapf_service import CentralMRAPF
 from robot_planner_server import RobotPlanner
+from central_mrapf_service import CentralMRAPF
+from mrapf_classes import TestInfo, AllPlannersData
 from initiate_planners import initiate_robots_planners
 
 
 class Run():
-    test_info: TestInfo
     rate: rospy.Rate
-    planners_data: AllPlannersData
     model: MRSModel
+    test_info: TestInfo
+    planners_data: AllPlannersData
 
     def __init__(self):
 
@@ -43,16 +43,15 @@ class Run():
         # visualize
         self.visualizer = RvizViusalizer(model=self.model)
 
-        # init_robot service server
-        print("Initializing Central Service Server (central_mrapf_srv) for adding robots ... ")
+        # running central MRAPF Service Server *********************************
         central_mrapf_srv_name = "central_mrapf_srv"
         self.cmrapf = CentralMRAPF(self.model, central_mrapf_srv_name)
 
-        # calling services
+        # creating distributed planners - by calling central service ***********
         initiate_robots_planners(self.model.robots_data.ids)
         self.rate.sleep()
 
-        # planning clients - send goals
+        # planning clients - sending goals *************************************
         self.planning_clients = PlanningClients(self.model.robots_data)
         self.planning_clients.send_goals()
 
@@ -71,9 +70,9 @@ class Run():
             self.visualizer.create_robot_circles(self.cmrapf.pose_srv.xy)
             self.rate.sleep()
 
-        print(" -----------------------")
-        print("APF Mission Accomplished.")
-        print(" -----------------------")
+        rospy.loginfo(" ---------------------------------")
+        rospy.loginfo(f"[{self.__class__.__name__}]: APF Mission Accomplished.")
+        rospy.loginfo(" ---------------------------------")
 
     def final_results_plot(self):
         # planners_data
@@ -96,8 +95,8 @@ class Run():
     def save_data(self):
         with open(self.test_info.res_file_p + "paths.json", "w") as outfile:
             json.dump(self.planners_data.all_xy, outfile)
-        with open(self.test_info.res_file_p + "times.json", "w") as outfile:
-            json.dump(self.planners_data.all_times, outfile)
+        # with open(self.test_info.res_file_p + "times.json", "w") as outfile:
+        #     json.dump(self.planners_data.all_times, outfile)
 
     def shutdown_hook(self):
         pass
