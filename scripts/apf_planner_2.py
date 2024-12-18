@@ -31,6 +31,7 @@ class APFPlanner:
         self.pose = Pose2D()
         self.all_robots_data = None
         self.multi_robots_vis = []
+        self.mp_bound = []
 
         #
         self.v = 0
@@ -108,7 +109,6 @@ class APFPlanner:
             self.stopped = True
             return
         else:
-
             # calculate forces =================================================
             self.forces()
 
@@ -134,7 +134,6 @@ class APFPlanner:
         # target
         f_r = 0
         f_theta = 0
-        # obstacles
         self.f_target()
         f_r = self.target_f[0]
         f_theta = self.target_f[1]
@@ -169,7 +168,7 @@ class APFPlanner:
         c_radius = 2.5  # 2.5          #$ param 3
         is_goal_close = False
 
-        #
+        # reset
         groups = []
         AD_h_rR = []
         new_robots = []
@@ -179,67 +178,61 @@ class APFPlanner:
         robots_inds_f = {}
         self.new_robots = []
 
-        #
+        # detect obsts
         self.detect_obsts()
 
         # get data
-        # todo
-        robots_x = self.all_robots_data.x
-        robots_y = self.all_robots_data.y
-        robots_n = self.all_robots_data.count
-        robots_h = self.all_robots_data.heading
-        robots_stopped = self.all_robots_data.stopp
-        robots_reached = self.all_robots_data.reached
-        robots_priority = self.all_robots_data.priority
+        ard = self.all_robots_data
 
+        # is_goal_close
         goal_dist = cal_distance(self.pose.x, self.pose.y, self.goal_x, self.goal_y)
         if (goal_dist < (c_r*self.p.robot_start_d)):
             is_goal_close = True
 
         # get indices of robots in proximity circle
-        for i in range(robots_n):
+        for i in range(ard.count):
             # rR
-            dx = (robots_x[i] - self.pose.x)
-            dy = (robots_y[i] - self.pose.y)
+            dx = (ard.x[i] - self.pose.x)
+            dy = (ard.y[i] - self.pose.y)
             d_rR = np.sqrt(dx**2 + dy**2)
             theta_rR = np.arctan2(dy, dx)
             ad_h_rR = cal_angle_diff(self.pose.theta, theta_rR)
             ad_h_rR_abs = abs(ad_h_rR)
-            ad_H_Rr = cal_angle_diff(robots_h[i], (theta_rR - np.pi))
+            ad_H_Rr = cal_angle_diff(ard.heading[i], (theta_rR - np.pi))
             ad_H_Rr_abs = abs(ad_H_Rr)
             AD_h_rR.append(ad_h_rR)
 
             if (d_rR > (c_r * self.p.robot_start_d)):
                 continue
 
-            # if (not robots_reached[i]) or (d_rR < (1 * self.p.robot_start_d)):
-            # if (d_rR < (1 * self.p.robot_start_d)) or ((not robots_reached[i]) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr_abs < np.pi/2)):
+            # if (not ard.reached[i]) or (d_rR < (1 * self.p.robot_start_d)):
+            # if (d_rR < (1 * self.p.robot_start_d)) or ((not ard.reached[i]) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr_abs < np.pi/2)):
 
-            if (not robots_reached[i]) or (d_rR < (1 * self.p.robot_start_d)):
+            if (not ard.reached[i]) or (d_rR < (1 * self.p.robot_start_d)):
                 robots_inds.append(i)
 
             # individual robots
             if (d_rR < (1 * self.p.robot_start_d)):
                 nr = ApfRobot()
                 nr.d = d_rR
-                nr.x = robots_x[i]
-                nr.y = robots_y[i]
-                nr.H = robots_h[i]
+                nr.x = ard.x[i]
+                nr.y = ard.y[i]
+                nr.H = ard.heading[i]
                 nr.h_rR = ad_h_rR
                 nr.theta_rR = theta_rR
                 nr.p = (
-                    not (robots_reached[i] or robots_stopped[i])) and robots_priority[i] > 0
-                nr.stop = robots_stopped[i]
-                nr.reached = robots_reached[i]
+                    not (ard.reached[i] or ard.stopp[i])) and ard.priority[i] > 0
+                nr.stop = ard.stopp[i]
+                nr.reached = ard.reached[i]
                 rc = self.p.robot_prec_d
                 nr.r_prec = rc
                 nr.r_half = 1.5 * rc
                 nr.r_start = 2.0 * rc
                 nr.z = 4 * self.p.fix_f * rc**4
                 new_robots.append(nr)
-                if robots_reached[i]:
+                if ard.reached[i]:
                     XY = self.eval_obst(
-                        robots_x[i], robots_y[i], self.p.robot_prec_d, d_rR)
+                        ard.x[i], ard.y[i], self.p.robot_prec_d, d_rR)
                     for xy in XY:
                         dx_ = (xy[0] - self.pose.x)
                         dy_ = (xy[1] - self.pose.y)
@@ -250,10 +243,10 @@ class APFPlanner:
                         nnr.d = d_rR_
                         nnr.x = xy[0]
                         nnr.y = xy[1]
-                        nnr.H = robots_h[i]
+                        nnr.H = ard.heading[i]
                         nnr.h_rR = ad_h_rR_
                         nnr.theta_rR = theta_rR_
-                        nnr.p = robots_priority[i] > 0
+                        nnr.p = ard.priority[i] > 0
                         nnr.stop = True
                         nnr.reached = True
                         nnr.r_prec = nr.r_prec/1.5  # $
@@ -279,8 +272,8 @@ class APFPlanner:
                 if len(robots_inds_2) == 0:
                     break
                 for ind_j in robots_inds_2:
-                    # if not (robots_reached[p] and robots_reached[ind_j]):
-                    dist = cal_distance(robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
+                    # if not (ard.reached[p] and ard.reached[ind_j]):
+                    dist = cal_distance(ard.x[p], ard.y[p], ard.x[ind_j], ard.y[ind_j])
                     if (dist < (self.p.robot_prec_d*2.2)):    # param 2
                         robots_inds_f[p].append(ind_j)
 
@@ -308,15 +301,15 @@ class APFPlanner:
                 is_target_in = False
 
                 # priorities
-                P = [robots_priority[i] > 0 for i in g]
+                P = [ard.priority[i] > 0 for i in g]
 
                 # polygon
                 is_g2 = True
                 if len(g) > 2:
                     point_robot = Point(self.pose.x, self.pose.y)
                     point_target = Point(self.goal_x, self.goal_y)
-                    polys_points = [Point(robots_x[i], robots_y[i])
-                                    for i in g if (not robots_reached[i])]
+                    polys_points = [Point(ard.x[i], ard.y[i])
+                                    for i in g if (not ard.reached[i])]
                     if (len(polys_points) > 2):
                         is_g2 = False
                         mpt = MultiPoint([shape(p) for p in polys_points])
@@ -325,7 +318,7 @@ class APFPlanner:
                         mpc = mp.centroid.coords[0]
                         is_robot_in = mp.contains(point_robot)
                         is_target_in = mp.contains(point_target)
-                        self.mp_bound = mp_bound
+                        self.mp_bound = [[], mp_bound]
 
                         # get the minimum bounding circle of the convex hull
                         mbr = mp.minimum_rotated_rectangle
@@ -348,10 +341,10 @@ class APFPlanner:
                     a_min = g[np.argmin(ad)]
                     a_max = g[np.argmax(ad)]
 
-                    x1 = robots_x[a_min]
-                    x2 = robots_x[a_max]
-                    y1 = robots_y[a_min]
-                    y2 = robots_y[a_max]
+                    x1 = ard.x[a_min]
+                    x2 = ard.x[a_max]
+                    y1 = ard.y[a_min]
+                    y2 = ard.y[a_max]
                     dx = x2-x1
                     dy = y2-y1
                     theta = np.arctan2(dy, dx)

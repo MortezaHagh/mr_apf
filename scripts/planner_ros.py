@@ -162,7 +162,7 @@ class PlannerROS:
             w = round(self.w, 2)
             fr = round(f_r, 2)
             ft = round(f_theta, 2)
-            rospy.loginfo(f"[planner_ros, {self.ns}]: {self.ap.stop_flag_multi}")
+            # rospy.loginfo(f"[planner_ros, {self.ns}]: {self.ap.stop_flag_multi}")
             rospy.loginfo(f"[planner_ros, {self.ns}]: f_r: {fr}, f_theta: {ft}")
             rospy.loginfo(f"[planner_ros, {self.ns}]: v: {v}, w: {w}")
             rospy.loginfo(" --------------------------------------------------- ")
