@@ -72,13 +72,13 @@ class PoseService(object):
                 continue
             resp.x.append(x)
             resp.y.append(y)
-            resp.heading.append(h)
-            resp.stopp.append(self.stop[i])
+            resp.h.append(h)
+            resp.stopped.append(self.stop[i])
             resp.reached.append(self.reached[i])
         # calculate priorities
         priorities = self.cal_priorities(self.xy, req_i)
-        resp.priority = priorities
-        resp.count = self.count-1
+        resp.pr = priorities
+        resp.nr = self.count-1
 
         return resp
 

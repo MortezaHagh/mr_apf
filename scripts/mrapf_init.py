@@ -26,7 +26,7 @@ class Run():
     def __init__(self):
 
         # data
-        self.test_info = TestInfo(v=1, n_robots=2)  # test info
+        self.test_info = TestInfo(v=1, n_robots=2, method=1)  # test info
         self.planners_data = AllPlannersData()  # planners data (trajectory and time)
 
         # ros settings

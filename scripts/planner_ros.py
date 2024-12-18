@@ -5,21 +5,23 @@ import rospy
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, Pose2D
 from tf.transformations import euler_from_quaternion
-from apf.srv import SharePoses2, SharePoses2Request, SharePoses2Response
+from apf.srv import SharePoses2, SharePoses2Request
 from parameters import Params
 from create_model import MRSModel
 from apf_planner_2 import APFPlanner
 from visualization import RvizViusalizer
-from mrapf_classes import PlannerRobot, Records
+from mrapf_classes import PlannerRobot, Records, AllRobotsData
 
 
 class PlannerROS:
     rid: int
     ns: str
     p: Params
-    pose: Pose2D
     ap: APFPlanner
     vs: RvizViusalizer
+    pose: Pose2D
+    rec: Records
+    ard: AllRobotsData
 
     def __init__(self, model: MRSModel, robot: PlannerRobot, params: Params):
 
@@ -33,8 +35,9 @@ class PlannerROS:
         self.ap = APFPlanner(model, robot, params)
 
         #
-        self.pose = Pose2D()    # robot pose
-        self.rec = Records()    # records
+        self.pose = Pose2D()        # robot pose
+        self.rec = Records()        # records
+        self.ard = AllRobotsData()  # all robots' data
 
         # ros
         self.rate = rospy.Rate(10)
@@ -63,7 +66,6 @@ class PlannerROS:
     def exec_cb(self):
         self.go_to_goal()
         self.is_reached = True
-        return
 
     def go_to_goal(self):
         while (not self.ap.reached) and (not rospy.is_shutdown()):
@@ -77,10 +79,10 @@ class PlannerROS:
             req_poses.id = self.rid
             req_poses.update = False
             req_poses.stopped = False
-            all_robots_data: SharePoses2Response = self.pose_client(req_poses)
+            self.ard.update_by_resp(self.pose_client(req_poses))
 
             # command ************************************
-            self.ap.planner_move(self.pose, all_robots_data)
+            self.ap.planner_move(self.pose, self.ard)
             self.v = self.ap.v
             self.w = self.ap.w
             self.rec.v_lin.append(self.v)

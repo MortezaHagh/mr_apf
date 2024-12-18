@@ -3,11 +3,10 @@
 from typing import List, Tuple
 import numpy as np
 from geometry_msgs.msg import Pose2D
-from apf.srv import SharePoses2Response
 from parameters import Params
 from create_model import MRSModel
-from mrapf_classes import PlannerRobot, ApfRobot
 from my_utils import cal_angle_diff, cal_distance
+from mrapf_classes import PlannerRobot, ApfRobot, AllRobotsData
 from shapely.geometry import Point, shape, MultiPoint  # type: ignore # pylint: disable-all
 # from shapely.geometry.polygon import Polygon
 
@@ -16,7 +15,7 @@ class APFPlanner:
     p: Params
     model: MRSModel
     robot: PlannerRobot
-    all_robots_data: SharePoses2Response
+    ard: AllRobotsData
     multi_robots_vis: List[ApfRobot]
     mp_bound: List[Tuple[float, float]]
 
@@ -29,7 +28,7 @@ class APFPlanner:
 
         #
         self.pose = Pose2D()
-        self.all_robots_data = None
+        self.ard = None
         self.multi_robots_vis = []
         self.mp_bound = []
 
@@ -89,13 +88,13 @@ class APFPlanner:
         self.stop_flag_robots = False
         self.stop_flag_multi = False
 
-    def planner_move(self, pose: Pose2D, all_robots_data: SharePoses2Response):
+    def planner_move(self, pose: Pose2D, ard: AllRobotsData):
         # inputs - reset
         self.pose = pose
-        self.all_robots_data = all_robots_data
+        self.ard = ard
         self.reset_vals()
 
-        #
+        # check dist to goal
         if self.goal_dist < self.p.goal_dis_tresh:
             self.reached = True
             return
@@ -182,7 +181,7 @@ class APFPlanner:
         self.detect_obsts()
 
         # get data
-        ard = self.all_robots_data
+        ard = self.ard
 
         # is_goal_close
         goal_dist = cal_distance(self.pose.x, self.pose.y, self.goal_x, self.goal_y)
@@ -190,7 +189,7 @@ class APFPlanner:
             is_goal_close = True
 
         # get indices of robots in proximity circle
-        for i in range(ard.count):
+        for i in range(ard.nr):
             # rR
             dx = (ard.x[i] - self.pose.x)
             dy = (ard.y[i] - self.pose.y)
@@ -198,7 +197,7 @@ class APFPlanner:
             theta_rR = np.arctan2(dy, dx)
             ad_h_rR = cal_angle_diff(self.pose.theta, theta_rR)
             ad_h_rR_abs = abs(ad_h_rR)
-            ad_H_Rr = cal_angle_diff(ard.heading[i], (theta_rR - np.pi))
+            ad_H_Rr = cal_angle_diff(ard.h[i], (theta_rR - np.pi))
             ad_H_Rr_abs = abs(ad_H_Rr)
             AD_h_rR.append(ad_h_rR)
 
@@ -217,12 +216,12 @@ class APFPlanner:
                 nr.d = d_rR
                 nr.x = ard.x[i]
                 nr.y = ard.y[i]
-                nr.H = ard.heading[i]
+                nr.H = ard.h[i]
                 nr.h_rR = ad_h_rR
                 nr.theta_rR = theta_rR
                 nr.p = (
-                    not (ard.reached[i] or ard.stopp[i])) and ard.priority[i] > 0
-                nr.stop = ard.stopp[i]
+                    not (ard.reached[i] or ard.stopped[i])) and ard.pr[i] > 0
+                nr.stop = ard.stopped[i]
                 nr.reached = ard.reached[i]
                 rc = self.p.robot_prec_d
                 nr.r_prec = rc
@@ -243,10 +242,10 @@ class APFPlanner:
                         nnr.d = d_rR_
                         nnr.x = xy[0]
                         nnr.y = xy[1]
-                        nnr.H = ard.heading[i]
+                        nnr.H = ard.h[i]
                         nnr.h_rR = ad_h_rR_
                         nnr.theta_rR = theta_rR_
-                        nnr.p = ard.priority[i] > 0
+                        nnr.p = ard.pr[i] > 0
                         nnr.stop = True
                         nnr.reached = True
                         nnr.r_prec = nr.r_prec/1.5  # $
@@ -301,7 +300,7 @@ class APFPlanner:
                 is_target_in = False
 
                 # priorities
-                P = [ard.priority[i] > 0 for i in g]
+                P = [ard.pr[i] > 0 for i in g]
 
                 # polygon
                 is_g2 = True

@@ -3,18 +3,17 @@
 from typing import List
 import numpy as np
 from geometry_msgs.msg import Pose2D
-from apf.srv import SharePoses2Response
 from parameters import Params
 from create_model import MRSModel
-from mrapf_classes import PlannerRobot, ApfRobot
 from my_utils import cal_angle_diff
+from mrapf_classes import PlannerRobot, ApfRobot, AllRobotsData
 
 
 class APFPlanner:
     p: Params
     model: MRSModel
     robot: PlannerRobot
-    all_robots_data: SharePoses2Response
+    ard: AllRobotsData
     multi_robots_vis: List[ApfRobot]
 
     def __init__(self, model: MRSModel, robot: PlannerRobot, params: Params):
@@ -26,7 +25,7 @@ class APFPlanner:
 
         #
         self.pose = Pose2D()
-        self.all_robots_data = None
+        self.ard = None
         self.multi_robots_vis = []
         self.mp_bound = []
 
@@ -71,10 +70,10 @@ class APFPlanner:
         self.reached = False
         self.stopped = False
 
-    def planner_move(self, pose: Pose2D, all_robots_data: SharePoses2Response):
+    def planner_move(self, pose: Pose2D, ard: AllRobotsData):
         # inputs - reset
         self.pose = pose
-        self.all_robots_data = all_robots_data
+        self.ard = ard
         self.reset_vals()
 
         #
@@ -148,12 +147,12 @@ class APFPlanner:
         #
         robot_flag = False
         self.stopped = False
-        ard = self.all_robots_data
+        ard = self.ard
         #
         robot_f = [0, 0]
         self.robot_f = [0, 0]
         #
-        for i in range(ard.count):
+        for i in range(ard.nr):
             dx = -(ard.x[i] - self.pose.x)
             dy = -(ard.y[i] - self.pose.y)
             d_ro = np.sqrt(dx**2 + dy**2)
@@ -164,7 +163,7 @@ class APFPlanner:
                 continue
 
             # and abs(angle_diff) > np.pi/2:
-            if (not ard.reached) and d_ro < self.p.obst_half_d and ard.priority[i] > 0:
+            if (not ard.reached) and d_ro < self.p.obst_half_d and ard.pr[i] > 0:
                 self.stopped = True
                 break
 

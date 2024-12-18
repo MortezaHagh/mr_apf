@@ -2,22 +2,24 @@
 from typing import List, Dict
 import os
 import rospkg
-
+from apf.srv import SharePoses2Response
 
 class TestInfo:
     v: int
+    method: int
     n_robots: int
     res_file_p: str
 
-    def __init__(self, v: int = 1, n_robots: int = 2):
+    def __init__(self, v: int = 1, n_robots: int = 2, method: int = 2):
         self.v = v
+        self.method = method
         self.n_robots = n_robots
         self.res_file_p = ""
         self.create_paths()  # create result files paths
 
     def create_paths(self):
         # names
-        folder_name = "T" + str(self.n_robots) + "_V" + str(self.v)
+        folder_name = "T" + str(self.n_robots) + "_V" + str(self.v) + "_M" + str(self.method)
         # Create directory
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
@@ -117,6 +119,34 @@ class Records:
         self.force_tt = []
         self.force_or = []
         self.force_ot = []
+
+
+class AllRobotsData:
+    nr: int
+    x: List[float]
+    y: List[float]
+    h: List[float]
+    pr: List[int]
+    reached: List[bool]
+    stopped: List[bool]
+    
+    def __init__(self):
+        self.nr = []
+        self.x = []
+        self.y = []
+        self.h = []
+        self.pr = []
+        self.reached = []
+        self.stopped = []
+        
+    def update_by_resp(self, resp: SharePoses2Response):
+        self.nr = resp.nr
+        self.x = resp.x
+        self.y = resp.y
+        self.h = resp.h
+        self.pr = resp.pr
+        self.reached = resp.reached
+        self.stopped = resp.stopped
 
 
 class ApfRobot:
