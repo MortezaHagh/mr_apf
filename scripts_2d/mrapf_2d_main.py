@@ -1,21 +1,23 @@
-""" MRPP APF 2D sim """
 #! /usr/bin/env python3
+""" MRPP APF 2D sim """
 
 import os
 import sys
-import rospy
 from typing import List
 from matplotlib.pylab import plt
-from pose_service import PoseService
+import rospy
+
 import actionlib
+from pose_service import PoseService
 from apf.msg import ApfAction, ApfGoal
 from parameters import Params
-from robot_action_static import RobotPlanner
+from scripts_2d.robot_planner2d_server import RobotPlanner
 
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 sys.path.append(os.path.join(script_directory, '..'))
 
-from scripts.plotter import plot_model
+from scripts.plotter import Plotter
+from scripts.results import Results
 from scripts.create_model import MRSModel
 from scripts.visualization import RvizViusalizer
 

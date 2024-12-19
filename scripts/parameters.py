@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Params(object):
+class Params:
     id: int
     ns: str
     ac_name: str
@@ -53,7 +53,7 @@ class Params(object):
         self.ang_tresh0 = 0.02
         self.ang_tresh1 = 0.2
         self.theta_thresh = np.deg2rad(30)      # 90*np.pi/180
-        self.goal_dis_tresh = 0.06              # params.dis_tresh
+        self.goal_dis_tresh = 0.06
 
         # forces
         self.zeta = 1
