@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from create_model import MRSModel
 
 
-
 class Plot3D:
     def __init__(self):
 
