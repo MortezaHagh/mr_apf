@@ -1,14 +1,14 @@
-int32 ind
+int32 id
 float32 xt
 float32 yt
 bool update
 bool reached
 bool stopped
 ---
-int32 count
+int32 nr
 float32[] x
 float32[] y
-float32[] heading
-int32[] priority
+float32[] h
+int32[] pr
 bool[] reached
-bool[] stopp
+bool[] stopped

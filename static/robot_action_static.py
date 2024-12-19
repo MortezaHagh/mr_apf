@@ -7,7 +7,7 @@ from apf.srv import SharePoses, SharePosesRequest
 from apf.msg import ApfAction, ApfResult, ApfFeedback
 
 
-class InitRobotAcion(object):
+class RobotPlanner(object):
     def __init__(self, init_params, model):
 
         # ros
@@ -15,10 +15,10 @@ class InitRobotAcion(object):
         rospy.on_shutdown(self.shutdown_hook)
 
         # preallocation
-        self.v_lin = []
-        self.v_ang = []
-        self.path_x = []
-        self.path_y = []
+        self.rec.v_lin = []
+        self.rec.v_ang = []
+        self.rec.path_x = []
+        self.rec.path_y = []
         self.force_r = []
         self.force_t = []
         self.res = ApfResult()
@@ -26,16 +26,16 @@ class InitRobotAcion(object):
 
         # data
         self.model = model
-        self.ind = init_params.id
+        self.id = init_params.id
         self.ac_name = init_params.ac_name
-        
+
         # parameters vel
         self.v = 0
         self.w = 0
-        self.v_min = init_params.linear_min_speed
-        self.v_max = init_params.linear_max_speed
-        self.w_min = init_params.angular_min_speed
-        self.w_max = init_params.angular_max_speed
+        self.v_min = init_params.v_min
+        self.v_max = init_params.v_max
+        self.w_min = init_params.w_min
+        self.w_max = init_params.w_max
 
         # parameters & settings
         self.dt = init_params.dt
@@ -43,19 +43,19 @@ class InitRobotAcion(object):
         self.robot_r = init_params.robot_r
         self.w_coeff = init_params.w_coeff
         self.dis_tresh = init_params.dis_tresh
-        self.f_r_min = init_params.f_r_min #
-        self.f_r_max = init_params.f_r_max #
-        self.f_theta_min = init_params.f_theta_min #
-        self.f_theta_max = init_params.f_theta_max #
+        self.f_r_min = init_params.f_r_min
+        self.f_r_max = init_params.f_r_max
+        self.f_theta_min = init_params.f_theta_min
+        self.f_theta_max = init_params.f_theta_max
         self.theta_thresh = init_params.theta_thresh
         self.obs_effect_r = init_params.obs_effect_r
         self.pose_srv_name = init_params.pose_srv_name
         self.goal_distance = init_params.goal_distance
 
         # map: target and obstacles coordinates
-        self.map()
+        self.map_data()
 
-        # get robots start coords 
+        # get robots start coords
         self.get_robot()
 
         # pose service client
@@ -63,7 +63,7 @@ class InitRobotAcion(object):
         self.pose_client = rospy.ServiceProxy(self.pose_srv_name, SharePoses)
 
         # action
-        self.ac_ = actionlib.SimpleActionServer(self.ac_name, ApfAction, self.exec_cb)
+        self.ac_ = actionlib.SimpleActionServer(self.ac_name, ApfAction, self.exec_cb, False)
         self.ac_.start()
 
     def exec_cb(self, goal):
@@ -72,8 +72,8 @@ class InitRobotAcion(object):
 
         # result
         self.res.result = True
-        self.res.path_x = self.path_x
-        self.res.path_y = self.path_y
+        self.res.path_x = self.rec.path_x
+        self.res.path_y = self.rec.path_y
         self.ac_.set_succeeded(self.res)
         return
 
@@ -87,8 +87,8 @@ class InitRobotAcion(object):
 
             # calculate velocities
             self.cal_vel(f_r, f_theta, phi)
-            self.v_lin.append(self.v)
-            self.v_ang.append(self.w)
+            self.rec.v_lin.append(self.v)
+            self.rec.v_ang.append(self.w)
 
             # update poses
             vt = self.v*self.dt
@@ -98,8 +98,8 @@ class InitRobotAcion(object):
             self.r_theta = self.modify_angle(theta)
 
             # result
-            self.path_x.append(self.r_x)
-            self.path_y.append(self.r_y)
+            self.rec.path_x.append(self.r_x)
+            self.rec.path_y.append(self.r_y)
 
             # # feedback
             # self.feedback.path = [self.r_x, self.r_y]
@@ -107,14 +107,13 @@ class InitRobotAcion(object):
 
             self.rate.sleep()
 
-
     def cal_vel(self, f_r, f_theta, theta):
 
-        if abs(theta)>self.theta_thresh:
+        if abs(theta) > self.theta_thresh:
             v = 0 + self.v_min/10
             w = self.w_max * np.sign(theta)
         else:
-            v = self.v_max * (1- (abs(theta)/self.theta_thresh))**2 + self.v_min/10
+            v = self.v_max * (1 - (abs(theta)/self.theta_thresh))**2 + self.v_min/10
             w = theta * self.w_coeff * 0.5
         v = min(v, self.v_max)
         v = max(v, 0)
@@ -143,7 +142,7 @@ class InitRobotAcion(object):
 
     def f_robots(self):
         req = SharePosesRequest()
-        req.ind = self.ind
+        req.id = self.id
         resp = self.pose_client(req)
         self.robot_f = [0, 0]
         for i in range(resp.count):
@@ -193,25 +192,24 @@ class InitRobotAcion(object):
                 angle_diff = theta - self.r_theta
                 angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
                 templ = [f*np.cos(angle_diff), f*np.sin(angle_diff)]
-                if abs(angle_diff)>np.pi/2:
-                    templ[1] +=  abs(templ[0]) * np.sign(templ[1])
+                if abs(angle_diff) > np.pi/2:
+                    templ[1] += abs(templ[0]) * np.sign(templ[1])
                 self.obs_f[0] += round(templ[0], 2)
                 self.obs_f[1] += round(templ[1], 2)
 
-
     def get_robot(self):
-        self.r_x = self.model.robots[self.ind].xs
-        self.r_y = self.model.robots[self.ind].ys
-        self.r_theta = self.model.robots[self.ind].heading
+        self.r_x = self.model.robots[self.id].xs
+        self.r_y = self.model.robots[self.id].ys
+        self.r_theta = self.model.robots[self.id].heading
 
     def modify_angle(self, theta):
         theta_mod = (theta + np.pi) % (2*np.pi) - np.pi
         return theta_mod
 
-    def map(self):
+    def map_data(self):
         # robot target
-        self.goal_x = self.model.robots[self.ind].xt
-        self.goal_y = self.model.robots[self.ind].yt
+        self.goal_x = self.model.robots[self.id].xt
+        self.goal_y = self.model.robots[self.id].yt
 
         # obstacles
         self.obs_count = self.model.obst.count

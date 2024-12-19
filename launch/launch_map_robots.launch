@@ -12,12 +12,14 @@
     <arg name="debug" value="false"/>
   </include>
 
+  <!-- static transform publishers -->
   <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link0_broadcaster" args="0 0 0 0 0 0 1 map r0/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 map r1/odom 50" />
-  <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 map r2/odom 50" />
+  <!-- <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 map r2/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0 0 0 0 0 0 1 map r3/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link4_broadcaster" args="0 0 0 0 0 0 1 map r4/odom 50" />
-  <node pkg="tf" type="static_transform_publisher" name="link5_broadcaster" args="0 0 0 0 0 0 1 map r5/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link5_broadcaster" args="0 0 0 0 0 0 1 map r5/odom 50" /> -->
   <!-- <node pkg="tf" type="static_transform_publisher" name="link6_broadcaster" args="0 0 0 0 0 0 1 odom r6/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link7_broadcaster" args="0 0 0 0 0 0 1 map r7/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link8_broadcaster" args="0 0 0 0 0 0 1 map r8/odom 50" />
@@ -29,10 +31,11 @@
   <node pkg="tf" type="static_transform_publisher" name="link14_broadcaster" args="0 0 0 0 0 0 1 map r14/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link15_broadcaster" args="0 0 0 0 0 0 1 map r15/odom 50" /> -->
 
+  <!-- states publisher -->
   <include file="$(find apf)/launch/launch_states_publisher.launch"/> 
 
   <!-- path planning -->
-  <node pkg="apf" name="main" type="apf_init_new.py" output="screen"/>
+  <node pkg="apf" name="mrapf_init" type="mrapf_init.py" output="screen"/>
 
   <!-- Load RVIZ -->
   <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d /home/morteza/mo_ws/src/mr_apf/rviz/apf_arviz.rviz" />

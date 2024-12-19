@@ -1,4 +1,4 @@
-test,version,robot_count,mean_len,total_len,operation_time,total_time
+test,version,n_robots,mean_len,total_len,operation_time,total_time
 ,,,,,,
 1.0,1.0,8.0,4.63,37.08,29.41,195.51
 2.0,1.0,8.0,5.7,45.57,41.17,261.64

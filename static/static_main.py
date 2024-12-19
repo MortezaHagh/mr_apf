@@ -1,14 +1,23 @@
-#! /usr/bin/env python
+""" MRPP APF 2D sim """
+#! /usr/bin/env python3
 
+import os
+import sys
 import rospy
-import actionlib
-from parameters import Params
+from typing import List
 from matplotlib.pylab import plt
-from plotter import plot_model
-from create_model import CreateModel
 from pose_service import PoseService
+import actionlib
 from apf.msg import ApfAction, ApfGoal
-from robot_action_static import InitRobotAcion
+from parameters import Params
+from robot_action_static import RobotPlanner
+
+script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+sys.path.append(os.path.join(script_directory, '..'))
+
+from scripts.plotter import plot_model
+from scripts.create_model import MRSModel
+from scripts.visualization import RvizViusalizer
 
 
 class ApfStatic(object):
@@ -17,15 +26,19 @@ class ApfStatic(object):
         # preallocation
         self.ac_names = []
         self.ac_clients = []
-        self.ac_servers = []
+        # self.ac_servers = []
+        self.ac_servers: List[RobotPlanner] = []
 
         # ros
         self.rate = rospy.Rate(100)
         rospy.on_shutdown(self.shutdown_hook)
 
         # model
-        self.model = CreateModel(map_id=4)
-        self.count = self.model.robot_count
+        self.model = MRSModel(map_id=1, n_robots=4)
+        self.count = self.model.n_robots
+
+        # # visualize
+        # self.visualize = RvizViusalizer(self.model)
 
         # setting - parameters
         params = []
@@ -38,7 +51,7 @@ class ApfStatic(object):
         # robots poses
         robot_poses = []
         for i in range(self.count):
-            pose = [self.model.robots[i].xs, self.model.robots[i].ys]
+            pose = [self.model.robots[i].xs, self.model.robots[i].ys, self.model.robots[i].heading]
             robot_poses.append(pose)
 
         # pose service
@@ -53,7 +66,7 @@ class ApfStatic(object):
             self.manage_poses()
             status = [c.get_state() > 1 for c in self.ac_clients]
             self.rate.sleep()
-            print(status) # to better
+            print(status)  # to better
 
         # results
         self.results = []
@@ -65,11 +78,10 @@ class ApfStatic(object):
 
         rospy.signal_shutdown("signal shutdown ... ")
 
-
     def manage_actions(self):
         # running action servers
         for i in range(self.count):
-            ac_server = InitRobotAcion(self.params[i], self.model)
+            ac_server = RobotPlanner(self.params[i], self.model)
             self.ac_servers.append(ac_server)
 
         # calling action servers
@@ -80,23 +92,21 @@ class ApfStatic(object):
             client.send_goal(goal)
             self.ac_clients.append(client)
 
-
     def manage_poses(self):
         robot_poses = []
         for ac_server in self.ac_servers:
-            pose = [ac_server.r_x, ac_server.r_y]
+            pose = [ac_server.r_x, ac_server.r_y, ac_server.r_theta]
             robot_poses.append(pose)
         self.pose_srv.update_poses(robot_poses)
-
 
     def plotting(self):
         fig, ax = plot_model(self.model, self.params[0])
 
         # paths
-        colors = plt.cm.get_cmap('rainbow', self.model.robot_count)
+        colors = plt.cm.get_cmap('rainbow', self.model.n_robots)
         for i, res in enumerate(self.results):
             ax.plot(res.path_x, res.path_y, color=colors(i))
-        
+
         # forces
         fig1, ax1 = plt.subplots(1, 1)
         ax1.plot(self.ac_servers[0].force_r, label="force_r")
@@ -110,7 +120,7 @@ class ApfStatic(object):
         ax2.plot(self.ac_servers[0].v_ang, label="v_ang")
         ax2.set_title("velocities")
         ax2.legend()
-        
+
         plt.show()
 
     def shutdown_hook(self):
@@ -123,8 +133,6 @@ class ApfStatic(object):
         print(" ------ static_main shutting down ... ---")
 
 
-
 if __name__ == "__main__":
     rospy.init_node("main_node")
     apf = ApfStatic()
-    

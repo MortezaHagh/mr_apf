@@ -1,98 +1,100 @@
+""" spawn robots (and obstacles) in the world based on model data """
 #! /usr/bin/env python
 
-import tf
-import rospy
+from typing import List
 import rospkg
+import rospy
+import tf
+from geometry_msgs.msg import Pose, Quaternion
 from gazebo_msgs.srv import SpawnModel, SpawnModelRequest
-from geometry_msgs.msg import Pose, Point, Quaternion
+from create_model import MRSModel
+
 
 class Initialize(object):
+    ids: List[int]
+    model: MRSModel
+    path_unit: float
+    all_obsts: List[Pose]
+    all_robots: List[Pose]
 
-    def __init__(self, model, path_unit=1.0):
-
+    def __init__(self, model: MRSModel, path_unit: float = 1.0):
         self.model = model
-        self.obsts = {'x': [], 'y': '', 'count': 0}
         self.path_unit = path_unit
-        self.robots_data = []
-        self.robots_count = 1
-        self.id = []
-        
-        # robots_initial
-        self.multi_json()
+        self.ids = []
+        self.all_obsts = []
+        self.all_robots = []
 
-    def multi_json(self):
+        # create spawning data
+        self.create_spawn_data()
+
+    def create_spawn_data(self):
         # obstacles
-        x = [ox*self.path_unit for ox in self.model.obst.x]
-        y = [oy*self.path_unit for oy in self.model.obst.y]
-        self.obsts = {'x': x, 'y': y, 'count': self.model.obst.count}
+        for i in range(self.model.obst.count):
+            p = Pose()
+            p.position.z = 0
+            p.position.x = self.model.obst.x[i]*self.path_unit
+            p.position.y = self.model.obst.x[i]*self.path_unit
+            p.orientation.w = 1.0
+            self.all_obsts.append(p)
 
         # robots
-        robots_count = self.model.robots_i.robot_count
-        self.robots_count = robots_count
-        xx = [x*self.path_unit for x in self.model.robots_i.xs]
-        yy = [y*self.path_unit for y in self.model.robots_i.ys]
-        YY = [yaw for yaw in self.model.robots_i.heading]
-        self.id = self.model.robots_i.ids
-        self.robots_initial = self.robots_initialize(robots_count, xx, yy, YY)
-
-    def robots_initialize(self, robots_count, x, y, yaw):
-        robots_initial = [Pose() for n in range(robots_count)]
-        for rd in range(robots_count):
-            theta = tf.transformations.quaternion_from_euler(0, 0, yaw[rd])
-            robots_initial[rd].position = Point(x[rd], y[rd], 0)
-            orient = Quaternion(*theta)
-            robots_initial[rd].orientation = orient
-        return robots_initial
+        self.all_robots: List[Pose] = []
+        for robot in self.model.robots:
+            self.ids.append(robot.id)
+            p = Pose()
+            p.position.z = 0.0
+            p.position.x = robot.xs*self.path_unit
+            p.position.y = robot.ys*self.path_unit
+            theta = tf.transformations.quaternion_from_euler(0, 0, robot.heading)
+            p.orientation = Quaternion(*theta)
+            self.all_robots.append(p)
 
 
 def Spawning(model, path_unit=1.0):
-    
+
     # get data
     init_obj = Initialize(model, path_unit)
-    robots_initial = init_obj.robots_initial
-    robots_count = init_obj.robots_count
-    obstacles = init_obj.obsts
-
-    # ros
-    rospack = rospkg.RosPack()
-    pkg_path = rospack.get_path('init_sim')
 
     # spawn_urdf_model service
-    print("Waiting for gazebo spawn_urdf_model services for robots...")
+    rospy.loginfo("[Spawning]: Waiting for gazebo spawn_urdf_model services for robots...")
     rospy.wait_for_service("gazebo/spawn_urdf_model")
     spawn_robots_servie = rospy.ServiceProxy("gazebo/spawn_urdf_model", SpawnModel)
 
     # robot file
-    with open(pkg_path+'/models/TB3_model_simple.urdf', 'r') as file:
+    rospack = rospkg.RosPack()
+    pkg_path = rospack.get_path('apf')
+    with open(pkg_path+'/Models/TB3_model_simple.urdf', 'r') as file:
         robot_file = file.read()
 
     # spawn robots
     name = 'robot'
     reference_frame = 'map'
 
-    for rd in range(robots_count):
+    for i, pose in enumerate(init_obj.all_robots):
+        rospy.loginfo("spawning robot: " + str(init_obj.ids[i]))
         sm = SpawnModelRequest()
-        id = init_obj.id[rd]
+        id = init_obj.ids[i]
         sm.model_name = name+str(id)
         sm.model_xml = robot_file
         sm.robot_namespace = '/r'+str(id)
-        sm.initial_pose = robots_initial[rd]
+        sm.initial_pose = pose
         sm.reference_frame = reference_frame
         rospy.set_param('tf_prefix', 'r'+str(id))
         spawn_robots_servie(sm)
         rospy.sleep(0.2)
 
-    print("spawning done!")
-    # --------------------------------------------------------------------------------------------
+    rospy.loginfo("[Spawning]: spawning done!")
 
-    # # spawn obstacles
+    # --------------------------------------------------------------------------
+
+    # # # spawn obstacles
     # # spawn_sdf_model sercice
-    # print("Waiting for gazebo spawn_sdf_model services for obstacles...")
+    # rospy.loginfo("[Spawning]: Waiting for gazebo spawn_sdf_model services for obstacles...")
     # rospy.wait_for_service("gazebo/spawn_sdf_model")
     # spawn_obst = rospy.ServiceProxy("gazebo/spawn_sdf_model", SpawnModel)
 
     # # model file
-    # with open(pkg_path+'/models/cylinder1/model2.sdf', 'r') as file2:
+    # with open(pkg_path+'/Models/cylinder1/model2.sdf', 'r') as file2:
     #     model_file = file2.read()
 
     # # spawn models
@@ -100,11 +102,7 @@ def Spawning(model, path_unit=1.0):
     # model_namespace = ''
     # reference_frame = 'world'
 
-    # for i in range(obstacles['count']):
-    #     pose = Point(x=obstacles['x'][i], y=obstacles['y'][i], z=0)
-    #     init_pose = Pose(pose, Quaternion())
+    # for i, pose in enumerate(init_obj.all_obsts):
     #     model_name = name+str(i)
-    #     spawn_obst(model_name, model_file, model_namespace,
-    #             init_pose, reference_frame)
+    #     spawn_obst(model_name, model_file, model_namespace, pose, reference_frame)
     #     rospy.sleep(0.2)
-

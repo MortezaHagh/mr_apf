@@ -4,7 +4,8 @@ import os
 import rospkg
 import numpy as np
 import matplotlib.pyplot as plt
-from create_model import CreateModel
+from create_model import MRSModel
+
 
 
 class Plot3D:
@@ -23,10 +24,10 @@ class Plot3D:
         # create model
         path_unit = 1  # 0.7
         self.path_unit = 0.7
-        robot_count = self.test_id
-        self.model = CreateModel(map_id=1,
+        n_robots = self.test_id
+        self.model = MRSModel(map_id=1,
                                  path_unit=path_unit,
-                                 robot_count=robot_count)
+                                 n_robots=n_robots)
 
         self.init()
         self.plot_f_obstacle()
