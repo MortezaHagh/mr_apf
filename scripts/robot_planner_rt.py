@@ -10,12 +10,13 @@ from apf.msg import FleetData
 from apf.srv import SendRobotUpdate, SendRobotUpdateRequest
 
 
-class Planner2D (RobotPlanner):
+class PlannerRT(RobotPlanner):
     def __init__(self, model: MRSModel, robot: PRobot, params: Params):
         RobotPlanner.__init__(self, model, robot, params)
 
         # listener
-        rospy.Subscriber(params.fleet_data_topic, FleetData, self.fleet_data_cb)
+        self.data_received = False
+        rospy.Subscriber(params.fleet_data_topic, FleetData, self.fleet_data_cb, queue_size=2)
 
         # Send Robot Update - target
         rospy.wait_for_service(params.sru_srv_name)
@@ -27,13 +28,12 @@ class Planner2D (RobotPlanner):
         self.ruc_req.stopped = False
         self.ruc_req.reached = False
 
-    # def initiate_robots(self):
-    #     # pose = [self.model.robots[i].xs, self.model.robots[i].ys, self.model.robots[i].heading]
-    #     x = self.model.robots[i].xs
-    #     self.ard.update()
-
     def go_to_goal(self):
         while (not self.ap.reached) and (not rospy.is_shutdown()):
+            if not self.data_received:
+                rospy.loginfo(f"[planner_ros, {self.ns}]: waiting for fleet data...")
+                self.rate.sleep()
+                continue
             # update robot's data
             self.ruc_req.stopped = False
 
@@ -83,4 +83,5 @@ class Planner2D (RobotPlanner):
 
     def fleet_data_cb(self, msg: FleetData):
         # update fleet data
+        self.data_received = True
         self.fleet_data = msg

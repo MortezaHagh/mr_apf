@@ -1,0 +1,8 @@
+int32 rid
+float32 xt
+float32 yt
+bool update
+bool reached
+bool stopped
+---
+bool success

@@ -2,7 +2,7 @@
 from typing import List, Dict
 import os
 import rospkg
-from apf.srv import SharePoses2Response
+from apf.srv import SharePosesResponse
 
 
 class TestInfo:
@@ -35,7 +35,7 @@ class TestInfo:
 
 class PRobot:
     def __init__(self, xs=0, ys=0, rid=0, name="r", heading=0, xt=0, yt=0):
-        self.id = rid
+        self.rid = rid
         self.xs = xs
         self.ys = ys
         self.xt = xt
@@ -124,7 +124,7 @@ class AllRobotsData:
         self.reached = []
         self.stopped = []
 
-    def update_by_resp(self, resp: SharePoses2Response):
+    def update_by_resp(self, resp: SharePosesResponse):
         self.nr = resp.nr
         self.x = resp.x
         self.y = resp.y
@@ -151,5 +151,5 @@ class ApfRobot:
         self.r_start = 0
         self.p = False
         self.big = False
-        self.stop = False
+        self.stopped = False
         self.reached = False

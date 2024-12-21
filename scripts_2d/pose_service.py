@@ -6,7 +6,7 @@ from apf.srv import SharePoses, SharePosesResponse
 
 class PoseService(object):
     def __init__(self, poses, count, pose_srv_name):
-        
+
         # ros
         rospy.on_shutdown(self.shutdown_hook)
 
@@ -21,7 +21,7 @@ class PoseService(object):
         rospy.Service(pose_srv_name, SharePoses, self.pose_cb)
 
     def pose_cb(self, req):
-        req_i = req.id
+        req_i = req.rid
         resp = SharePosesResponse()
         inds = [j for j in self.ids if j != req_i]
         resp.x = [self.x[i] for i in inds]

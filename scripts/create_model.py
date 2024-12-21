@@ -32,7 +32,7 @@ class Map:
 
 class Robot:
     def __init__(self, xs, ys, xt, yt, heading, rid: int, path_unit: float):
-        self.id = rid
+        self.rid = rid
         self.ns = "/r"+str(rid)
         self.xs = xs * path_unit
         self.ys = ys * path_unit
@@ -62,7 +62,7 @@ class MRSModel:
     def __init__(self, map_id: int = 1, path_unit: float = 1.0, n_robots: int = 1):
 
         print(f"[{self.__class__.__name__}]: Create Base Model")
-        
+
         # model inputs
         inputs = ModelInputs(map_id, path_unit, n_robots)
         self.map_ind = inputs.map_ind
@@ -88,7 +88,7 @@ class MRSModel:
         yt = inputs.yt
         self.robots = []
 
-        # 
+        #
         for i in range(self.n_robots):
             self.robots.append(Robot(xs[i], ys[i], xt[i], yt[i], heading[i], i, path_unit))
 

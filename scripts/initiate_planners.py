@@ -16,7 +16,7 @@ def initiate_robots_planners(ids: List[int]):
     initial_robots = rospy.ServiceProxy(srv_name, InitRobot)
     for rid in ids:
         req = InitRobotRequest()
-        req.id = rid
+        req.rid = rid
         req.name = str(rid)
         initial_robots(req)
         rate.sleep()

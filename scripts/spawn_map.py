@@ -40,7 +40,7 @@ class Initialize(object):
         # robots
         self.all_robots: List[Pose] = []
         for robot in self.model.robots:
-            self.ids.append(robot.id)
+            self.ids.append(robot.rid)
             p = Pose()
             p.position.z = 0.0
             p.position.x = robot.xs*self.path_unit
@@ -50,13 +50,13 @@ class Initialize(object):
             self.all_robots.append(p)
 
 
-def Spawning(model, path_unit=1.0):
+def spawning(model, path_unit=1.0):
 
     # get data
     init_obj = Initialize(model, path_unit)
 
     # spawn_urdf_model service
-    rospy.loginfo("[Spawning]: Waiting for gazebo spawn_urdf_model services for robots...")
+    rospy.loginfo("[spawning]: Waiting for gazebo spawn_urdf_model services for robots...")
     rospy.wait_for_service("gazebo/spawn_urdf_model")
     spawn_robots_servie = rospy.ServiceProxy("gazebo/spawn_urdf_model", SpawnModel)
 
@@ -83,13 +83,13 @@ def Spawning(model, path_unit=1.0):
         spawn_robots_servie(sm)
         rospy.sleep(0.2)
 
-    rospy.loginfo("[Spawning]: spawning done!")
+    rospy.loginfo("[spawning]: spawning done!")
 
     # --------------------------------------------------------------------------
 
     # # # spawn obstacles
     # # spawn_sdf_model sercice
-    # rospy.loginfo("[Spawning]: Waiting for gazebo spawn_sdf_model services for obstacles...")
+    # rospy.loginfo("[spawning]: Waiting for gazebo spawn_sdf_model services for obstacles...")
     # rospy.wait_for_service("gazebo/spawn_sdf_model")
     # spawn_obst = rospy.ServiceProxy("gazebo/spawn_sdf_model", SpawnModel)
 

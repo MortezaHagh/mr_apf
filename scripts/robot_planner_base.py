@@ -7,7 +7,9 @@ from parameters import Params
 from create_model import MRSModel
 from apf_planner_2 import APFPlanner
 from visualization import RvizViusalizer
-from mrapf_classes import PRobot, PlannerData, AllRobotsData
+from mrapf_classes import PRobot, PlannerData
+from apf.msg import FleetData
+# choose: [apf_planner_2], [apf_planner_1]
 
 
 class RobotPlanner:
@@ -18,19 +20,19 @@ class RobotPlanner:
     ap: APFPlanner
     vs: RvizViusalizer
     pose: Pose2D
-    pd: PlannerData
-    ard: AllRobotsData
+    pd: PlannerData  # planner data
+    fleet_data: FleetData
 
     def __init__(self, model: MRSModel, robot: PRobot, params: Params):
 
         #
         self.v = 0
         self.w = 0
+        self.do_viz = True
         self.is_reached = False
-        self.do_viz = False
 
         #
-        self.rid = params.id
+        self.rid = params.rid
         self.ns = params.ns  # name space
 
         # apf planner
@@ -38,8 +40,8 @@ class RobotPlanner:
 
         #
         self.pose = Pose2D()        # robot pose
-        self.pd = PlannerData()        # records
-        self.ard = AllRobotsData()  # all robots' data
+        self.pd = PlannerData()     # planner data
+        self.fleet_data = FleetData()
 
         # ros
         self.rate = rospy.Rate(10)
@@ -50,17 +52,6 @@ class RobotPlanner:
 
         # /cmd_vel puplisher
         self.cmd_vel_pub = rospy.Publisher(params.cmd_topic, Twist, queue_size=5)
-
-        # # listener
-        # self.check_topic(params.lis_topic)
-        # rospy.Subscriber(params.lis_topic, Odometry, self.odom_cb)
-
-        # # pose service client
-        # rospy.wait_for_service(params.pose_srv_name)
-        # self.pose_client = rospy.ServiceProxy(params.pose_srv_name, SharePoses2)
-
-        # # execute goal
-        # self.exec_cb()
 
     def start(self):
         # start time

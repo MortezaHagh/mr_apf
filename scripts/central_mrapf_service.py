@@ -5,10 +5,10 @@ from typing import List
 import numpy as np
 import rospy
 from parameters import Params
-from create_model import MRSModel
-from pose_service import PoseService
 from mrapf_classes import PRobot
-from robot_planner_server import RobotPlannerAc
+from create_model import MRSModel
+from fleet_data import FleetDataH
+from robot_planner_ac import RobotPlannerAc
 from apf.srv import InitRobot, InitRobotResponse, InitRobotRequest
 
 
@@ -16,7 +16,7 @@ class CentralMRAPF:
     n_robots: int
     robot_ids: List[int]
     model: MRSModel
-    pose_srv: PoseService
+    fleet_data_h: FleetDataH
     robots: List[PRobot]
     planners: List[RobotPlannerAc]
 
@@ -29,12 +29,12 @@ class CentralMRAPF:
         # all robots
         self.n_robots = 0
         self.robots = []
-        self.robot_ids = []
         self.planners = []
+        self.robot_ids = []
 
-        # pose service
-        posr_srv_name = "/pose_service"
-        self.pose_srv = PoseService(posr_srv_name)
+        # send_robot_update_srv
+        params = Params(-1)
+        self.fleet_data_h = FleetDataH(params)
 
         # init_robot_srv Service Server
         self.robot_srv = rospy.Service(central_mrapf_srv_name, InitRobot, self.apf_srv_callback)
@@ -42,12 +42,12 @@ class CentralMRAPF:
 
     def apf_srv_callback(self, req: InitRobotRequest):
 
-        rospy.loginfo(f"[{self.__class__.__name__}]: 'central_mrapf_srv' is called. req id: " + str(req.id))
+        rospy.loginfo(f"[{self.__class__.__name__}]: 'central_mrapf_srv' is called. req rid: " + str(req.rid))
 
         # robot object
-        rid = req.id
+        rid = req.rid
         heading = np.deg2rad(req.theta)
-        robot = PRobot(req.xs, req.ys, req.id, req.name, heading, req.xt, req.yt)
+        robot = PRobot(req.xs, req.ys, req.rid, req.name, heading, req.xt, req.yt)
 
         # update robotic system data
         self.n_robots += 1
@@ -60,8 +60,8 @@ class CentralMRAPF:
         params.set_name_space(name_s)
 
         # update pose service
-        self.pose_srv.add_robot(rid, robot.priority, params.lis_topic)
-        self.pose_srv.topics[rid] = params.lis_topic
+        self.fleet_data_h.add_robot(rid, name_s)
+        self.fleet_data_h.update_goal(rid, robot.xt, robot.yt)
 
         # motion_action action *************************************************
         rospy.loginfo(f"[{self.__class__.__name__}]: Creating Initial Robot Action: {name_s}/motion_action ...")
@@ -71,5 +71,5 @@ class CentralMRAPF:
         # service responce
         resp = InitRobotResponse()
         resp.success = True
-        resp.id = rid
+        resp.rid = rid
         return resp

@@ -1,22 +1,22 @@
 #! /usr/bin/env python
 
-from typing import List, Dict
+from typing import Dict, Tuple
 import rospy
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
-from apf.srv import SharePoses2, SharePoses2Response, SharePoses2Request
+from apf.srv import SharePoses, SharePosesResponse, SharePosesRequest
 
 
 class PoseService:
-    xy: Dict[int, List[float]]
+    xy: Dict[int, Tuple[float, float]]
 
     def __init__(self, pose_srv_name: str):
 
         # data
         self.pose_srv_name = pose_srv_name
 
-        # ros
-        rospy.on_shutdown(self.shutdown_hook)
+        # # ros
+        # rospy.on_shutdown(self.shutdown_hook)
 
         # data
         self.topics = {}
@@ -26,26 +26,26 @@ class PoseService:
         self.yt = {}
         self.h = {}
         self.xy = {}
-        self.stop = {}
+        self.stopped = {}
         self.reached = {}
         self.priorities = {}
 
         # service
-        self.srv = rospy.Service(pose_srv_name, SharePoses2, self.pose_cb)
+        self.srv = rospy.Service(pose_srv_name, SharePoses, self.pose_cb)
 
     def add_robot(self, rid, priority, lis_topic):
         self.count += 1
         self.xt[rid] = 0
         self.yt[rid] = 0
         self.ids.append(rid)
-        self.stop[rid] = False
+        self.stopped[rid] = False
         self.reached[rid] = False
         self.priorities[rid] = priority
         self.topics[rid] = lis_topic
 
-    def pose_cb(self, req: SharePoses2Request):
-        req_i = req.id
-        resp = SharePoses2Response()
+    def pose_cb(self, req: SharePosesRequest):
+        req_i = reqrid
+        resp = SharePosesResponse()
 
         # update goal
         if req.update:
@@ -60,20 +60,20 @@ class PoseService:
 
         # check if stopped
         if req.stopped:
-            self.stop[req_i] = True
+            self.stopped[req_i] = True
             return resp
 
         # calculate response
         for i in self.ids:
             x, y, h = self.get_odom(self.topics[i])
             self.h[i] = h
-            self.xy[i] = [x, y]
+            self.xy[i] = (x, y)
             if i == req_i:
                 continue
             resp.x.append(x)
             resp.y.append(y)
             resp.h.append(h)
-            resp.stopped.append(self.stop[i])
+            resp.stopped.append(self.stopped[i])
             resp.reached.append(self.reached[i])
         # calculate priorities
         priorities = self.cal_priorities(self.xy, req_i)
@@ -96,8 +96,8 @@ class PoseService:
         return priorities
 
     def update_goal(self, req):
-        self.xt[req.id] = req.xt
-        self.yt[req.id] = req.yt
+        self.xt[reqrid] = req.xt
+        self.yt[reqrid] = req.yt
 
     def get_odom(self, topic):
         topic_msg: Odometry = None
@@ -118,5 +118,5 @@ class PoseService:
         heading = orientation[2]
         return x, y, heading
 
-    def shutdown_hook(self):
-        rospy.loginfo("[PoseService]: shutting down from pose service")
+    # def shutdown_hook(self):
+    #     rospy.loginfo("[PoseService]: shutting down from pose service")

@@ -5,15 +5,18 @@ import numpy as np
 from geometry_msgs.msg import Pose2D
 from parameters import Params
 from create_model import MRSModel
+from apf.msg import RobotData, FleetData
+from mrapf_classes import PRobot, ApfRobot
 from my_utils import cal_angle_diff
-from mrapf_classes import PRobot, ApfRobot, AllRobotsData
 
 
 class APFPlanner:
     p: Params
     model: MRSModel
     robot: PRobot
-    ard: AllRobotsData
+    pose: Pose2D
+    rd: RobotData
+    fleet_data: FleetData
     multi_robots_vis: List[ApfRobot]
 
     def __init__(self, model: MRSModel, robot: PRobot, params: Params):
@@ -25,7 +28,8 @@ class APFPlanner:
 
         #
         self.pose = Pose2D()
-        self.ard = None
+        self.rd = None
+        self.fleet_data = None
         self.multi_robots_vis = []
         self.mp_bound = []
 
@@ -70,13 +74,23 @@ class APFPlanner:
         self.reached = False
         self.stopped = False
 
-    def planner_move(self, pose: Pose2D, ard: AllRobotsData):
+    def planner_move(self, pose: Pose2D, fleet_data: FleetData):
         # inputs - reset
         self.pose = pose
-        self.ard = ard
+        self.fleet_data = fleet_data
         self.reset_vals()
 
-        #
+        # get this robot data
+        crob: RobotData = None
+        for crob in fleet_data.fdata:
+            if crob.rid == self.p.rid:
+                self.pose.x = crob.x
+                self.pose.y = crob.y
+                self.pose.theta = crob.h
+                # rd = crob
+                break
+
+        # check dist to goal
         if self.goal_dist < self.p.goal_dis_tresh:
             self.reached = True
             return
@@ -89,8 +103,7 @@ class APFPlanner:
 
         # check stop_flag_full
         if self.stopped:
-            print("[planner_move, {self.p.id}], stop_flag_full")
-            self.stopped = True
+            print("[planner_move, {self.p.rid}], stop_flag_full")
             self.v = 0
             # self.w = 0
 
@@ -146,15 +159,17 @@ class APFPlanner:
     def f_robots(self):
         #
         robot_flag = False
-        self.stopped = False
-        ard = self.ard
+        fd: FleetData = self.fleet_data
         #
         robot_f = [0, 0]
         self.robot_f = [0, 0]
         #
-        for i in range(ard.nr):
-            dx = -(ard.x[i] - self.pose.x)
-            dy = -(ard.y[i] - self.pose.y)
+        rob: RobotData
+        for rob in fd.fdata:
+            if rob.rid == self.p.rid:
+                continue
+            dx = -(rob.x - self.pose.x)
+            dy = -(rob.y - self.pose.y)
             d_ro = np.sqrt(dx**2 + dy**2)
             theta = np.arctan2(dy, dx)
             angle_diff = cal_angle_diff(theta, self.pose.theta)
@@ -163,7 +178,7 @@ class APFPlanner:
                 continue
 
             # and abs(angle_diff) > np.pi/2:
-            if (not ard.reached) and d_ro < self.p.obst_half_d and ard.pr[i] > 0:
+            if (not rob.reached) and d_ro < self.p.obst_half_d and rob.priority > 0:
                 self.stopped = True
                 break
 

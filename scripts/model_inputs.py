@@ -116,7 +116,7 @@ class ModelInputs:
         self.xt = [1]
         self.yt = [10]
 
-    def collide(self, robot_n=2):
+    def collide(self, n_robots=2):
         # area
         lim = 7
         self.lim = lim
@@ -127,8 +127,8 @@ class ModelInputs:
         self.map_ind = 1
 
         # obstacles
-        xc1 = [3, 3, 5, 5, 7, 7, 9, 9, 11, 11]
-        yc1 = [3, 5, 3, 5, 3, 5, 3, 5, 3, 5]
+        # xc1 = [3, 3, 5, 5, 7, 7, 9, 9, 11, 11]
+        # yc1 = [3, 5, 3, 5, 3, 5, 3, 5, 3, 5]
         # xc2 = xc1*2
         # yc2 = yc1 + [y+6 for y in yc1]
         self.x_obst = []  # xc2
@@ -136,7 +136,7 @@ class ModelInputs:
         self.n_obst_orig = 0
 
         # robots
-        self.n_robots = 2
+        self.n_robots = n_robots
         # # 1
         # xs = [2, 5]
         # ys = [4, 4]
@@ -380,7 +380,7 @@ class ModelInputs:
         self.x_obst.extend(new_obst_x)
         self.y_obst.extend(new_obst_y)
 
-    def obstacles2(self, robot_n=2):
+    def obstacles2(self, n_robot=2):
 
         # area
         lim = 7
@@ -411,7 +411,7 @@ class ModelInputs:
         ys = [2.3, 3.5]
         xt = [3.5, 3.5]
         yt = [6.0, 3.5]
-        self.n_robots = 2
+        self.n_robots = n_robot
         self.heading = [np.pi/2, -np.pi/2]
         n_robots = self.n_robots
         self.ids = list(range(1, n_robots+1))
@@ -420,7 +420,7 @@ class ModelInputs:
         self.xt = [xt[i] for i in range(n_robots)]
         self.yt = [yt[i] for i in range(n_robots)]
 
-    def obstacles1(self, robot_n=2):
+    def obstacles1(self, n_robot=1):
 
         # area
         lim = 7
@@ -440,7 +440,7 @@ class ModelInputs:
         # self.modify_obst()
 
         # robots
-        self.n_robots = 1
+        self.n_robots = n_robot
         # 1
         xs = [3.5]  # [3.5, 3.5]
         ys = [2.3]  # [1.0, 3.5] //////

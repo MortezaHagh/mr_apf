@@ -10,6 +10,7 @@ project(apf)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
+  geometry_msgs
   actionlib
   actionlib_msgs
   message_generation
@@ -20,18 +21,18 @@ find_package(catkin REQUIRED COMPONENTS
 
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+ add_message_files(
+  FILES
+  RobotData.msg
+  FleetData.msg
+ )
 
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  SharePoses2.srv
-  SharePoses.srv
   InitRobot.srv
+  SharePoses.srv
+  SendRobotUpdate.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -50,7 +51,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES apf
- CATKIN_DEPENDS rospy std_msgs message_runtime
+ CATKIN_DEPENDS rospy std_msgs geometry_msgs message_runtime
 #  DEPENDS system_lib
 )
 

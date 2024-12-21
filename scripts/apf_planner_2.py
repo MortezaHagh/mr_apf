@@ -1,12 +1,13 @@
 #! /usr/bin/env python
 
-from typing import List, Tuple
+from typing import List, Dict, Tuple
 import numpy as np
 from geometry_msgs.msg import Pose2D
 from parameters import Params
 from create_model import MRSModel
+from apf.msg import RobotData, FleetData
+from mrapf_classes import PRobot, ApfRobot
 from my_utils import cal_angle_diff, cal_distance
-from mrapf_classes import PRobot, ApfRobot, AllRobotsData
 from shapely.geometry import Point, shape, MultiPoint  # type: ignore # pylint: disable-all
 # from shapely.geometry.polygon import Polygon
 
@@ -15,7 +16,10 @@ class APFPlanner:
     p: Params
     model: MRSModel
     robot: PRobot
-    ard: AllRobotsData
+    pose: Pose2D
+    rd: RobotData
+    fleet_data: FleetData
+    new_robots: List[ApfRobot]
     multi_robots_vis: List[ApfRobot]
     mp_bound: List[Tuple[float, float]]
 
@@ -28,7 +32,9 @@ class APFPlanner:
 
         #
         self.pose = Pose2D()
-        self.ard = None
+        self.rd = None
+        self.fleet_data = None
+        self.new_robots = []
         self.multi_robots_vis = []
         self.mp_bound = []
 
@@ -88,11 +94,21 @@ class APFPlanner:
         self.stop_flag_robots = False
         self.stop_flag_multi = False
 
-    def planner_move(self, pose: Pose2D, ard: AllRobotsData):
+    def planner_move(self, pose: Pose2D, fleet_data: FleetData):
         # inputs - reset
         self.pose = pose
-        self.ard = ard
+        self.fleet_data = fleet_data
         self.reset_vals()
+
+        # get this robot data
+        crob: RobotData = None
+        for crob in fleet_data.fdata:
+            if crob.rid == self.p.rid:
+                self.pose.x = crob.x
+                self.pose.y = crob.y
+                self.pose.theta = crob.h
+                self.rd = crob
+                break
 
         # check dist to goal
         if self.goal_dist < self.p.goal_dis_tresh:
@@ -104,7 +120,7 @@ class APFPlanner:
 
         # check stop_flag_multi
         if self.stop_flag_multi:
-            print(f"[planner_move, {self.p.id}], stop_flag_multi")
+            print(f"[planner_move, {self.p.rid}], stop_flag_multi")
             self.stopped = True
             return
         else:
@@ -116,7 +132,7 @@ class APFPlanner:
 
             # check stop flags
             if self.stop_flag_obsts or self.stop_flag_robots:
-                print("[planner_move, {self.p.id}], stop_flag_obsts or stop_flag_robots")
+                print(f"[planner_move, {self.p.rid}], stop_flag_obsts or stop_flag_robots")
                 self.v = 0
                 # self.w = 0
                 if abs(self.w) < (np.deg2rad(2)):
@@ -124,7 +140,7 @@ class APFPlanner:
 
             # check stop_flag_full
             if self.stop_flag_full:
-                print("[planner_move, {self.p.id}], stop_flag_full")
+                print(f"[planner_move, {self.p.rid}], stop_flag_full")
                 self.stopped = True
                 self.v = 0
                 # self.w = 0
@@ -169,19 +185,16 @@ class APFPlanner:
 
         # reset
         groups = []
-        AD_h_rR = []
-        new_robots = []
-        multi_robots = []
+        AD_h_rR: Dict[int, float] = {}
+        new_robots: List[ApfRobot] = []
+        multi_robots: List[ApfRobot] = []
         multi_robots_vis: List[ApfRobot] = []
-        robots_inds = []
+        robots_inds: List[int] = []
         robots_inds_f = {}
         self.new_robots = []
 
         # detect obsts
         self.detect_obsts()
-
-        # get data
-        ard = self.ard
 
         # is_goal_close
         goal_dist = cal_distance(self.pose.x, self.pose.y, self.goal_x, self.goal_y)
@@ -189,49 +202,50 @@ class APFPlanner:
             is_goal_close = True
 
         # get indices of robots in proximity circle
-        for i in range(ard.nr):
-            # rR
-            dx = (ard.x[i] - self.pose.x)
-            dy = (ard.y[i] - self.pose.y)
+        fd: FleetData = self.fleet_data
+        o_rob: RobotData = None
+        for o_rob in fd.fdata:
+            if o_rob.rid == self.p.rid:
+                continue
+            dx = (o_rob.x - self.pose.x)
+            dy = (o_rob.y - self.pose.y)
             d_rR = np.sqrt(dx**2 + dy**2)
             theta_rR = np.arctan2(dy, dx)
             ad_h_rR = cal_angle_diff(self.pose.theta, theta_rR)
             ad_h_rR_abs = abs(ad_h_rR)
-            ad_H_Rr = cal_angle_diff(ard.h[i], (theta_rR - np.pi))
+            ad_H_Rr = cal_angle_diff(o_rob.h, (theta_rR - np.pi))
             ad_H_Rr_abs = abs(ad_H_Rr)
-            AD_h_rR.append(ad_h_rR)
+            AD_h_rR[o_rob.rid] = ad_h_rR
 
             if (d_rR > (c_r * self.p.robot_start_d)):
                 continue
 
-            # if (not ard.reached[i]) or (d_rR < (1 * self.p.robot_start_d)):
-            # if (d_rR < (1 * self.p.robot_start_d)) or ((not ard.reached[i]) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr_abs < np.pi/2)):
+            # if (not o_rob.reached) or (d_rR < (1 * self.p.robot_start_d)):
+            # if (d_rR < (1 * self.p.robot_start_d)) or ((not o_rob.reached) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr_abs < np.pi/2)):
 
-            if (not ard.reached[i]) or (d_rR < (1 * self.p.robot_start_d)):
-                robots_inds.append(i)
+            if (not o_rob.reached) or (d_rR < (1 * self.p.robot_start_d)):
+                robots_inds.append(o_rob.rid)
 
             # individual robots
             if (d_rR < (1 * self.p.robot_start_d)):
                 nr = ApfRobot()
                 nr.d = d_rR
-                nr.x = ard.x[i]
-                nr.y = ard.y[i]
-                nr.H = ard.h[i]
+                nr.x = o_rob.x
+                nr.y = o_rob.y
+                nr.H = o_rob.h
                 nr.h_rR = ad_h_rR
                 nr.theta_rR = theta_rR
-                nr.p = (
-                    not (ard.reached[i] or ard.stopped[i])) and ard.pr[i] > 0
-                nr.stop = ard.stopped[i]
-                nr.reached = ard.reached[i]
+                nr.p = (not (o_rob.reached or o_rob.stopped)) and (o_rob.priority > self.rd.priority)
+                nr.stopped = o_rob.stopped
+                nr.reached = o_rob.reached
                 rc = self.p.robot_prec_d
                 nr.r_prec = rc
                 nr.r_half = 1.5 * rc
                 nr.r_start = 2.0 * rc
                 nr.z = 4 * self.p.fix_f * rc**4
                 new_robots.append(nr)
-                if ard.reached[i]:
-                    XY = self.eval_obst(
-                        ard.x[i], ard.y[i], self.p.robot_prec_d, d_rR)
+                if o_rob.reached:
+                    XY = self.eval_obst(o_rob.x, o_rob.y, self.p.robot_prec_d, d_rR)
                     for xy in XY:
                         dx_ = (xy[0] - self.pose.x)
                         dy_ = (xy[1] - self.pose.y)
@@ -242,11 +256,11 @@ class APFPlanner:
                         nnr.d = d_rR_
                         nnr.x = xy[0]
                         nnr.y = xy[1]
-                        nnr.H = ard.h[i]
+                        nnr.H = o_rob.h
                         nnr.h_rR = ad_h_rR_
                         nnr.theta_rR = theta_rR_
-                        nnr.p = ard.pr[i] > 0
-                        nnr.stop = True
+                        nnr.p = o_rob.priority > self.rd.priority
+                        nnr.stopped = True
                         nnr.reached = True
                         nnr.r_prec = nr.r_prec/1.5  # $
                         nnr.r_half = 1.5 * nnr.r_prec
@@ -271,8 +285,8 @@ class APFPlanner:
                 if len(robots_inds_2) == 0:
                     break
                 for ind_j in robots_inds_2:
-                    # if not (ard.reached[p] and ard.reached[ind_j]):
-                    dist = cal_distance(ard.x[p], ard.y[p], ard.x[ind_j], ard.y[ind_j])
+                    # if not (fd.fdata[p].reached and fd.fdata[ind_j].reached):
+                    dist = cal_distance(fd.fdata[p].x, fd.fdata[p].y, fd.fdata[ind_j].x, fd.fdata[ind_j].y)
                     if (dist < (self.p.robot_prec_d*2.2)):    # param 2
                         robots_inds_f[p].append(ind_j)
 
@@ -300,15 +314,14 @@ class APFPlanner:
                 is_target_in = False
 
                 # priorities
-                P = [ard.pr[i] > 0 for i in g]
+                P = [fd.fdata[i].priority > self.rd.priority for i in g]
 
                 # polygon
                 is_g2 = True
                 if len(g) > 2:
                     point_robot = Point(self.pose.x, self.pose.y)
                     point_target = Point(self.goal_x, self.goal_y)
-                    polys_points = [Point(ard.x[i], ard.y[i])
-                                    for i in g if (not ard.reached[i])]
+                    polys_points = [Point(fd.fdata[i].x, fd.fdata[i].y) for i in g if (not fd.fdata[i].reached)]
                     if (len(polys_points) > 2):
                         is_g2 = False
                         mpt = MultiPoint([shape(p) for p in polys_points])
@@ -340,10 +353,10 @@ class APFPlanner:
                     a_min = g[np.argmin(ad)]
                     a_max = g[np.argmax(ad)]
 
-                    x1 = ard.x[a_min]
-                    x2 = ard.x[a_max]
-                    y1 = ard.y[a_min]
-                    y2 = ard.y[a_max]
+                    x1 = fd.fdata[a_min].x
+                    x2 = fd.fdata[a_max].x
+                    y1 = fd.fdata[a_min].y
+                    y2 = fd.fdata[a_max].y
                     dx = x2-x1
                     dy = y2-y1
                     theta = np.arctan2(dy, dx)
@@ -577,7 +590,7 @@ class APFPlanner:
             if (nr.d < nr.r_prec):
                 if (abs(nr.h_rR) < (np.pi/4)):  # to check # np.pi/4 np.pi/2
                     self.stop_flag_robots = True
-                if (not nr.reached) and (not nr.stop):  # and nr.p:
+                if (not nr.reached) and (not nr.stopped):  # and nr.p:
                     if abs(ad_rR_h) < np.pi/2 and abs(ad_Rr_H) > np.pi/2:
                         self.stop_flag_full = True
                         # return [0, 0]
@@ -612,7 +625,7 @@ class APFPlanner:
             # adjust heading
             if target_other_side:
                 if (nr.r_half < nr.d < nr.r_start):
-                    if (not nr.reached) and (not nr.stop):
+                    if (not nr.reached) and (not nr.stopped):
                         if (flag_rR and abs(ad_h_rR) < np.pi/2) and (abs(ad_Rr_H) < (np.pi/2)):
                             nr_force = [templ2[0]+nr_force[0],
                                         templ2[1]+nr_force[1]]
@@ -622,7 +635,7 @@ class APFPlanner:
                                         templ3[1]+nr_force[1]]
 
                 elif (nr.r_prec < nr.d < nr.r_half):
-                    if (not nr.reached) and (not nr.stop):
+                    if (not nr.reached) and (not nr.stopped):
                         if (flag_rR and abs(ad_h_rR) < np.pi/2 and abs(ad_Rr_H) < np.pi/2):
                             nr_force = [templ2_2[0]+nr_force[0],
                                         templ2_2[1]+nr_force[1]]

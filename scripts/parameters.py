@@ -3,43 +3,41 @@ import numpy as np
 
 class Params:
     sim: str
-    id: int
+    rid: int
     ns: str
     ac_name: str
     cmd_topic: str
-    lis_topic: str
     name_space: str
+    global_frame: str
+    local_frame: str
+    fleet_data_topic: str
 
     def __init__(self, rid: int = 0, sim: str = "3D"):
         self.sim = sim
-        self.id = rid
-        self.ns = None
-        self.name_space = None
-        self.ac_name = None
-        self.cmd_topic = None
-        self.lis_topic = None
-        self.sim_params()
+        self.rid = rid
+        self.sim_params(rid)
 
     def set_name_space(self, name_space: str):
         self.ns = name_space
         self.name_space = name_space
         self.ac_name = name_space+self.ac_name
         self.cmd_topic = name_space+self.cmd_topic
-        self.lis_topic = name_space+self.lis_topic
 
     # parameters for simulation
-    def sim_params(self):
-        # proccess names
+    def sim_params(self, rid: int):
+        # params
         self.ns = ''
         self.name_space = ''
-        self.lis_topic = '/odom'
         self.cmd_topic = '/cmd_vel'
         self.ac_name = "/apf_action"
-        self.pose_srv_name = "/pose_service"
+        self.sru_srv_name = "/send_robot_update"  # send_robot_update_srv
+        self.global_frame = "map"
+        self.local_frame = "/base_footprint"  # odom
+        self.fleet_data_topic = "fleet_data"
 
         # general
         self.path_unit = 1.0
-        self.priority = id
+        self.priority = rid
         self.dt = 0.1
 
         # velocities

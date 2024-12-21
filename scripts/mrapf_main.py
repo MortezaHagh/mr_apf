@@ -7,12 +7,12 @@ import rospy
 from plotter import Plotter
 from results import Results
 from parameters import Params
-from spawn_map import Spawning
+from spawn_map import spawning
 from create_model import MRSModel
 from visualization import RvizViusalizer
+from robot_planner_ac import RobotPlannerAc
 from planning_clinets import PlanningClients
 from central_mrapf_service import CentralMRAPF
-from robot_planner_server import RobotPlannerAc
 from mrapf_classes import TestInfo, AllPlannersData
 from initiate_planners import initiate_robots_planners
 
@@ -29,7 +29,7 @@ class Run():
         # data
         sim = "3d"  # 2D
         self.params = Params(sim=sim)
-        self.test_info = TestInfo(v=1, n_robots=2, method=2, ns="")  # test info
+        self.test_info = TestInfo(v=1, n_robots=3, method=2, ns="")  # test info
         self.planners_data = AllPlannersData()  # planners data (trajectory and time)
 
         # ros settings
@@ -41,7 +41,7 @@ class Run():
         self.model = MRSModel(map_id=1, path_unit=path_unit, n_robots=self.test_info.n_robots)
 
         # spawn robots and obstacles
-        Spawning(model=self.model, path_unit=1.0)
+        spawning(model=self.model, path_unit=1.0)
 
         # visualize
         self.visualizer = RvizViusalizer(model=self.model)
@@ -54,6 +54,11 @@ class Run():
         initiate_robots_planners(self.model.robots_data.ids)
         self.rate.sleep()
 
+        # update fleet data
+        for _ in range(20):
+            self.cmrapf.fleet_data_h.update_all()
+            self.rate.sleep()
+
         # planning clients - sending goals *************************************
         self.planning_clients = PlanningClients(self.model.robots_data)
         self.planning_clients.send_goals()
@@ -65,12 +70,14 @@ class Run():
         self.final_results_plot()
 
     def check_status(self):
+        self.cmrapf.fleet_data_h.update_all()
         status = [c.get_state() for c in self.planning_clients.clients]
         s_flags = [s < 2 for s in status]
         while (not rospy.is_shutdown()) and (any(s_flags)):
+            self.cmrapf.fleet_data_h.update_all()
             status = [c.get_state() for c in self.planning_clients.clients]
             s_flags = [s < 2 for s in status]
-            self.visualizer.create_robot_circles(self.cmrapf.pose_srv.xy)
+            self.visualizer.create_robot_circles(self.cmrapf.fleet_data_h.xy)
             self.rate.sleep()
 
         rospy.loginfo(" ---------------------------------")
@@ -106,3 +113,4 @@ class Run():
 if __name__ == "__main__":
     rospy.init_node("mrapf_node")
     run = Run()
+    rospy.spin()

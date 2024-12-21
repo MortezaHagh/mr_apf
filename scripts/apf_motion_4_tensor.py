@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from visualization import RvizViusalizer
-from apf.srv import SharePoses2, SharePoses2Request
+from apf.srv import SharePoses, SharePosesRequest
 from tf.transformations import euler_from_quaternion
 
 # from shapely.geometry.polygon import Polygon
@@ -27,11 +27,11 @@ class NewRobots:
         self.r_start = 0
         self.p = False
         self.big = False
-        self.stop = False
+        self.stopped = False
         self.reached = False
 
 
-class PlannerROS(object):
+class PlannerRT(object):
 
     def __init__(self, model, robot, init_params):
 
@@ -58,7 +58,7 @@ class PlannerROS(object):
         # pose service client
         rospy.wait_for_service(self.p.pose_srv_name)
         self.pose_client = rospy.ServiceProxy(
-            self.p.pose_srv_name, SharePoses2)
+            self.p.pose_srv_name, SharePoses)
 
         # execute goal
         self.exec_cb()
@@ -99,7 +99,7 @@ class PlannerROS(object):
         self.prioriy = robot.priority
 
         # params
-        self.p.id = init_params.id
+        self.p.rid = init_params.rid
         self.p.ns = init_params.name_space
         self.p.topic = init_params.lis_topic
         self.cmd_topic = init_params.cmd_topic
@@ -149,16 +149,16 @@ class PlannerROS(object):
         while self.goal_dist > self.p.goal_dis_tresh and not rospy.is_shutdown():
 
             # for plot tensors
-            if self.p.id == 2:
+            if self.p.rid == 2:
                 break
 
             # detect and group
             self.detect_group()
 
             if self.stop_flag_multi:
-                print(self.p.id, "stop_flag_multi")
-                req = SharePoses2Request()
-                req.id = self.p.id
+                print(self.p.rid, "stop_flag_multi")
+                req = SharePosesRequest()
+                reqrid = self.p.rid
                 req.stopped = True
                 self.pose_client(req)
                 self.v = 0
@@ -179,16 +179,16 @@ class PlannerROS(object):
                 self.rec.w.append(self.w)
 
                 if self.stop_flag_obsts or self.stop_flag_robots:
-                    print(self.p.id, "stop_flag_obsts or stop_flag_robots")
+                    print(self.p.rid, "stop_flag_obsts or stop_flag_robots")
                     self.v = 0
                     # self.w = 0
                     if abs(self.w) < (np.deg2rad(2)):
                         self.v = self.p.v_min_2
 
                 if self.stop_flag_full:
-                    print(self.p.id, "stop_flag_full")
-                    req = SharePoses2Request()
-                    req.id = self.p.id
+                    print(self.p.rid, "stop_flag_full")
+                    req = SharePosesRequest()
+                    reqrid = self.p.rid
                     req.stopped = True
                     self.pose_client(req)
                     self.v = 0
@@ -205,18 +205,18 @@ class PlannerROS(object):
             self.rec.y.append(round(self.r_y, 3))
 
             n = 1
-            if self.p.id == n:
+            if self.p.rid == n:
                 print("fm: ", self.stop_flag_multi)
-            if self.p.id == n:
+            if self.p.rid == n:
                 print("f_r", round(f_r, 2), "f_theta", round(f_theta, 2))
-            if self.p.id == n:
+            if self.p.rid == n:
                 print("moving", "v", round(self.v, 2), "w", round(self.w, 2))
-            if self.p.id == n:
+            if self.p.rid == n:
                 print(" ------------------------------------ ")
             self.rate.sleep()
 
-        req = SharePoses2Request()
-        req.id = self.p.id
+        req = SharePosesRequest()
+        reqrid = self.p.rid
         req.reached = True
         self.pose_client(req)
         self.stop()
@@ -312,8 +312,8 @@ class PlannerROS(object):
         self.detect_obsts()
 
         # get data
-        req_poses = SharePoses2Request()
-        req_poses.id = self.rid
+        req_poses = SharePosesRequest()
+        req_posesrid = self.rid
         req_poses.update = False
         req_poses.stopped = False
         resp_poses = self.pose_client(req_poses)
@@ -361,7 +361,7 @@ class PlannerROS(object):
                 nr.theta_rR = theta_rR
                 nr.p = (
                     not (robots_reached[i] or robots_stopped[i])) and robots_priority[i] > 0
-                nr.stop = robots_stopped[i]
+                nr.stopped = robots_stopped[i]
                 nr.reached = robots_reached[i]
                 rc = self.p.robot_prec_d
                 nr.r_prec = rc
@@ -386,7 +386,7 @@ class PlannerROS(object):
                         nnr.h_rR = ad_h_rR_
                         nnr.theta_rR = theta_rR_
                         nnr.p = robots_priority[i] > 0
-                        nnr.stop = True
+                        nnr.stopped = True
                         nnr.reached = True
                         nnr.r_prec = nr.r_prec/1.5  # to check
                         nnr.r_half = 1.5 * nnr.r_prec
@@ -710,7 +710,7 @@ class PlannerROS(object):
                 if nr.p:
                     self.stop_flag_robots
                     R_coeff = -1
-                #     print(self.p.id, " ==== ")
+                #     print(self.p.rid, " ==== ")
                 # if abs(ad_rR_h)>abs(ad_Rr_H):
                 #     R_coeff = -1
                 #     flag_rR = False
@@ -719,7 +719,7 @@ class PlannerROS(object):
             if (nr.d < nr.r_prec):
                 if (abs(nr.h_rR) < (np.pi/4)):  # to check # np.pi/4 np.pi/2
                     self.stop_flag_robots = True
-                if (not nr.reached) and (not nr.stop):  # and nr.p:
+                if (not nr.reached) and (not nr.stopped):  # and nr.p:
                     if abs(ad_rR_h) < np.pi/2 and abs(ad_Rr_H) > np.pi/2:
                         self.stop_flag_full = True
                         # return [0, 0]
@@ -754,7 +754,7 @@ class PlannerROS(object):
             # adjust heading
             if target_other_side:
                 if (nr.r_half < nr.d < nr.r_start):
-                    if (not nr.reached) and (not nr.stop):
+                    if (not nr.reached) and (not nr.stopped):
                         if (flag_rR and abs(ad_h_rR) < np.pi/2) and (abs(ad_Rr_H) < (np.pi/2)):
                             nr_force = [templ2[0]+nr_force[0],
                                         templ2[1]+nr_force[1]]
@@ -764,7 +764,7 @@ class PlannerROS(object):
                                         templ3[1]+nr_force[1]]
 
                 elif (nr.r_prec < nr.d < nr.r_half):
-                    if (not nr.reached) and (not nr.stop):
+                    if (not nr.reached) and (not nr.stopped):
                         if (flag_rR and abs(ad_h_rR) < np.pi/2 and abs(ad_Rr_H) < np.pi/2):
                             nr_force = [templ2_2[0]+nr_force[0],
                                         templ2_2[1]+nr_force[1]]
@@ -896,7 +896,7 @@ class PlannerROS(object):
 
     def viz_arrow(self, nr_force, ip=True):
         n = 1
-        if True:  # self.p.id==n:
+        if True:  # self.p.rid==n:
             theta = np.arctan2(nr_force[1], nr_force[0])
             theta = np.arctan2(np.sin(theta), np.cos(theta))
             theta = self.r_h + theta
@@ -1243,7 +1243,7 @@ class PlannerROS(object):
                     if nr.p:
                         self.stop_flag_robots
                         R_coeff = -1
-                    #     print(self.p.id, " ==== ")
+                    #     print(self.p.rid, " ==== ")
                     # if abs(ad_rR_h)>abs(ad_Rr_H):
                     #     R_coeff = -1
                     #     flag_rR = False
@@ -1252,7 +1252,7 @@ class PlannerROS(object):
                 if (nr.d < nr.r_prec):
                     if (abs(nr.h_rR) < (np.pi/4)):  # +np.pi/10
                         self.stop_flag_robots = True
-                    if (not nr.reached) and (not nr.stop):  # and nr.p:
+                    if (not nr.reached) and (not nr.stopped):  # and nr.p:
                         if abs(ad_rR_h) < np.pi/2 and abs(ad_Rr_H) > np.pi/2:
                             self.stop_flag_full = True
                             # return [0, 0]
@@ -1287,9 +1287,9 @@ class PlannerROS(object):
 
                 # adjust heading
                 if target_other_side:
-                    # if self.p.id==1: print("case 0, ===========")
+                    # if self.p.rid==1: print("case 0, ===========")
                     if (nr.r_half < nr.d < nr.r_start):
-                        if (not nr.reached) and (not nr.stop):
+                        if (not nr.reached) and (not nr.stopped):
                             if (flag_rR and abs(ad_h_rR) < np.pi/2) and (abs(ad_Rr_H) < (np.pi/2)):
                                 nr_force = [templ2[0]+nr_force[0],
                                             templ2[1]+nr_force[1]]
@@ -1299,7 +1299,7 @@ class PlannerROS(object):
                                             templ3[1]+nr_force[1]]
 
                     elif (nr.r_prec < nr.d < nr.r_half):
-                        if (not nr.reached) and (not nr.stop):
+                        if (not nr.reached) and (not nr.stopped):
                             if (flag_rR and abs(ad_h_rR) < np.pi/2 and abs(ad_Rr_H) < np.pi/2):
                                 nr_force = [templ2_2[0]+nr_force[0],
                                             templ2_2[1]+nr_force[1]]
