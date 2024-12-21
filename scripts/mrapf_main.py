@@ -11,14 +11,15 @@ from spawn_map import Spawning
 from create_model import MRSModel
 from visualization import RvizViusalizer
 from planning_clinets import PlanningClients
-from robot_planner_server import RobotPlanner
 from central_mrapf_service import CentralMRAPF
+from robot_planner_server import RobotPlannerAc
 from mrapf_classes import TestInfo, AllPlannersData
 from initiate_planners import initiate_robots_planners
 
 
 class Run():
     rate: rospy.Rate
+    params: Params
     model: MRSModel
     test_info: TestInfo
     planners_data: AllPlannersData
@@ -26,7 +27,9 @@ class Run():
     def __init__(self):
 
         # data
-        self.test_info = TestInfo(v=1, n_robots=2, method=2)  # test info
+        sim = "3d"  # 2D
+        self.params = Params(sim=sim)
+        self.test_info = TestInfo(v=1, n_robots=2, method=2, ns="")  # test info
         self.planners_data = AllPlannersData()  # planners data (trajectory and time)
 
         # ros settings
@@ -76,9 +79,9 @@ class Run():
 
     def final_results_plot(self):
         # planners_data
-        planners: List[RobotPlanner] = self.cmrapf.planners
+        planners: List[RobotPlannerAc] = self.cmrapf.planners
         for ac in planners:
-            self.planners_data.add_data(ac.p_data)
+            self.planners_data.add_data(ac.planner_data)
 
         #
         Results(self.planners_data, self.test_info.res_file_p)
@@ -86,9 +89,7 @@ class Run():
         self.plotting()
 
     def plotting(self):
-        # map
-        params = Params()
-        plotter = Plotter(self.model, params, self.test_info.res_file_p)
+        plotter = Plotter(self.model, self.params, self.test_info.res_file_p)
         plotter.plot_all_paths(self.planners_data)
         plt.show()
 
@@ -103,5 +104,5 @@ class Run():
 
 
 if __name__ == "__main__":
-    rospy.init_node("main_node")
+    rospy.init_node("mrapf_node")
     run = Run()

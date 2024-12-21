@@ -75,14 +75,14 @@ class PlannerROS(object):
         self.goal_theta = 0
         self.goal_dist = 1000
         self.rec.phis = []
-        self.rec.v_lin = []
-        self.rec.v_ang = []
-        self.rec.path_x = []
-        self.rec.path_y = []
-        self.rec.force_tr = []
-        self.rec.force_tt = []
-        self.rec.force_or = []
-        self.rec.force_ot = []
+        self.rec.v = []
+        self.rec.w = []
+        self.rec.x = []
+        self.rec.y = []
+        self.rec.f_tr = []
+        self.rec.f_tt = []
+        self.rec.f_or = []
+        self.rec.f_ot = []
         self.is_multi = False
         self.near_obst = False
         self.near_robots = False
@@ -175,8 +175,8 @@ class PlannerROS(object):
 
                 # calculate velocities
                 self.cal_vel(f_r, f_theta, phi)
-                self.rec.v_lin.append(self.v)
-                self.rec.v_ang.append(self.w)
+                self.rec.v.append(self.v)
+                self.rec.w.append(self.w)
 
                 if self.stop_flag_obsts or self.stop_flag_robots:
                     print(self.p.id, "stop_flag_obsts or stop_flag_robots")
@@ -201,8 +201,8 @@ class PlannerROS(object):
             self.cmd_vel_pub.publish(move_cmd)
 
             # result
-            self.rec.path_x.append(round(self.r_x, 3))
-            self.rec.path_y.append(round(self.r_y, 3))
+            self.rec.x.append(round(self.r_x, 3))
+            self.rec.y.append(round(self.r_y, 3))
 
             n = 1
             if self.p.id == n:
@@ -283,10 +283,10 @@ class PlannerROS(object):
         self.viz_arrow([f_r, f_theta], False)
 
         # self.rec.phis.append(phi)
-        # self.rec.force_or.append(self.obs_f[0])
-        # self.rec.force_ot.append(self.obs_f[1])
-        # self.rec.force_tr.append(self.target_f[0])
-        # self.rec.force_tt.append(self.target_f[1])
+        # self.rec.f_or.append(self.obs_f[0])
+        # self.rec.f_ot.append(self.obs_f[1])
+        # self.rec.f_tr.append(self.target_f[0])
+        # self.rec.f_tt.append(self.target_f[1])
 
         return [f_r, f_theta, phi]
 

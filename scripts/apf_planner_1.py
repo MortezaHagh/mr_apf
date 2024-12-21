@@ -6,17 +6,17 @@ from geometry_msgs.msg import Pose2D
 from parameters import Params
 from create_model import MRSModel
 from my_utils import cal_angle_diff
-from mrapf_classes import PlannerRobot, ApfRobot, AllRobotsData
+from mrapf_classes import PRobot, ApfRobot, AllRobotsData
 
 
 class APFPlanner:
     p: Params
     model: MRSModel
-    robot: PlannerRobot
+    robot: PRobot
     ard: AllRobotsData
     multi_robots_vis: List[ApfRobot]
 
-    def __init__(self, model: MRSModel, robot: PlannerRobot, params: Params):
+    def __init__(self, model: MRSModel, robot: PRobot, params: Params):
         # data
         self.p = params
         self.model = model
@@ -119,11 +119,11 @@ class APFPlanner:
         self.f_theta = f_theta
         self.phi = phi
 
-        # self.rec.phis.append(phi)
-        # self.rec.force_or.append(self.obs_f[0])
-        # self.rec.force_ot.append(self.obs_f[1])
-        # self.rec.force_tr.append(self.target_f[0])
-        # self.rec.force_tt.append(self.target_f[1])
+        # self.pd.phis.append(phi)
+        # self.pd.f_or.append(self.obs_f[0])
+        # self.pd.f_ot.append(self.obs_f[1])
+        # self.pd.f_tr.append(self.target_f[0])
+        # self.pd.f_tt.append(self.target_f[1])
 
     def f_target(self):
         # r_g

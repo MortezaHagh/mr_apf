@@ -2,6 +2,7 @@ import numpy as np
 
 
 class Params:
+    sim: str
     id: int
     ns: str
     ac_name: str
@@ -9,7 +10,8 @@ class Params:
     lis_topic: str
     name_space: str
 
-    def __init__(self, rid=0):
+    def __init__(self, rid: int = 0, sim: str = "3D"):
+        self.sim = sim
         self.id = rid
         self.ns = None
         self.name_space = None
@@ -87,7 +89,7 @@ class Params:
         self.robot_half_d = 1.5 * self.robot_prec_d
         self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
 
-        # # for static -----------
+        # # for 2D -----------
 
         # self.danger_r = 0.25             # real obst radius
         self.obs_effect_r = 1.0          # obstacles effective radius

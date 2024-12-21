@@ -4,14 +4,17 @@ import os
 import rospkg
 from apf.srv import SharePoses2Response
 
+
 class TestInfo:
     v: int
+    ns: str
     method: int
     n_robots: int
     res_file_p: str
 
-    def __init__(self, v: int = 1, n_robots: int = 2, method: int = 2):
+    def __init__(self, v: int = 1, n_robots: int = 2, method: int = 2, ns: str = ""):
         self.v = v
+        self.ns = ns
         self.method = method
         self.n_robots = n_robots
         self.res_file_p = ""
@@ -19,7 +22,7 @@ class TestInfo:
 
     def create_paths(self):
         # names
-        folder_name = "T" + str(self.n_robots) + "_V" + str(self.v) + "_M" + str(self.method)
+        folder_name = self.ns + "T" + str(self.n_robots) + "_V" + str(self.v) + "_M" + str(self.method)
         # Create directory
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
@@ -30,73 +33,7 @@ class TestInfo:
         self.res_file_p = result_path+'/'
 
 
-class TimeData:
-    start: float
-    end: float
-    dur: float
-
-    def __init__(self, start: float, end: float):
-        self.start = start
-        self.end = end
-        self.dur = 0
-        self.cal_dur()
-
-    def cal_dur(self):
-        self.dur = round(self.end - self.start, 3)
-
-
-class PlannerData:
-    time: TimeData
-    x: List[float]
-    y: List[float]
-    xy: Dict[str, List[float]]
-    f_tt: List[float]
-    f_or: List[float]
-    f_ot: List[float]
-    phiis: List[float]
-
-    def __init__(self, x=None, y=None):
-        self.x = x
-        self.y = y
-        self.xy = {"x": x, "y": y}
-        self.time = None
-        #
-        self.f_tr = None
-        self.f_tt = None
-        self.f_or = None
-        self.f_ot = None
-        self.phiis = None
-
-    def set_time(self, start: float, end: float):
-        self.time = TimeData(start, end)
-
-
-class AllPlannersData:
-    n: int
-    planners_data: List[PlannerData]
-    all_x: List[List[float]]
-    all_y: List[List[float]]
-    all_xy: Dict[str, Dict[str, List[int]]]
-    all_times: Dict[str, float]
-
-    def __init__(self):
-        self.n = 0
-        self.all_x = []
-        self.all_y = []
-        self.all_xy = dict()
-        self.all_times = dict()
-        self.planners_data = []
-
-    def add_data(self, p_data: PlannerData):
-        self.planners_data.append(p_data)
-        self.all_x.append(p_data.x)
-        self.all_y.append(p_data.y)
-        self.all_xy[str(self.n)] = p_data.xy
-        self.all_times[str(self.n)] = p_data.time.dur
-        self.n += 1
-
-
-class PlannerRobot:
+class PRobot:
     def __init__(self, xs=0, ys=0, rid=0, name="r", heading=0, xt=0, yt=0):
         self.id = rid
         self.xs = xs
@@ -108,17 +45,65 @@ class PlannerRobot:
         self.priority = rid
 
 
-class Records:
+class PlannerData:
+    start_t: float
+    end_t: float
+    dur_t: float
+    x: List[float]
+    y: List[float]
+    xy: Dict[str, List[float]]
+    f_tt: List[float]
+    f_tr: List[float]
+    f_or: List[float]
+    f_ot: List[float]
+    phis: List[float]
+
     def __init__(self):
+        self.start_t = None
+        self.end_t = None
+        self.dur_t = None
+        # v
+        self.v = []
+        self.w = []
+        # xy
+        self.x = []
+        self.y = []
+        self.xy = {"x": [], "y": []}
+        # f
+        self.f_tr = []
+        self.f_tt = []
+        self.f_or = []
+        self.f_ot = []
         self.phis = []
-        self.v_lin = []
-        self.v_ang = []
-        self.path_x = []
-        self.path_y = []
-        self.force_tr = []
-        self.force_tt = []
-        self.force_or = []
-        self.force_ot = []
+
+    def finalize(self):
+        self.xy = {"x": self.x, "y": self.y}
+        self.dur_t = round(self.end_t - self.start_t, 3)
+
+
+class AllPlannersData:
+    n: int
+    all_x: List[List[float]]
+    all_y: List[List[float]]
+    all_times: Dict[str, float]
+    planners_data: List[PlannerData]
+    all_xy: Dict[str, Dict[str, List[int]]]
+
+    def __init__(self):
+        self.n = 0
+        self.all_x = []
+        self.all_y = []
+        self.all_xy = {}
+        self.all_times = {}
+        self.planners_data = []
+
+    def add_data(self, p_data: PlannerData):
+        self.planners_data.append(p_data)
+        self.all_x.append(p_data.x)
+        self.all_y.append(p_data.y)
+        self.all_xy[str(self.n)] = p_data.xy
+        self.all_times[str(self.n)] = p_data.dur_t
+        self.n += 1
 
 
 class AllRobotsData:
@@ -129,7 +114,7 @@ class AllRobotsData:
     pr: List[int]
     reached: List[bool]
     stopped: List[bool]
-    
+
     def __init__(self):
         self.nr = []
         self.x = []
@@ -138,7 +123,7 @@ class AllRobotsData:
         self.pr = []
         self.reached = []
         self.stopped = []
-        
+
     def update_by_resp(self, resp: SharePoses2Response):
         self.nr = resp.nr
         self.x = resp.x
@@ -147,6 +132,9 @@ class AllRobotsData:
         self.pr = resp.pr
         self.reached = resp.reached
         self.stopped = resp.stopped
+
+    def update(self):
+        pass
 
 
 class ApfRobot:

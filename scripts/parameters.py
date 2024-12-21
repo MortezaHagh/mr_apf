@@ -2,6 +2,7 @@ import numpy as np
 
 
 class Params:
+    sim: str
     id: int
     ns: str
     ac_name: str
@@ -9,7 +10,8 @@ class Params:
     lis_topic: str
     name_space: str
 
-    def __init__(self, rid=0):
+    def __init__(self, rid: int = 0, sim: str = "3D"):
+        self.sim = sim
         self.id = rid
         self.ns = None
         self.name_space = None

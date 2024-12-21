@@ -15,10 +15,10 @@ class RobotPlanner(object):
         rospy.on_shutdown(self.shutdown_hook)
 
         # preallocation
-        self.rec.v_lin = []
-        self.rec.v_ang = []
-        self.rec.path_x = []
-        self.rec.path_y = []
+        self.pd.v = []
+        self.pd.w = []
+        self.pd.x = []
+        self.pd.y = []
         self.force_r = []
         self.force_t = []
         self.res = ApfResult()
@@ -72,8 +72,8 @@ class RobotPlanner(object):
 
         # result
         self.res.result = True
-        self.res.path_x = self.rec.path_x
-        self.res.path_y = self.rec.path_y
+        self.res.x = self.pd.x
+        self.res.y = self.pd.y
         self.ac_.set_succeeded(self.res)
         return
 
@@ -87,8 +87,8 @@ class RobotPlanner(object):
 
             # calculate velocities
             self.cal_vel(f_r, f_theta, phi)
-            self.rec.v_lin.append(self.v)
-            self.rec.v_ang.append(self.w)
+            self.pd.v.append(self.v)
+            self.pd.w.append(self.w)
 
             # update poses
             vt = self.v*self.dt
@@ -98,8 +98,8 @@ class RobotPlanner(object):
             self.r_theta = self.modify_angle(theta)
 
             # result
-            self.rec.path_x.append(self.r_x)
-            self.rec.path_y.append(self.r_y)
+            self.pd.x.append(self.r_x)
+            self.pd.y.append(self.r_y)
 
             # # feedback
             # self.feedback.path = [self.r_x, self.r_y]

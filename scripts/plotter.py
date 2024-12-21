@@ -71,7 +71,7 @@ class Plotter:
         line2, = ax.plot(data.f_tt, '-g', label="target t")
         line3, = ax.plot(data.f_or, '-r', label="object r")
         line4, = ax.plot(data.f_ot, '-k', label="object t")
-        line5, = ax2.plot(data.phiis, '--', label="phi")
+        line5, = ax2.plot(data.phis, '--', label="phi")
         ax.legend(handles=[line1, line2, line3, line4])
         ax2.legend(handles=[line5])
         fig.savefig(self.save_path + ".svg", format="svg")

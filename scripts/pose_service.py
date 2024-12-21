@@ -7,10 +7,10 @@ from tf.transformations import euler_from_quaternion
 from apf.srv import SharePoses2, SharePoses2Response, SharePoses2Request
 
 
-class PoseService(object):
+class PoseService:
     xy: Dict[int, List[float]]
 
-    def __init__(self, pose_srv_name):
+    def __init__(self, pose_srv_name: str):
 
         # data
         self.pose_srv_name = pose_srv_name

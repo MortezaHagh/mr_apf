@@ -7,8 +7,8 @@ import rospy
 from parameters import Params
 from create_model import MRSModel
 from pose_service import PoseService
-from mrapf_classes import PlannerRobot
-from robot_planner_server import RobotPlanner
+from mrapf_classes import PRobot
+from robot_planner_server import RobotPlannerAc
 from apf.srv import InitRobot, InitRobotResponse, InitRobotRequest
 
 
@@ -17,8 +17,8 @@ class CentralMRAPF:
     robot_ids: List[int]
     model: MRSModel
     pose_srv: PoseService
-    robots: List[PlannerRobot]
-    planners: List[RobotPlanner]
+    robots: List[PRobot]
+    planners: List[RobotPlannerAc]
 
     def __init__(self, model: MRSModel, central_mrapf_srv_name: str):
         rospy.loginfo(f"[{self.__class__.__name__}]: Initializing Central MRAPF Path Planning Service Server.")
@@ -47,7 +47,7 @@ class CentralMRAPF:
         # robot object
         rid = req.id
         heading = np.deg2rad(req.theta)
-        robot = PlannerRobot(req.xs, req.ys, req.id, req.name, heading, req.xt, req.yt)
+        robot = PRobot(req.xs, req.ys, req.id, req.name, heading, req.xt, req.yt)
 
         # update robotic system data
         self.n_robots += 1
@@ -56,16 +56,16 @@ class CentralMRAPF:
 
         # setting - parameters
         name_s = "/r" + str(rid)
-        action_params = Params(rid)
-        action_params.set_name_space(name_s)
+        params = Params(rid)
+        params.set_name_space(name_s)
 
         # update pose service
-        self.pose_srv.add_robot(rid, robot.priority, action_params.lis_topic)
-        self.pose_srv.topics[rid] = action_params.lis_topic
+        self.pose_srv.add_robot(rid, robot.priority, params.lis_topic)
+        self.pose_srv.topics[rid] = params.lis_topic
 
         # motion_action action *************************************************
         rospy.loginfo(f"[{self.__class__.__name__}]: Creating Initial Robot Action: {name_s}/motion_action ...")
-        ac = RobotPlanner(self.model, robot, action_params)
+        ac = RobotPlannerAc(self.model, robot, params)
         self.planners.append(ac)
 
         # service responce
