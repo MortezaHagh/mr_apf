@@ -26,14 +26,10 @@ class RobotPlannerAc:
 
         # setting - parameters
         self.params = params
-        self.name_s = params.name_space
+        self.name_s = params.ns
 
         # shutdown hook
         rospy.on_shutdown(self.shutdown)
-
-        # # pose service client
-        # rospy.wait_for_service(params.pose_srv_name)
-        # self.pose_client = rospy.ServiceProxy(params.pose_srv_name, SharePoses)
 
         # action: /r#/apf_action ===============================================
         self.result = ApfResult()

@@ -100,7 +100,7 @@ class PlannerRT(object):
 
         # params
         self.p.rid = init_params.rid
-        self.p.ns = init_params.name_space
+        self.p.ns = init_params.ns
         self.p.topic = init_params.lis_topic
         self.cmd_topic = init_params.cmd_topic
         self.p.pose_srv_name = init_params.pose_srv_name

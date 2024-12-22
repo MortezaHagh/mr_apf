@@ -1,11 +1,11 @@
 #! /usr/bin/env python
 
-from typing import List
 import rospy
+from create_model import MRSModel
 from apf.srv import InitRobot, InitRobotRequest
 
 
-def initiate_robots_planners(ids: List[int]):
+def initiate_robots_planners(model: MRSModel):
     """ Initializing Planners by calling central service for each robot.
         Simulating each robot connecting to the central service.
     """
@@ -14,9 +14,14 @@ def initiate_robots_planners(ids: List[int]):
     srv_name = "/central_mrapf_srv"
     rospy.wait_for_service(srv_name)
     initial_robots = rospy.ServiceProxy(srv_name, InitRobot)
-    for rid in ids:
+    for r in model.robots:
         req = InitRobotRequest()
-        req.rid = rid
-        req.name = str(rid)
+        req.rid = r.rid
+        req.xs = r.xs
+        req.ys = r.ys
+        req.xt = r.xt
+        req.yt = r.yt
+        req.theta = r.heading
+        req.name = str(r.rid)
         initial_robots(req)
         rate.sleep()

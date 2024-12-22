@@ -5,36 +5,41 @@ class Params:
     sim: str
     rid: int
     ns: str
+    frame_ns: str
     ac_name: str
     cmd_topic: str
-    name_space: str
+    global_frame: str
+    odom_frame: str
+    local_frame: str
+    fleet_data_topic: str
 
-    def __init__(self, rid: int = 0, sim: str = "3D"):
+    def __init__(self, rid: int = 0, sim: str = "2D"):
         self.sim = sim
         self.rid = rid
-        self.sim_params()
+        self.sim_params(rid)
 
-    def set_name_space(self, name_space: str):
-        self.ns = name_space
-        self.name_space = name_space
-        self.ac_name = name_space+self.ac_name
-        self.cmd_topic = name_space+self.cmd_topic
+    def set_ns(self, ns: str):
+        self.ns = "/" + ns
+        self.frame_ns = ns
+        self.ac_name = ns+self.ac_name
+        self.cmd_topic = ns+self.cmd_topic
 
     # parameters for simulation
-    def sim_params(self):
+    def sim_params(self, rid: int):
         # params
         self.ns = ''
-        self.name_space = ''
+        self.frame_ns = ""
         self.cmd_topic = '/cmd_vel'
         self.ac_name = "/apf_action"
         self.sru_srv_name = "/send_robot_update"  # send_robot_update_srv
         self.global_frame = "map"
-        self.local_frame = "/odom"
+        self.odom_frame = "/odom"
+        self.local_frame = "/base_footprint"  # odom
         self.fleet_data_topic = "fleet_data"
 
         # general
         self.path_unit = 1.0
-        self.priority = self.rid
+        self.priority = rid
         self.dt = 0.1
 
         # velocities
@@ -84,14 +89,5 @@ class Params:
         self.robot_half_d = 1.5 * self.robot_prec_d
         self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
 
-        # # for 2D -----------
-
-        # self.danger_r = 0.25             # real obst radius
+        # 2d
         self.obs_effect_r = 1.0          # obstacles effective radius
-        self.goal_distance = 1000
-
-        #
-        self.f_r_min = 0
-        self.f_r_max = 5
-        self.f_theta_min = 1
-        self.f_theta_max = 5

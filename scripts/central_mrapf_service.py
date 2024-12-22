@@ -55,16 +55,16 @@ class CentralMRAPF:
         self.robots.append(robot)
 
         # setting - parameters
-        name_s = "/r" + str(rid)
+        name_s = "r" + str(rid)
         params = Params(rid)
-        params.set_name_space(name_s)
+        params.set_ns(name_s)
 
         # update pose service
         self.fleet_data_h.add_robot(rid, name_s)
         self.fleet_data_h.update_goal(rid, robot.xt, robot.yt)
 
         # motion_action action *************************************************
-        rospy.loginfo(f"[{self.__class__.__name__}]: Creating Initial Robot Action: {name_s}/motion_action ...")
+        rospy.loginfo(f"[{self.__class__.__name__}]: Creating Initial Robot Action: {params.ns}/motion_action ...")
         ac = RobotPlannerAc(self.model, robot, params)
         self.planners.append(ac)
 

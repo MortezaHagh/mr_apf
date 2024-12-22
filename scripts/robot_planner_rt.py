@@ -34,6 +34,7 @@ class PlannerRT(RobotPlanner):
                 rospy.loginfo(f"[planner_ros, {self.ns}]: waiting for fleet data...")
                 self.rate.sleep()
                 continue
+
             # update robot's data
             self.ruc_req.stopped = False
 
@@ -82,6 +83,8 @@ class PlannerRT(RobotPlanner):
         rospy.loginfo(f"[planner_ros, {self.ns}]: go_to_goal finished!")
 
     def fleet_data_cb(self, msg: FleetData):
-        # update fleet data
-        self.data_received = True
+        if msg.success:
+            self.data_received = True
+        else:
+            self.data_received = False
         self.fleet_data = msg

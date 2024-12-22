@@ -5,33 +5,37 @@ class Params:
     sim: str
     rid: int
     ns: str
+    frame_ns: str
     ac_name: str
     cmd_topic: str
-    name_space: str
     global_frame: str
+    odom_frame: str
     local_frame: str
     fleet_data_topic: str
 
-    def __init__(self, rid: int = 0, sim: str = "3D"):
-        self.sim = sim
+    def __init__(self, rid: int = -1):
+        self.sim = "3D"  # 3D
+        self.nr = 3
+        self.method = 2
         self.rid = rid
         self.sim_params(rid)
 
-    def set_name_space(self, name_space: str):
-        self.ns = name_space
-        self.name_space = name_space
-        self.ac_name = name_space+self.ac_name
-        self.cmd_topic = name_space+self.cmd_topic
+    def set_ns(self, ns: str):
+        self.ns = "/" + ns
+        self.frame_ns = ns
+        self.ac_name = ns+self.ac_name
+        self.cmd_topic = ns+self.cmd_topic
 
     # parameters for simulation
     def sim_params(self, rid: int):
         # params
         self.ns = ''
-        self.name_space = ''
+        self.frame_ns = ""
         self.cmd_topic = '/cmd_vel'
         self.ac_name = "/apf_action"
         self.sru_srv_name = "/send_robot_update"  # send_robot_update_srv
         self.global_frame = "map"
+        self.odom_frame = "/odom"
         self.local_frame = "/base_footprint"  # odom
         self.fleet_data_topic = "fleet_data"
 

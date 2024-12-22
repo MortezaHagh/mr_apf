@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from math import cos, sin
+import tf
 import rospy
 from geometry_msgs.msg import Twist
 from parameters import Params
@@ -14,8 +16,21 @@ class Planner2D (RobotPlanner):
     def __init__(self, model: MRSModel, robot: PRobot, params: Params):
         RobotPlanner.__init__(self, model, robot, params)
 
+        # Initialize the broadcaster
+        self.global_frame = params.global_frame
+        self.odom_frame = params.frame_ns + params.odom_frame
+        self.local_frame = params.frame_ns + params.local_frame
+        self.tf_broadcaster = tf.TransformBroadcaster()
+
+        # init pose
+        self.pose.x = robot.xs
+        self.pose.y = robot.ys
+        self.pose.theta = robot.heading
+        self.broadcast_transform()
+
         # listener
-        rospy.Subscriber(params.fleet_data_topic, FleetData, self.fleet_data_cb)
+        self.data_received = False
+        rospy.Subscriber(params.fleet_data_topic, FleetData, self.fleet_data_cb, queue_size=2)
 
         # Send Robot Update - target
         rospy.wait_for_service(params.sru_srv_name)
@@ -27,13 +42,14 @@ class Planner2D (RobotPlanner):
         self.ruc_req.stopped = False
         self.ruc_req.reached = False
 
-    # def initiate_robots(self):
-    #     # pose = [self.model.robots[i].xs, self.model.robots[i].ys, self.model.robots[i].heading]
-    #     x = self.model.robots[i].xs
-    #     self.ard.update()
-
     def go_to_goal(self):
         while (not self.ap.reached) and (not rospy.is_shutdown()):
+            if not self.data_received:
+                rospy.loginfo(f"[planner_2d, {self.ns}]: waiting for fleet data...")
+                self.broadcast_transform()
+                self.rate.sleep()
+                continue
+
             # update robot's data
             self.ruc_req.stopped = False
 
@@ -69,9 +85,13 @@ class Planner2D (RobotPlanner):
             self.log_motion(self.ap.f_r, self.ap.f_theta)
             self.rate.sleep()
 
+            # sim robot movement
+            self.move_robot()
+            self.broadcast_transform()
+
             #
             if self.ap.reached:
-                rospy.loginfo(f"[planner_ros, {self.ns}]: robot reached goal.")
+                rospy.loginfo(f"[planner_2d, {self.ns}]: robot reached goal.")
 
         # reached
         self.ruc_req.stopped = True
@@ -79,8 +99,25 @@ class Planner2D (RobotPlanner):
         self.robot_update_client(self.ruc_req)
         self.stop()
         self.stop()
-        rospy.loginfo(f"[planner_ros, {self.ns}]: go_to_goal finished!")
+        rospy.loginfo(f"[planner_2d, {self.ns}]: go_to_goal finished!")
 
     def fleet_data_cb(self, msg: FleetData):
-        # update fleet data
+        if msg.success:
+            self.data_received = True
+        else:
+            self.data_received = False
         self.fleet_data = msg
+
+    def move_robot(self):
+        self.pose.x += (self.v * self.dt) * cos(self.pose.theta)
+        self.pose.y += (self.v * self.dt) * sin(self.pose.theta)
+        self.pose.theta += self.w * self.dt
+
+    def broadcast_transform(self):
+        self.tf_broadcaster.sendTransform(
+            (self.pose.x, self.pose.y, 0),  # Translation
+            tf.transformations.quaternion_from_euler(0, 0, self.pose.theta),  # Rotation
+            rospy.Time.now(),
+            self.local_frame,  # Child frame
+            self.odom_frame  # Parent frame
+        )

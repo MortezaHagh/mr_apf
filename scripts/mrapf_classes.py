@@ -2,27 +2,26 @@
 from typing import List, Dict
 import os
 import rospkg
+from parameters import Params
 from apf.srv import SharePosesResponse
 
 
 class TestInfo:
-    v: int
-    ns: str
+    sim: str
+    nr: int
     method: int
-    n_robots: int
     res_file_p: str
 
-    def __init__(self, v: int = 1, n_robots: int = 2, method: int = 2, ns: str = ""):
-        self.v = v
-        self.ns = ns
-        self.method = method
-        self.n_robots = n_robots
+    def __init__(self, params: Params):
+        self.sim = params.sim
+        self.nr = params.nr
+        self.method = params.method
         self.res_file_p = ""
         self.create_paths()  # create result files paths
 
     def create_paths(self):
         # names
-        folder_name = self.ns + "T" + str(self.n_robots) + "_V" + str(self.v) + "_M" + str(self.method)
+        folder_name = "T" + str(self.nr) + "_M" + str(self.method) + "_" + self.sim
         # Create directory
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')

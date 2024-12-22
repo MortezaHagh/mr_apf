@@ -1,10 +1,10 @@
 int32 rid
-int32 xs
-int32 ys
-int32 xt
-int32 yt
-string name
+float32 xs
+float32 ys
+float32 xt
+float32 yt
 float32 theta
+string name
 ---
 int32 rid
 bool success

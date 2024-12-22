@@ -27,9 +27,8 @@ class Run():
     def __init__(self):
 
         # data
-        sim = "3d"  # 2D
-        self.params = Params(sim=sim)
-        self.test_info = TestInfo(v=1, n_robots=3, method=2, ns="")  # test info
+        self.params = Params()
+        self.test_info = TestInfo(self.params)
         self.planners_data = AllPlannersData()  # planners data (trajectory and time)
 
         # ros settings
@@ -38,10 +37,11 @@ class Run():
 
         # create model
         path_unit = 0.7
-        self.model = MRSModel(map_id=1, path_unit=path_unit, n_robots=self.test_info.n_robots)
+        self.model = MRSModel(map_id=1, path_unit=path_unit, n_robots=self.params.nr)
 
-        # spawn robots and obstacles
-        spawning(model=self.model, path_unit=1.0)
+        if self.params.sim == "3D":
+            # spawn robots and obstacles
+            spawning(model=self.model, path_unit=1.0)
 
         # visualize
         self.visualizer = RvizViusalizer(model=self.model)
@@ -51,7 +51,7 @@ class Run():
         self.cmrapf = CentralMRAPF(self.model, central_mrapf_srv_name)
 
         # creating distributed planners - by calling central service ***********
-        initiate_robots_planners(self.model.robots_data.ids)
+        initiate_robots_planners(self.model)
         self.rate.sleep()
 
         # update fleet data

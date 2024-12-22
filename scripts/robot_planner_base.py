@@ -44,7 +44,9 @@ class RobotPlanner:
         self.fleet_data = FleetData()
 
         # ros
-        self.rate = rospy.Rate(10)
+        f = 10
+        self.dt = 1/f
+        self.rate = rospy.Rate(f)
         rospy.on_shutdown(self.shutdown_hook)
 
         # RvizViusalizer
@@ -81,13 +83,13 @@ class RobotPlanner:
             w = round(self.w, 2)
             fr = round(f_r, 2)
             ft = round(f_theta, 2)
-            # rospy.loginfo(f"[planner_ros, {self.ns}]: {self.ap.stop_flag_multi}")
-            rospy.loginfo(f"[planner_ros, {self.ns}]: f_r: {fr}, f_theta: {ft}")
-            rospy.loginfo(f"[planner_ros, {self.ns}]: v: {v}, w: {w}")
+            # rospy.loginfo(f"[planner_base, {self.ns}]: {self.ap.stop_flag_multi}")
+            rospy.loginfo(f"[planner_base, {self.ns}]: f_r: {fr}, f_theta: {ft}")
+            rospy.loginfo(f"[planner_base, {self.ns}]: v: {v}, w: {w}")
             rospy.loginfo(" --------------------------------------------------- ")
 
     def shutdown_hook(self):
-        rospy.loginfo(f"[planner_ros, {self.ns}]: shutting ...")
+        rospy.loginfo(f"[planner_base, {self.ns}]: shutting ...")
         self.stop()
 
     def vizualize_force(self, nr_force, ip=True):
