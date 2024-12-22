@@ -32,18 +32,6 @@ class TestInfo:
         self.res_file_p = result_path+'/'
 
 
-class PRobot:
-    def __init__(self, xs=0, ys=0, rid=0, name="r", heading=0, xt=0, yt=0):
-        self.rid = rid
-        self.xs = xs
-        self.ys = ys
-        self.xt = xt
-        self.yt = yt
-        self.name = name
-        self.heading = heading
-        self.priority = rid
-
-
 class PlannerData:
     start_t: float
     end_t: float
@@ -103,37 +91,6 @@ class AllPlannersData:
         self.all_xy[str(self.n)] = p_data.xy
         self.all_times[str(self.n)] = p_data.dur_t
         self.n += 1
-
-
-class AllRobotsData:
-    nr: int
-    x: List[float]
-    y: List[float]
-    h: List[float]
-    pr: List[int]
-    reached: List[bool]
-    stopped: List[bool]
-
-    def __init__(self):
-        self.nr = []
-        self.x = []
-        self.y = []
-        self.h = []
-        self.pr = []
-        self.reached = []
-        self.stopped = []
-
-    def update_by_resp(self, resp: SharePosesResponse):
-        self.nr = resp.nr
-        self.x = resp.x
-        self.y = resp.y
-        self.h = resp.h
-        self.pr = resp.pr
-        self.reached = resp.reached
-        self.stopped = resp.stopped
-
-    def update(self):
-        pass
 
 
 class ApfRobot:

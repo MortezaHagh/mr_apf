@@ -5,21 +5,21 @@ import tf
 import rospy
 from geometry_msgs.msg import Twist
 from parameters import Params
-from mrapf_classes import PRobot
-from create_model import MRSModel
+from create_model import MRSModel, Robot
 from robot_planner_base import RobotPlanner
 from apf.msg import FleetData
 from apf.srv import SendRobotUpdate, SendRobotUpdateRequest
 
 
 class Planner2D (RobotPlanner):
-    def __init__(self, model: MRSModel, robot: PRobot, params: Params):
+    def __init__(self, model: MRSModel, robot: Robot, params: Params):
         RobotPlanner.__init__(self, model, robot, params)
+        self.rate2d = rospy.Rate(50)
 
         # Initialize the broadcaster
         self.global_frame = params.global_frame
-        self.odom_frame = params.frame_ns + params.odom_frame
-        self.local_frame = params.frame_ns + params.local_frame
+        self.odom_frame = params.sns + params.odom_frame
+        self.local_frame = params.sns + params.local_frame
         self.tf_broadcaster = tf.TransformBroadcaster()
 
         # init pose
@@ -83,7 +83,7 @@ class Planner2D (RobotPlanner):
 
             # log data
             self.log_motion(self.ap.f_r, self.ap.f_theta)
-            self.rate.sleep()
+            self.rate2d.sleep()
 
             # sim robot movement
             self.move_robot()

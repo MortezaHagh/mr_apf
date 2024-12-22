@@ -3,21 +3,21 @@
 import rospy
 import actionlib
 from parameters import Params
-from create_model import MRSModel
-from robot_planner_base import RobotPlanner
+from mrapf_classes import PlannerData
 from robot_planner_2d import Planner2D
 from robot_planner_rt import PlannerRT
-from mrapf_classes import PRobot, PlannerData
+from create_model import MRSModel, Robot
+from robot_planner_base import RobotPlanner
 from apf.msg import ApfAction, ApfResult, ApfGoal
 
 
 class RobotPlannerAc:
     model: MRSModel
-    robot: PRobot
+    robot: Robot
     params: Params
     planner_data = PlannerData
 
-    def __init__(self, model, robot: PRobot, params: Params):
+    def __init__(self, model, robot: Robot):
 
         #
         self.robot = robot
@@ -25,8 +25,11 @@ class RobotPlannerAc:
         self.planner_data = None
 
         # setting - parameters
+        ns = "r" + str(robot.rid)
+        params = Params(robot.rid)
+        params.set_ns(ns)
         self.params = params
-        self.name_s = params.ns
+        self.ns = params.ns
 
         # shutdown hook
         rospy.on_shutdown(self.shutdown)
@@ -36,11 +39,11 @@ class RobotPlannerAc:
         self.ac_name = params.ac_name
         self._as = actionlib.SimpleActionServer(self.ac_name, ApfAction, self.goal_callback, False)
         self._as.start()
-        rospy.loginfo(f"[RobotPlanner, {self.name_s}]: Robot Action Server [{self.ac_name}] has started.")
+        rospy.loginfo(f"[RobotPlanner, {self.ns}]: Robot Action Server [{self.ac_name}] has started.")
 
     def goal_callback(self, goal: ApfGoal):
 
-        rospy.loginfo(f"[RobotPlanner, {self.name_s}]: Robot Action Server [{self.ac_name}] is called.")
+        rospy.loginfo(f"[RobotPlanner, {self.ns}]: Robot Action Server [{self.ac_name}] is called.")
 
         # goal received
         self.robot.xt = goal.xt * self.params.path_unit
@@ -63,12 +66,12 @@ class RobotPlannerAc:
             self.result.result = True
             self.result.path_x = planner.pd.x
             self.result.path_y = planner.pd.y
-            rospy.loginfo(f"[RobotPlanner, {self.name_s}]: Succeeded!")
+            rospy.loginfo(f"[RobotPlanner, {self.ns}]: Succeeded!")
             self._as.set_succeeded(self.result)
         else:
             rospy.loginfo(f'Failed {self.ac_name}')
             self._as.set_aborted(self.result)
 
     def shutdown(self):
-        rospy.loginfo(f"[RobotPlanner, {self.name_s}]: shutting down ... ")
+        rospy.loginfo(f"[RobotPlanner, {self.ns}]: shutting down ... ")
         # rospy.sleep(1)

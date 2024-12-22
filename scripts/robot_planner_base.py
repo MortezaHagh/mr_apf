@@ -4,10 +4,10 @@ import numpy as np
 import rospy
 from geometry_msgs.msg import Twist, Pose2D
 from parameters import Params
-from create_model import MRSModel
+from mrapf_classes import PlannerData
 from apf_planner_2 import APFPlanner
 from visualization import RvizViusalizer
-from mrapf_classes import PRobot, PlannerData
+from create_model import MRSModel, Robot
 from apf.msg import FleetData
 # choose: [apf_planner_2], [apf_planner_1]
 
@@ -23,7 +23,7 @@ class RobotPlanner:
     pd: PlannerData  # planner data
     fleet_data: FleetData
 
-    def __init__(self, model: MRSModel, robot: PRobot, params: Params):
+    def __init__(self, model: MRSModel, robot: Robot, params: Params):
 
         #
         self.v = 0
@@ -32,8 +32,8 @@ class RobotPlanner:
         self.is_reached = False
 
         #
-        self.rid = params.rid
-        self.ns = params.ns  # name space
+        self.rid = robot.rid
+        self.ns = robot.ns  # name space
 
         # apf planner
         self.ap = APFPlanner(model, robot, params)

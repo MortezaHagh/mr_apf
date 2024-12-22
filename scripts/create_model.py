@@ -31,14 +31,16 @@ class Map:
 
 
 class Robot:
-    def __init__(self, xs, ys, xt, yt, heading, rid: int, path_unit: float):
+    def __init__(self, rid: int = -1, xs: float = None, ys: float = None, xt: float = None, yt: float = None, heading: float = 0.0, path_unit: float = 1.0):
         self.rid = rid
         self.ns = "/r"+str(rid)
+        self.sns = "r"+str(rid)
         self.xs = xs * path_unit
         self.ys = ys * path_unit
         self.xt = xt * path_unit
         self.yt = yt * path_unit
         self.heading = np.deg2rad(heading)
+        self.priority = rid
 
 
 class Obstacles:
@@ -90,7 +92,7 @@ class MRSModel:
 
         #
         for i in range(self.n_robots):
-            self.robots.append(Robot(xs[i], ys[i], xt[i], yt[i], heading[i], i, path_unit))
+            self.robots.append(Robot(i, xs[i], ys[i], xt[i], yt[i], heading[i], path_unit))
 
         # robots Data
         self.robots_data = RobotsData(inputs, path_unit)

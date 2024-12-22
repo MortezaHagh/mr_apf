@@ -7,14 +7,13 @@ import rospy
 from plotter import Plotter
 from results import Results
 from parameters import Params
-from spawn_map import spawning
-from create_model import MRSModel
-from visualization import RvizViusalizer
+from create_model import MRSModel, Robot
 from robot_planner_ac import RobotPlannerAc
 from planning_clinets import PlanningClients
-from central_mrapf_service import CentralMRAPF
 from mrapf_classes import TestInfo, AllPlannersData
-from initiate_planners import initiate_robots_planners
+
+from fleet_data import FleetDataH
+from apf_planner_2 import APFPlanner
 
 
 class Run():
@@ -28,8 +27,9 @@ class Run():
     def __init__(self):
 
         # data
-        self.params = Params()
-        self.test_info = TestInfo(self.params)
+        params = Params()
+        self.params = params
+        self.test_info = TestInfo(params)
         self.planners_data = AllPlannersData()  # planners data (trajectory and time)
 
         # ros settings
@@ -39,23 +39,23 @@ class Run():
 
         # create model
         path_unit = 0.7
-        self.model = MRSModel(map_id=1, path_unit=path_unit, n_robots=self.params.nr)
+        model = MRSModel(map_id=1, path_unit=path_unit, n_robots=self.params.nr)
+        self.model = model
 
-        if self.params.sim == "3D":
-            # spawn robots and obstacles
-            spawning(model=self.model, path_unit=1.0)
+        # fleet data
+        fleet_data_h = FleetDataH(params)
 
-        # visualize
-        self.visualizer = RvizViusalizer(model=self.model)
+        # planners
+        r: Robot
+        planners = List[APFPlanner]
+        for r in self.model.robots:
+            # update fleet data handler
+            fleet_data_h.add_robot(r.rid, r.sns)
+            fleet_data_h.update_goal(r.rid, r.xt, r.yt)
+            ap = APFPlanner(model, r, params)
+            planners.append(ap)
 
-        # running central MRAPF Service Server *********************************
-        central_mrapf_srv_name = "central_mrapf_srv"
-        self.cmrapf = CentralMRAPF(self.model, central_mrapf_srv_name)
-
-        # creating distributed planners - by calling central service ***********
-        initiate_robots_planners(self.model)
-        self.rate.sleep()
-
+        # central service
         # update fleet data
         for _ in range(20):
             self.cmrapf.fleet_data_h.update_all()

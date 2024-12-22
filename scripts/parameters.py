@@ -5,7 +5,7 @@ class Params:
     sim: str
     rid: int
     ns: str
-    frame_ns: str
+    sns: str
     ac_name: str
     cmd_topic: str
     global_frame: str
@@ -14,7 +14,7 @@ class Params:
     fleet_data_topic: str
 
     def __init__(self, rid: int = -1):
-        self.sim = "3D"  # 3D
+        self.sim = "2D"  # 3D
         self.nr = 3
         self.method = 2
         self.rid = rid
@@ -22,7 +22,7 @@ class Params:
 
     def set_ns(self, ns: str):
         self.ns = "/" + ns
-        self.frame_ns = ns
+        self.sns = ns
         self.ac_name = ns+self.ac_name
         self.cmd_topic = ns+self.cmd_topic
 
@@ -30,7 +30,7 @@ class Params:
     def sim_params(self, rid: int):
         # params
         self.ns = ''
-        self.frame_ns = ""
+        self.sns = ""
         self.cmd_topic = '/cmd_vel'
         self.ac_name = "/apf_action"
         self.sru_srv_name = "/send_robot_update"  # send_robot_update_srv

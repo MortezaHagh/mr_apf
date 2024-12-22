@@ -3,15 +3,14 @@
 import rospy
 from geometry_msgs.msg import Twist
 from parameters import Params
-from mrapf_classes import PRobot
-from create_model import MRSModel
+from create_model import MRSModel, Robot
 from robot_planner_base import RobotPlanner
 from apf.msg import FleetData
 from apf.srv import SendRobotUpdate, SendRobotUpdateRequest
 
 
 class PlannerRT(RobotPlanner):
-    def __init__(self, model: MRSModel, robot: PRobot, params: Params):
+    def __init__(self, model: MRSModel, robot: Robot, params: Params):
         RobotPlanner.__init__(self, model, robot, params)
 
         # listener

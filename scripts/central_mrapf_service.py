@@ -5,8 +5,7 @@ from typing import List
 import numpy as np
 import rospy
 from parameters import Params
-from mrapf_classes import PRobot
-from create_model import MRSModel
+from create_model import MRSModel, Robot
 from fleet_data import FleetDataH
 from robot_planner_ac import RobotPlannerAc
 from apf.srv import InitRobot, InitRobotResponse, InitRobotRequest
@@ -17,7 +16,7 @@ class CentralMRAPF:
     robot_ids: List[int]
     model: MRSModel
     fleet_data_h: FleetDataH
-    robots: List[PRobot]
+    robots: List[Robot]
     planners: List[RobotPlannerAc]
 
     def __init__(self, model: MRSModel, central_mrapf_srv_name: str):
@@ -47,25 +46,20 @@ class CentralMRAPF:
         # robot object
         rid = req.rid
         heading = np.deg2rad(req.theta)
-        robot = PRobot(req.xs, req.ys, req.rid, req.name, heading, req.xt, req.yt)
+        robot = Robot(req.rid, req.xs, req.ys, heading, req.xt, req.yt)
 
         # update robotic system data
         self.n_robots += 1
         self.robot_ids.append(rid)
         self.robots.append(robot)
 
-        # setting - parameters
-        name_s = "r" + str(rid)
-        params = Params(rid)
-        params.set_ns(name_s)
-
-        # update pose service
-        self.fleet_data_h.add_robot(rid, name_s)
+        # update fleet data handler
+        self.fleet_data_h.add_robot(rid, robot.sns)
         self.fleet_data_h.update_goal(rid, robot.xt, robot.yt)
 
         # motion_action action *************************************************
-        rospy.loginfo(f"[{self.__class__.__name__}]: Creating Initial Robot Action: {params.ns}/motion_action ...")
-        ac = RobotPlannerAc(self.model, robot, params)
+        rospy.loginfo(f"[{self.__class__.__name__}]: Creating Initial Robot Action: {robot.ns}/motion_action ...")
+        ac = RobotPlannerAc(self.model, robot)
         self.planners.append(ac)
 
         # service responce

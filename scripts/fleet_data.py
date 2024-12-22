@@ -12,7 +12,7 @@ from apf.srv import SendRobotUpdate, SendRobotUpdateRequest, SendRobotUpdateResp
 class FleetDataH:
     nr: int
     ids: List[int]
-    frame_ns: Dict[int, str]
+    sns: Dict[int, str]
     xy: Dict[int, Tuple[float, float]]
     xyt: Dict[int, Tuple[float, float]]
     fleet_data: Dict[int, RobotData]
@@ -22,7 +22,7 @@ class FleetDataH:
         # data
         self.nr = 0
         self.ids = []
-        self.frame_ns = {}
+        self.sns = {}
         self.xy = {}
         self.xyt = {}
         self.fleet_data = {}
@@ -44,10 +44,10 @@ class FleetDataH:
         # # update and pubish data
         # self.update_all()
 
-    def add_robot(self, rid: int, frame_ns: str = ""):
+    def add_robot(self, rid: int, sns: str = ""):
         self.nr += 1
         self.ids.append(rid)
-        self.frame_ns[rid] = frame_ns
+        self.sns[rid] = sns
         self.xy[rid] = (0, 0)
         self.xyt[rid] = (0, 0)
         self.fleet_data[rid] = RobotData()
@@ -81,7 +81,7 @@ class FleetDataH:
         for rid in self.ids:
             if self.fleet_data[rid].reached:
                 continue
-            frame = self.frame_ns[rid] + self.local_frame
+            frame = self.sns[rid] + self.local_frame
             if not self.get_tf(rid, frame):
                 return False
         return True
