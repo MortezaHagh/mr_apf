@@ -32,6 +32,7 @@ class APFPlanner(APFPlannerBase):
 
         # check dist to goal
         if self.goal_dist < self.p.goal_dis_tresh:
+            print(f"[planner_move, {self.robot.rid}], reached goal!")
             self.reached = True
             return
 

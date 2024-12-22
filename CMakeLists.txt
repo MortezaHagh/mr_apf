@@ -31,7 +31,6 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   InitRobot.srv
-  SharePoses.srv
   SendRobotUpdate.srv
 )
 

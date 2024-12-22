@@ -5,6 +5,7 @@ import rospy
 import tf2_ros
 import tf_conversions
 from parameters import Params
+from geometry_msgs.msg import Pose2D
 from apf.msg import RobotData, FleetData
 from apf.srv import SendRobotUpdate, SendRobotUpdateRequest, SendRobotUpdateResponse
 
@@ -15,6 +16,7 @@ class FleetDataH:
     sns: Dict[int, str]
     xy: Dict[int, Tuple[float, float]]
     xyt: Dict[int, Tuple[float, float]]
+    poses: Dict[int, Pose2D]
     fleet_data: Dict[int, RobotData]
 
     def __init__(self, params: Params):
@@ -25,6 +27,7 @@ class FleetDataH:
         self.sns = {}
         self.xy = {}
         self.xyt = {}
+        self.poses = {}
         self.fleet_data = {}
 
         # settings
@@ -50,6 +53,7 @@ class FleetDataH:
         self.sns[rid] = sns
         self.xy[rid] = (0, 0)
         self.xyt[rid] = (0, 0)
+        self.poses[rid] = Pose2D()
         self.fleet_data[rid] = RobotData()
         self.fleet_data[rid].rid = rid
 
@@ -123,3 +127,30 @@ class FleetDataH:
         dists = [d/max_dist for d in dists]
         for i, rid in enumerate(self.ids):
             self.fleet_data[rid].priority = dists[i]
+
+    # -------------------------------------------------------------------------
+
+    def get_robot_pose(self, rid: int) -> Pose2D:
+        return self.poses[rid]
+
+    def get_fleet_data(self) -> FleetData:
+        fd = FleetData()
+        fd.success = True
+        fd.nr = self.nr
+        fd.fdata = list(self.fleet_data.values())
+        return fd
+
+    def set_robot_pose(self, rid: int, x: float, y: float, h: float):
+        self.xy[rid] = (x, y)
+        self.fleet_data[rid].x = x
+        self.fleet_data[rid].y = y
+        self.fleet_data[rid].h = h
+        self.poses[rid] = Pose2D(x, y, h)
+
+    def set_robot_data(self, rid: int, stopped: bool, reached: bool):
+        self.fleet_data[rid].stopped = stopped
+        self.fleet_data[rid].reached = reached
+        self.fleet_data[rid].priority = 0.0
+
+    def get_all_data(self) -> Dict[int, RobotData]:
+        return self.fleet_data

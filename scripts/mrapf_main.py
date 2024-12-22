@@ -30,7 +30,7 @@ class Run():
         # data
         self.params = Params()
         self.test_info = TestInfo(self.params)
-        self.planners_data = AllPlannersData()  # planners data (trajectory and time)
+        self.planners_data = AllPlannersData()
 
         # ros settings
         self.rate = rospy.Rate(20)
@@ -115,4 +115,3 @@ class Run():
 if __name__ == "__main__":
     rospy.init_node("mrapf_node")
     run = Run()
-    rospy.spin()

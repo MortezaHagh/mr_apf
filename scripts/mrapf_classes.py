@@ -3,25 +3,28 @@ from typing import List, Dict
 import os
 import rospkg
 from parameters import Params
-from apf.srv import SharePosesResponse
 
 
 class TestInfo:
+    name: str
     sim: str
     nr: int
     method: int
     res_file_p: str
 
-    def __init__(self, params: Params):
-        self.sim = params.sim
+    def __init__(self, params: Params, name: str = ""):
+        if name != "":
+            name = name + "_"
+        self.name = name
         self.nr = params.nr
+        self.sim = params.sim
         self.method = params.method
         self.res_file_p = ""
         self.create_paths()  # create result files paths
 
     def create_paths(self):
         # names
-        folder_name = "T" + str(self.nr) + "_M" + str(self.method) + "_" + self.sim
+        folder_name = self.name + "T" + str(self.nr) + "_M" + str(self.method) + "_" + self.sim
         # Create directory
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
@@ -62,6 +65,14 @@ class PlannerData:
         self.f_or = []
         self.f_ot = []
         self.phis = []
+
+    def add_xy(self, x: float, y: float):
+        self.x.append(round(x, 2))
+        self.y.append(round(y, 2))
+
+    def add_vw(self, v: float, w: float):
+        self.v.append(round(v, 2))
+        self.w.append(round(w, 2))
 
     def finalize(self):
         self.xy = {"x": self.x, "y": self.y}

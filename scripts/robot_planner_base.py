@@ -9,11 +9,13 @@ from apf_planner_2 import APFPlanner
 from visualization import RvizViusalizer
 from create_model import MRSModel, Robot
 from apf.msg import FleetData
+from apf.srv import SendRobotUpdate, SendRobotUpdateRequest
 # choose: [apf_planner_2], [apf_planner_1]
 
 
 class RobotPlanner:
     do_viz: bool
+    data_received: bool
     rid: int
     ns: str
     p: Params
@@ -52,8 +54,22 @@ class RobotPlanner:
         # RvizViusalizer
         self.vs = RvizViusalizer(model)
 
+        # listener
+        self.data_received = False
+        rospy.Subscriber(params.fleet_data_topic, FleetData, self.fleet_data_cb, queue_size=2)
+
         # /cmd_vel puplisher
         self.cmd_vel_pub = rospy.Publisher(params.cmd_topic, Twist, queue_size=5)
+
+        # Send Robot Update - target
+        rospy.wait_for_service(params.sru_srv_name)
+        self.robot_update_client = rospy.ServiceProxy(params.sru_srv_name, SendRobotUpdate)
+        self.ruc_req = SendRobotUpdateRequest()
+        self.ruc_req.rid = self.rid
+        self.ruc_req.xt = robot.xt
+        self.ruc_req.yt = robot.yt
+        self.ruc_req.stopped = False
+        self.ruc_req.reached = False
 
     def start(self):
         # start time
@@ -87,6 +103,13 @@ class RobotPlanner:
             rospy.loginfo(f"[planner_base, {self.ns}]: f_r: {fr}, f_theta: {ft}")
             rospy.loginfo(f"[planner_base, {self.ns}]: v: {v}, w: {w}")
             rospy.loginfo(" --------------------------------------------------- ")
+
+    def fleet_data_cb(self, msg: FleetData):
+        if msg.success:
+            self.data_received = True
+        else:
+            self.data_received = False
+        self.fleet_data = msg
 
     def shutdown_hook(self):
         rospy.loginfo(f"[planner_base, {self.ns}]: shutting ...")

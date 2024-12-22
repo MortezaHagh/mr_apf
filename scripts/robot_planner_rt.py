@@ -5,27 +5,11 @@ from geometry_msgs.msg import Twist
 from parameters import Params
 from create_model import MRSModel, Robot
 from robot_planner_base import RobotPlanner
-from apf.msg import FleetData
-from apf.srv import SendRobotUpdate, SendRobotUpdateRequest
 
 
 class PlannerRT(RobotPlanner):
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
         RobotPlanner.__init__(self, model, robot, params)
-
-        # listener
-        self.data_received = False
-        rospy.Subscriber(params.fleet_data_topic, FleetData, self.fleet_data_cb, queue_size=2)
-
-        # Send Robot Update - target
-        rospy.wait_for_service(params.sru_srv_name)
-        self.robot_update_client = rospy.ServiceProxy(params.sru_srv_name, SendRobotUpdate)
-        self.ruc_req = SendRobotUpdateRequest()
-        self.ruc_req.rid = self.rid
-        self.ruc_req.xt = robot.xt
-        self.ruc_req.yt = robot.yt
-        self.ruc_req.stopped = False
-        self.ruc_req.reached = False
 
     def go_to_goal(self):
         while (not self.ap.reached) and (not rospy.is_shutdown()):
@@ -61,9 +45,10 @@ class PlannerRT(RobotPlanner):
             self.cmd_vel_pub.publish(move_cmd)
 
             # check stop
-            if self.ap.stopped:
-                self.ruc_req.stopped = True
+            if self.ap.stopped != self.ap.prev_stopped:
+                self.ruc_req.stopped = self.ap.stopped
                 self.robot_update_client(self.ruc_req)
+                self.ap.prev_stopped = self.ap.stopped
 
             # log data
             self.log_motion(self.ap.f_r, self.ap.f_theta)
@@ -80,10 +65,3 @@ class PlannerRT(RobotPlanner):
         self.stop()
         self.stop()
         rospy.loginfo(f"[planner_ros, {self.ns}]: go_to_goal finished!")
-
-    def fleet_data_cb(self, msg: FleetData):
-        if msg.success:
-            self.data_received = True
-        else:
-            self.data_received = False
-        self.fleet_data = msg

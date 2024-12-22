@@ -49,6 +49,7 @@ class APFPlannerBase:
         # control vars
         self.reached = False
         self.stopped = False
+        self.prev_stopped = False
 
         # control vars
         self.theta_rg = 0
