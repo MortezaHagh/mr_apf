@@ -15,7 +15,7 @@ class Params:
 
     def __init__(self, rid: int = -1):
         self.sim = "2D"  # 3D
-        self.nr = 3
+        self.nr = 6
         self.method = 2
         self.rid = rid
         self.sim_params(rid)

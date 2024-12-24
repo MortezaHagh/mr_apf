@@ -16,7 +16,7 @@ class ModelInputs:
     y_max: int
     map_ind: int
     n_robots: int
-    ids = List[int]
+    rids = List[int]
     xs = List[float]
     ys = List[float]
     xt = List[float]
@@ -37,7 +37,7 @@ class ModelInputs:
             # self.random_map_2(n_robots)
             # self.from_json_file(n_robots, path_unit)
         #
-        self.ids = list(range(0, self.n_robots))
+        self.rids = list(range(0, self.n_robots))
         self.apply_path_unit(path_unit)
 
     def apply_path_unit(self, path_unit: float = 1.0):
@@ -156,7 +156,7 @@ class ModelInputs:
         # yt = [1, 2]
         # self.heading = [0.0 , 0.0]
         n_robots = 2
-        self.ids = list(range(1, n_robots+1))
+        self.rids = list(range(1, n_robots+1))
         self.xs = [xs[i] for i in range(n_robots)]
         self.ys = [ys[i] for i in range(n_robots)]
         self.xt = [xt[i] for i in range(n_robots)]
@@ -339,7 +339,7 @@ class ModelInputs:
 
         # robots
         self.n_robots = data['n_robots']
-        self.ids = data['ids']
+        self.rids = data['rids']
         self.heading = data['heading']
         self.xs = data['xs']
         self.ys = data['ys']
@@ -414,7 +414,7 @@ class ModelInputs:
         self.n_robots = n_robot
         self.heading = [np.pi/2, -np.pi/2]
         n_robots = self.n_robots
-        self.ids = list(range(1, n_robots+1))
+        self.rids = list(range(1, n_robots+1))
         self.xs = [xs[i] for i in range(n_robots)]
         self.ys = [ys[i] for i in range(n_robots)]
         self.xt = [xt[i] for i in range(n_robots)]
@@ -448,7 +448,7 @@ class ModelInputs:
         yt = [6.0]  # [6.0, 3.5]
         self.heading = [np.pi/2]  # [np.pi/2, -np.pi/2]
         n_robots = self.n_robots
-        self.ids = list(range(1, n_robots+1))
+        self.rids = list(range(1, n_robots+1))
         self.xs = [xs[i] for i in range(n_robots)]
         self.ys = [ys[i] for i in range(n_robots)]
         self.xt = [xt[i] for i in range(n_robots)]

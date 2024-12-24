@@ -11,7 +11,7 @@ from create_model import MRSModel
 
 
 class Initialize(object):
-    ids: List[int]
+    rids: List[int]
     model: MRSModel
     path_unit: float
     all_obsts: List[Pose]
@@ -20,7 +20,7 @@ class Initialize(object):
     def __init__(self, model: MRSModel, path_unit: float = 1.0):
         self.model = model
         self.path_unit = path_unit
-        self.ids = []
+        self.rids = []
         self.all_obsts = []
         self.all_robots = []
 
@@ -40,7 +40,7 @@ class Initialize(object):
         # robots
         self.all_robots: List[Pose] = []
         for robot in self.model.robots:
-            self.ids.append(robot.rid)
+            self.rids.append(robot.rid)
             p = Pose()
             p.position.z = 0.0
             p.position.x = robot.xs*self.path_unit
@@ -71,9 +71,9 @@ def spawning(model, path_unit=1.0):
     reference_frame = 'map'
 
     for i, pose in enumerate(init_obj.all_robots):
-        rospy.loginfo("spawning robot: " + str(init_obj.ids[i]))
+        rospy.loginfo("spawning robot: " + str(init_obj.rids[i]))
         sm = SpawnModelRequest()
-        id = init_obj.ids[i]
+        id = init_obj.rids[i]
         sm.model_name = name+str(id)
         sm.model_xml = robot_file
         sm.robot_namespace = '/r'+str(id)

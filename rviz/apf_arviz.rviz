@@ -109,7 +109,7 @@ Visualization Manager:
         r2/wheel_right_link:
           Value: false
         r3/base_footprint:
-          Value: false
+          Value: true
         r3/base_link:
           Value: false
         r3/caster_back_left_link:
@@ -117,6 +117,12 @@ Visualization Manager:
         r3/caster_back_right_link:
           Value: false
         r3/imu_link:
+          Value: false
+        r3/odom:
+          Value: false
+        r3/wheel_left_link:
+          Value: false
+        r3/wheel_right_link:
           Value: false
         r4/base_footprint:
           Value: true
@@ -128,6 +134,14 @@ Visualization Manager:
           Value: false
         r4/imu_link:
           Value: false
+        r4/odom:
+          Value: true
+        r4/wheel_left_link:
+          Value: false
+        r4/wheel_right_link:
+          Value: false
+        r5/odom:
+          Value: true
       Marker Alpha: 1
       Marker Scale: 1
       Name: TF
@@ -177,22 +191,34 @@ Visualization Manager:
                   {}
                 r2/wheel_right_link:
                   {}
-        r3/base_footprint:
-          r3/base_link:
-            r3/caster_back_left_link:
-              {}
-            r3/caster_back_right_link:
-              {}
-            r3/imu_link:
-              {}
-        r4/base_footprint:
-          r4/base_link:
-            r4/caster_back_left_link:
-              {}
-            r4/caster_back_right_link:
-              {}
-            r4/imu_link:
-              {}
+          r3/odom:
+            r3/base_footprint:
+              r3/base_link:
+                r3/caster_back_left_link:
+                  {}
+                r3/caster_back_right_link:
+                  {}
+                r3/imu_link:
+                  {}
+                r3/wheel_left_link:
+                  {}
+                r3/wheel_right_link:
+                  {}
+          r4/odom:
+            r4/base_footprint:
+              r4/base_link:
+                r4/caster_back_left_link:
+                  {}
+                r4/caster_back_right_link:
+                  {}
+                r4/imu_link:
+                  {}
+                r4/wheel_left_link:
+                  {}
+                r4/wheel_right_link:
+                  {}
+          r5/odom:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 0.699999988079071
@@ -609,7 +635,7 @@ Visualization Manager:
       Marker Topic: /r0/arrowsf
       Name: /r0/arrowsf
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -685,4 +711,4 @@ Window Geometry:
     collapsed: true
   Width: 1267
   X: 653
-  Y: 27
+  Y: 0

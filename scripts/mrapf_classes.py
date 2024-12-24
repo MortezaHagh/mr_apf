@@ -36,6 +36,7 @@ class TestInfo:
 
 
 class PlannerData:
+    steps: int
     start_t: float
     end_t: float
     dur_t: float
@@ -52,6 +53,7 @@ class PlannerData:
         self.start_t = None
         self.end_t = None
         self.dur_t = None
+        self.steps = 0
         # v
         self.v = []
         self.w = []
@@ -81,6 +83,7 @@ class PlannerData:
 
 class AllPlannersData:
     n: int
+    all_steps: List[int]
     all_x: List[List[float]]
     all_y: List[List[float]]
     all_times: Dict[str, float]
@@ -92,6 +95,7 @@ class AllPlannersData:
         self.all_x = []
         self.all_y = []
         self.all_xy = {}
+        self.all_steps = []
         self.all_times = {}
         self.planners_data = []
 
@@ -100,6 +104,7 @@ class AllPlannersData:
         self.all_x.append(p_data.x)
         self.all_y.append(p_data.y)
         self.all_xy[str(self.n)] = p_data.xy
+        self.all_steps.append(p_data.steps)
         self.all_times[str(self.n)] = p_data.dur_t
         self.n += 1
 

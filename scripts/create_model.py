@@ -8,7 +8,7 @@ from model_inputs import ModelInputs
 
 
 class RobotsData:
-    ids: List[int]
+    rids: List[int]
 
     def __init__(self, inputs: ModelInputs, path_unit: float):
         self.xs = [x*path_unit for x in inputs.xs]
@@ -16,9 +16,9 @@ class RobotsData:
         self.xt = [x*path_unit for x in inputs.xt]
         self.yt = [y*path_unit for y in inputs.yt]
         self.heading = list(inputs.heading)
-        self.ids = inputs.ids
-        self.ns = ["/r"+str(id) for id in inputs.ids]
-        self.n_robots = len(inputs.ids)
+        self.rids = inputs.rids
+        self.ns = ["/r"+str(id) for id in inputs.rids]
+        self.n_robots = len(inputs.rids)
 
 
 class Map:

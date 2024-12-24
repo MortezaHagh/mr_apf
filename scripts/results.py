@@ -45,8 +45,12 @@ class Results:
         total_headings = np.array([total_h, np.rad2deg(total_h)])
         total_headings = np.round(total_headings, 2)
 
+        # max_steps
+        max_steps = max(self.data.all_steps)
+
         # final data
         final_data = {"n_robots": self.n,
+                      "max_steps": max_steps,
                       "mean_length": mean_length,
                       "total_length": total_length,
                       "operation_time": operation_time,

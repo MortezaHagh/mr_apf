@@ -12,7 +12,7 @@ from apf.srv import SendRobotUpdate, SendRobotUpdateRequest, SendRobotUpdateResp
 
 class FleetDataH:
     nr: int
-    ids: List[int]
+    rids: List[int]
     sns: Dict[int, str]
     xy: Dict[int, Tuple[float, float]]
     xyt: Dict[int, Tuple[float, float]]
@@ -23,7 +23,7 @@ class FleetDataH:
 
         # data
         self.nr = 0
-        self.ids = []
+        self.rids = []
         self.sns = {}
         self.xy = {}
         self.xyt = {}
@@ -49,7 +49,7 @@ class FleetDataH:
 
     def add_robot(self, rid: int, sns: str = ""):
         self.nr += 1
-        self.ids.append(rid)
+        self.rids.append(rid)
         self.sns[rid] = sns
         self.xy[rid] = (0, 0)
         self.xyt[rid] = (0, 0)
@@ -82,7 +82,7 @@ class FleetDataH:
             rospy.logwarn("[FleetDataH]: Failed to get all TFs")
 
     def get_all_tf(self):
-        for rid in self.ids:
+        for rid in self.rids:
             if self.fleet_data[rid].reached:
                 continue
             frame = self.sns[rid] + self.local_frame
@@ -117,7 +117,7 @@ class FleetDataH:
     def update_priority(self):
         dists = []
         max_dist = 0.001
-        for rid in self.ids:
+        for rid in self.rids:
             x_t, y_t = self.xyt[rid]
             x_r, y_r = self.fleet_data[rid].x, self.fleet_data[rid].y
             d = ((x_t - x_r) ** 2 + (y_t - y_r) ** 2) ** 0.5
@@ -125,7 +125,7 @@ class FleetDataH:
             if d > max_dist:
                 max_dist = d
         dists = [d/max_dist for d in dists]
-        for i, rid in enumerate(self.ids):
+        for i, rid in enumerate(self.rids):
             self.fleet_data[rid].priority = dists[i]
 
     # -------------------------------------------------------------------------

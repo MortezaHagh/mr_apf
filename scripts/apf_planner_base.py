@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
 import numpy as np
-from parameters import Params
 from geometry_msgs.msg import Pose2D
+from parameters import Params
 from create_model import MRSModel, Robot
 from apf.msg import RobotData, FleetData
 

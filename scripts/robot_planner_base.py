@@ -5,12 +5,13 @@ import rospy
 from geometry_msgs.msg import Twist, Pose2D
 from parameters import Params
 from mrapf_classes import PlannerData
-from apf_planner_2 import APFPlanner
 from visualization import RvizViusalizer
 from create_model import MRSModel, Robot
+from apf_planner_base import APFPlannerBase
+from apf_planner_1 import APFPlanner as APFPlanner1
+from apf_planner_2 import APFPlanner as APFPlanner2
 from apf.msg import FleetData
 from apf.srv import SendRobotUpdate, SendRobotUpdateRequest
-# choose: [apf_planner_2], [apf_planner_1]
 
 
 class RobotPlanner:
@@ -19,7 +20,7 @@ class RobotPlanner:
     rid: int
     ns: str
     p: Params
-    ap: APFPlanner
+    ap: APFPlannerBase
     vs: RvizViusalizer
     pose: Pose2D
     pd: PlannerData  # planner data
@@ -38,7 +39,13 @@ class RobotPlanner:
         self.ns = robot.ns  # name space
 
         # apf planner
-        self.ap = APFPlanner(model, robot, params)
+        self.p = params
+        if params.method == 1:
+            self.ap = APFPlanner1(model, robot, params)
+        elif params.method == 2:
+            self.ap = APFPlanner2(model, robot, params)
+        else:
+            raise ValueError("method not defined")
 
         #
         self.pose = Pose2D()        # robot pose

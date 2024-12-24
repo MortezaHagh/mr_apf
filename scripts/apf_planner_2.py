@@ -1,24 +1,25 @@
 #! /usr/bin/env python
 
 from typing import List, Dict, Tuple
+from array import array
 import numpy as np
-from parameters import Params
 from geometry_msgs.msg import Pose2D
-from create_model import MRSModel, Robot
-from apf.msg import RobotData, FleetData
-
+from parameters import Params
 from mrapf_classes import ApfRobot
 from my_utils import cal_distance
-from shapely.geometry import Point, shape, MultiPoint  # type: ignore # pylint: disable-all
 from my_utils import cal_angle_diff
+from create_model import MRSModel, Robot
+from apf.msg import RobotData, FleetData
 from apf_planner_base import APFPlannerBase
+from shapely.coords import CoordinateSequence  # type: ignore # pylint: disable-all
+from shapely.geometry import Point, shape, MultiPoint  # type: ignore # pylint: disable-all
 # from shapely.geometry.polygon import Polygon
 
 
 class APFPlanner(APFPlannerBase):
     multi_robots_vis: List[ApfRobot]
     new_robots: List[ApfRobot]
-    mp_bound: List[Tuple[float, float]]
+    mp_bound: List[Tuple[array, array]]
 
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
         APFPlannerBase.__init__(self, model, robot, params)
@@ -252,11 +253,11 @@ class APFPlanner(APFPlannerBase):
                         is_g2 = False
                         mpt = MultiPoint([shape(p) for p in polys_points])
                         mp = mpt.convex_hull
-                        mp_bound = mp.boundary.coords
-                        mpc = mp.centroid.coords[0]
+                        mp_bound: CoordinateSequence = mp.boundary.coords
+                        # mpc = mp.centroid.coords[0]
                         is_robot_in = mp.contains(point_robot)
                         is_target_in = mp.contains(point_target)
-                        self.mp_bound = [[], mp_bound]
+                        self.mp_bound.append(mp_bound.xy)
 
                         # get the minimum bounding circle of the convex hull
                         mbr = mp.minimum_rotated_rectangle

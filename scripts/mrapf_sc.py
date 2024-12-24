@@ -8,23 +8,22 @@ import rospy
 from plotter import Plotter
 from results import Results
 from parameters import Params
-from create_model import MRSModel, Robot
-from mrapf_classes import TestInfo, AllPlannersData, PlannerData
-
 from fleet_data import FleetDataH
-from apf_planner_2 import APFPlanner
+from create_model import MRSModel, Robot
+from apf_planner_base import APFPlannerBase
+from apf_planner_1 import APFPlanner as APFPlanner1
+from apf_planner_2 import APFPlanner as APFPlanner2
+from mrapf_classes import TestInfo, AllPlannersData, PlannerData
 
 
 class Run():
-    rate: rospy.Rate
-    rate40: rospy.Rate
     params: Params
     model: MRSModel
     test_info: TestInfo
-    planners_data: AllPlannersData
-    planners: List[APFPlanner]
-    apd: Dict[int, PlannerData]  # all planners data
     fdh: FleetDataH
+    planners: List[APFPlannerBase]
+    apd: Dict[int, PlannerData]  # all planners data
+    planners_data: AllPlannersData
 
     def __init__(self):
 
@@ -53,17 +52,16 @@ class Run():
         # fleet data
         fleet_data_h = FleetDataH(params)
 
-        # planners - set fleet_data_h
+       # planners - set fleet_data_h
         r: Robot
-        planners: List[APFPlanner] = []
+        planners: List[APFPlannerBase] = []
         for r in self.model.robots:
             # update fleet data handler
             fleet_data_h.add_robot(r.rid, r.sns)
             fleet_data_h.update_goal(r.rid, r.xt, r.yt)
             fleet_data_h.set_robot_pose(r.rid, r.xs, r.ys, r.heading)
             fleet_data_h.set_robot_data(r.rid, False, False)
-            pl = APFPlanner(model, r, params)
-            planners.append(pl)
+            planners.append(self.create_planner(r))
         self.planners = planners
         self.fdh = fleet_data_h
 
@@ -85,7 +83,8 @@ class Run():
         for r in self.model.robots:
             reaches[r.rid] = False
 
-        pl: APFPlanner
+        # planning and moving
+        pl: APFPlannerBase
         while not all(reaches.values()):
             for pl in self.planners:
                 if pl.reached:
@@ -99,10 +98,11 @@ class Run():
                 # record data
                 self.apd[pl.robot.rid].add_xy(pose.x, pose.y)
                 self.apd[pl.robot.rid].add_vw(pl.v, pl.w)
+                self.apd[pl.robot.rid].steps += 1
 
                 # check stop
                 if pl.stopped != pl.prev_stopped:
-                    self.fdh.set_robot_data(pl.rid, pl.stopped, False)
+                    self.fdh.set_robot_data(pl.robot.rid, pl.stopped, False)
                     pl.prev_stopped = pl.stopped
 
                 # check reach
@@ -122,7 +122,16 @@ class Run():
                 # log motion
                 self.log_motion(pl)
 
-    def log_motion(self, pl: APFPlanner):
+    def create_planner(self, robot: Robot):
+        if self.params.method == 1:
+            planner = APFPlanner1(self.model, robot, self.params)
+        elif self.params.method == 2:
+            planner = APFPlanner2(self.model, robot, self.params)
+        else:
+            raise ValueError("method not defined")
+        return planner
+
+    def log_motion(self, pl: APFPlannerBase):
         n = 1
         rid = pl.robot.rid
         if rid == n:

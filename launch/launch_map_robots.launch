@@ -17,9 +17,9 @@
   <node pkg="tf" type="static_transform_publisher" name="link0_broadcaster" args="0 0 0 0 0 0 1 map r0/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 map r1/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 map r2/odom 50" />
-  <!-- <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0 0 0 0 0 0 1 map r3/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0 0 0 0 0 0 1 map r3/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link4_broadcaster" args="0 0 0 0 0 0 1 map r4/odom 50" />
-  <node pkg="tf" type="static_transform_publisher" name="link5_broadcaster" args="0 0 0 0 0 0 1 map r5/odom 50" /> -->
+  <node pkg="tf" type="static_transform_publisher" name="link5_broadcaster" args="0 0 0 0 0 0 1 map r5/odom 50" />
   <!-- <node pkg="tf" type="static_transform_publisher" name="link6_broadcaster" args="0 0 0 0 0 0 1 odom r6/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link7_broadcaster" args="0 0 0 0 0 0 1 map r7/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link8_broadcaster" args="0 0 0 0 0 0 1 map r8/odom 50" />

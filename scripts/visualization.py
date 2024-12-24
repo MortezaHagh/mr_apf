@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 from typing import List, Dict, Tuple
+from array import array
 import numpy as np
 import rospy
 from sensor_msgs.msg import PointCloud
@@ -227,29 +228,25 @@ class RvizViusalizer:
                 rospy.loginfo(notife)
                 self.rate.sleep()
 
-    def robot_poly(self, pols: List[Tuple[float, float]], ns):
-        i = -1
-        for po in pols:
-            i = i+1
-            if len(po) == 0:
-                continue
-
-            pol_stamp = PolygonStamped()
-            pol_stamp.header.frame_id = "map"
-
-            polygon = Polygon()
-            for p in po:
+    def robot_poly(self, pols_xy: List[Tuple[array, array]], ns: str, rid: int):
+        if len(pols_xy) == 0:
+            return
+        pol_stamp = PolygonStamped()
+        pol_stamp.header.frame_id = "map"
+        polygon = Polygon()
+        for xy in pols_xy:
+            for x, y in zip(xy[0], xy[1]):
                 point = Point32()
-                point.x = p[0]
-                point.y = p[1]
+                point.x = x
+                point.y = y
                 point.z = 0
                 polygon.points.append(point)
-
-            pol_stamp.polygon = polygon
-            if i == 0:
-                self.robots_poly_pubs[ns].publish(pol_stamp)
-            else:
-                self.robots_poly_pubs_2[ns].publish(pol_stamp)
+        #
+        pol_stamp.polygon = polygon
+        if rid == 0:
+            self.robots_poly_pubs[ns].publish(pol_stamp)
+        else:
+            self.robots_poly_pubs_2[ns].publish(pol_stamp)
 
     def arrow(self, x, y, theta, ns=None):
         marker = Marker()

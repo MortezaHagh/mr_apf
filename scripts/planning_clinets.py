@@ -13,12 +13,12 @@ class PlanningClients:
 
     def __init__(self, robots: RobotsData):
         rospy.loginfo("[PlanningClients], Initializing Path Planning Clinets.")
-        self.ids = robots.ids
+        self.rids = robots.rids
         self.robots = robots
         self.clients = []
 
     def send_goals(self):
-        for rid in self.ids:
+        for rid in self.rids:
             goal = ApfGoal()
             goal.xt = self.robots.xt[rid]
             goal.yt = self.robots.yt[rid]

@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
 import numpy as np
-from parameters import Params
 from geometry_msgs.msg import Pose2D
+from parameters import Params
 from create_model import MRSModel, Robot
 from apf.msg import RobotData, FleetData
 from apf_planner_base import APFPlannerBase
@@ -27,7 +27,7 @@ class APFPlanner(APFPlannerBase):
                 self.pose.x = crob.x
                 self.pose.y = crob.y
                 self.pose.theta = crob.h
-                # rd = crob
+                self.rd = crob
                 break
 
         # check dist to goal
@@ -44,7 +44,7 @@ class APFPlanner(APFPlannerBase):
 
         # check stop_flag_full
         if self.stopped:
-            print("[planner_move, {self.robot.rid}], stop_flag_full")
+            print(f"[planner_move, {self.robot.rid}], stopped.")
             self.v = 0
             # self.w = 0
 
@@ -88,7 +88,7 @@ class APFPlanner(APFPlannerBase):
                 continue
 
             # and abs(angle_diff) > np.pi/2:
-            if (not rob.reached) and d_ro < self.p.obst_half_d and rob.priority > 0:
+            if (not rob.reached) and d_ro < self.p.obst_half_d and rob.priority > self.rd.priority:
                 self.stopped = True
                 break
 

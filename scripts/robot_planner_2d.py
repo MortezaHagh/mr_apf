@@ -34,15 +34,13 @@ class Planner2D (RobotPlanner):
                 self.rate.sleep()
                 continue
 
-            # update robot's data
-            self.ruc_req.stopped = False
-
             # command *********************************************************
             self.ap.planner_move(self.pose, self.fleet_data)
             self.v = self.ap.v
             self.w = self.ap.w
             self.pd.v.append(self.v)
             self.pd.w.append(self.w)
+            self.pd.steps += 1
 
             # record path
             self.pd.x.append(round(self.pose.x, 3))
@@ -50,9 +48,10 @@ class Planner2D (RobotPlanner):
 
             # vizualize
             if self.do_viz:
-                self.vs.robot_poly([[], self.ap.mp_bound], self.ns)
-                self.vs.draw_robot_circles(self.ap.multi_robots_vis, self.ns)
                 self.vizualize_force([self.ap.f_r, self.ap.f_theta], False)
+                if self.p.method == 2:
+                    self.vs.robot_poly(self.ap.mp_bound, self.ns, self.p.rid)
+                    self.vs.draw_robot_circles(self.ap.multi_robots_vis, self.ns)
 
             # publish cmd
             move_cmd = Twist()

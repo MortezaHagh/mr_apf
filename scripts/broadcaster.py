@@ -42,7 +42,7 @@ class BroadCast:
 
 # if __name__ == "__main__":
 #     rospy.init_node("broadcasters")
-#     ids = [1, 2, 3, 4]
-#     for i in ids:
+#     rids = [1, 2, 3, 4]
+#     for i in rids:
 #         BroadCast(i)
 #     rospy.spin()
