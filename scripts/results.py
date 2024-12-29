@@ -70,8 +70,5 @@ class Results:
         print("[Results]: operation_time:", operation_time)
         print("==================================")
 
-    def distance(self, x1, x2, y1, y2):
-        return round(np.sqrt((x1-x2)**2 + (y1-y2)**2), 2)
-
     def angle_diff(self, da):
         return np.arctan2(np.sin(da), np.cos(da))

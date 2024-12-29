@@ -60,7 +60,7 @@ class FleetDataH:
     def update_goal(self, rid: int, xt: float, yt: float):
         self.xyt[rid] = (xt, yt)
 
-    def sru_cb(self, req: SendRobotUpdateRequest):
+    def sru_cb(self, req: SendRobotUpdateRequest) -> SendRobotUpdateResponse:
         rid = req.rid
         self.fleet_data[rid].stopped = req.stopped
         self.fleet_data[rid].reached = req.reached
@@ -81,7 +81,7 @@ class FleetDataH:
             self.pub.publish(fd)
             rospy.logwarn("[FleetDataH]: Failed to get all TFs")
 
-    def get_all_tf(self):
+    def get_all_tf(self) -> bool:
         for rid in self.rids:
             if self.fleet_data[rid].reached:
                 continue
@@ -90,7 +90,7 @@ class FleetDataH:
                 return False
         return True
 
-    def get_tf(self, rid: int, frame: str):
+    def get_tf(self, rid: int, frame: str) -> bool:
         try:
             trans = self.tf_buffer.lookup_transform(self.global_frame, frame, rospy.Time(0), rospy.Duration(0.2))
             translation = trans.transform.translation

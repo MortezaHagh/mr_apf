@@ -122,7 +122,7 @@ class Run():
                 # log motion
                 self.log_motion(pl)
 
-    def create_planner(self, robot: Robot):
+    def create_planner(self, robot: Robot) -> APFPlannerBase:
         if self.params.method == 1:
             planner = APFPlanner1(self.model, robot, self.params)
         elif self.params.method == 2:

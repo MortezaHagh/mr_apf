@@ -5,6 +5,7 @@ import random
 from typing import List
 import numpy as np
 import rospkg
+from my_utils import cal_distance
 
 
 class ModelInputs:
@@ -227,7 +228,7 @@ class ModelInputs:
             while dist < 0.5:
                 xo = np.random.uniform(self.x_min, self.x_max)
                 yo = np.random.uniform(self.y_min, self.y_max)
-                dist = min([self.distance(x, y, xo, yo) for (x, y) in zip(obst_x, obst_y)])
+                dist = min([cal_distance(x, y, xo, yo) for (x, y) in zip(obst_x, obst_y)])
             obst_x.append(xo)
             obst_y.append(yo)
 
@@ -241,7 +242,7 @@ class ModelInputs:
             while dist < 1:
                 xs = np.random.uniform(self.x_min, self.x_max)
                 ys = np.random.uniform(self.y_min, self.y_max)
-                dist = min([self.distance(x, y, xs, ys) for (x, y) in zip(all_x, all_y)])
+                dist = min([cal_distance(x, y, xs, ys) for (x, y) in zip(all_x, all_y)])
             all_x.append(xs)
             all_y.append(ys)
             x_rs.append(xs)
@@ -255,10 +256,10 @@ class ModelInputs:
             while True:
                 xt = np.random.uniform(self.x_min, self.x_max)
                 yt = np.random.uniform(self.y_min, self.y_max)
-                dist = min([self.distance(x, y, xt, yt) for (x, y) in zip(all_x, all_y)])
+                dist = min([cal_distance(x, y, xt, yt) for (x, y) in zip(all_x, all_y)])
 
                 if dist > 1:
-                    dist_st = self.distance(x_rs[ii], y_rs[ii], xt, yt)
+                    dist_st = cal_distance(x_rs[ii], y_rs[ii], xt, yt)
                     if dist_st > 5:
                         ii += 1
                         x_rt.append(xt)
@@ -286,9 +287,6 @@ class ModelInputs:
 
         # dave data as JSON
         self.save_object_attributes(ind)
-
-    def distance(self, x1, y1, x2, y2):
-        return np.sqrt((x1-x2)**2 + (y1-y2)**2)
 
     def save_object_attributes(self, ind=1):
 
@@ -352,7 +350,7 @@ class ModelInputs:
         new_obst_y = []
         for i, [x, y] in enumerate(zip(self.x_obst, self.y_obst)):
             for j in range(i+1, len(self.x_obst)):
-                dist = self.distance(x, y, self.x_obst[j], self.y_obst[j])
+                dist = cal_distance(x, y, self.x_obst[j], self.y_obst[j])
                 if obst_prec_d < dist < 1.65*obst_prec_d:
                     new_obst_x.append((self.x_obst[j]+x)/2)
                     new_obst_y.append((self.y_obst[j]+y)/2)
@@ -367,7 +365,7 @@ class ModelInputs:
         new_obst_y = []
         for i, [x, y] in enumerate(zip(self.x_obst, self.y_obst)):
             for j in range(i+1, len(self.x_obst)):
-                dist = self.distance(x, y, self.x_obst[j], self.y_obst[j])
+                dist = cal_distance(x, y, self.x_obst[j], self.y_obst[j])
                 if dist < 1.99*obst_prec_d and dist > obst_prec_d:
                     xxm = (self.x_obst[j]+x)/2.0
                     yym = (self.y_obst[j]+y)/2.0

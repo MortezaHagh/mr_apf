@@ -39,7 +39,7 @@ class CentralMRAPF:
         self.robot_srv = rospy.Service(central_mrapf_srv_name, InitRobot, self.apf_srv_callback)
         rospy.loginfo(f"[{self.__class__.__name__}]: Central Service Server (central_mrapf_srv) is created. ")
 
-    def apf_srv_callback(self, req: InitRobotRequest):
+    def apf_srv_callback(self, req: InitRobotRequest) -> InitRobotResponse:
 
         rospy.loginfo(f"[{self.__class__.__name__}]: 'central_mrapf_srv' is called. req rid: " + str(req.rid))
 

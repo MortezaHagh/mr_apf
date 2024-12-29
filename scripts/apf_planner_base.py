@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-
+from typing import Tuple
 import numpy as np
 from geometry_msgs.msg import Pose2D
 from parameters import Params
@@ -42,9 +42,9 @@ class APFPlannerBase:
         self.goal_dist = None
         self.goal_theta = None
         #
-        self.robot_f = []
-        self.target_f = []
-        self.obs_f = []
+        self.robot_f: Tuple[float, float] = (0.0, 0.0)
+        self.target_f: Tuple[float, float] = (0.0, 0.0)
+        self.obs_f: Tuple[float, float] = (0.0, 0.0)
 
         # control vars
         self.reached = False

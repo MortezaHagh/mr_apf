@@ -228,7 +228,7 @@ class RvizViusalizer:
                 rospy.loginfo(notife)
                 self.rate.sleep()
 
-    def robot_poly(self, pols_xy: List[Tuple[array, array]], ns: str, rid: int):
+    def robot_poly(self, pols_xy: List[Tuple[array, array]], ns: str, rid: int) -> None:
         if len(pols_xy) == 0:
             return
         pol_stamp = PolygonStamped()

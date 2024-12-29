@@ -14,7 +14,7 @@ class APFPlanner(APFPlannerBase):
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
         APFPlannerBase.__init__(self, model, robot, params)
 
-    def planner_move(self, pose: Pose2D, fleet_data: FleetData):
+    def planner_move(self, pose: Pose2D, fleet_data: FleetData) -> None:
         # inputs - reset
         self.pose = pose
         self.fleet_data = fleet_data
