@@ -4,10 +4,10 @@ import rospy
 import actionlib
 from parameters import Params
 from mrapf_classes import PlannerData
-from robot_planner_2d import Planner2D
-from robot_planner_rt import PlannerRT
+from robot_planner_l2_2d import Planner2D
+from robot_planner_l2_rt import PlannerRT
 from create_model import MRSModel, Robot
-from robot_planner_base import RobotPlanner
+from robot_planner_l1_base import RobotPlanner
 from apf.msg import ApfAction, ApfResult, ApfGoal
 
 

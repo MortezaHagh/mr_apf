@@ -6,7 +6,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from parameters import Params
 from create_model import MRSModel, Robot
-from robot_planner_base import RobotPlanner
+from robot_planner_l1_base import RobotPlanner
 
 
 class Planner2D (RobotPlanner):

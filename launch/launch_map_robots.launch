@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <launch>
-  
+
   <include file="$(find init_sim)/launch/empty_world_complete.launch">
-    <arg name="world_name" value="$(find init_sim)/worlds/empty_world_1.world"/>  
+    <arg name="world_name" value="$(find init_sim)/worlds/empty_world_1.world" />
     <!-- walls3 empty_wall empty_world_1 columns1.world-->
-    
-    <arg name="paused" value="false"/>
-    <arg name="use_sim_time" value="true"/>
-    <arg name="gui" value="false"/>
-    <arg name="recording" value="false"/>
-    <arg name="debug" value="false"/>
+
+    <arg name="paused" value="false" />
+    <arg name="use_sim_time" value="true" />
+    <arg name="gui" value="true" />
+    <arg name="recording" value="false" />
+    <arg name="debug" value="false" />
   </include>
 
   <!-- static transform publishers -->
@@ -32,13 +32,13 @@
   <node pkg="tf" type="static_transform_publisher" name="link15_broadcaster" args="0 0 0 0 0 0 1 map r15/odom 50" /> -->
 
   <!-- states publisher -->
-  <include file="$(find apf)/launch/launch_states_publisher.launch"/> 
+  <include file="$(find apf)/launch/launch_states_publisher.launch" />
 
   <!-- path planning -->
-  <node pkg="apf" name="mrapf_main" type="mrapf_main.py" output="screen"/>
+  <node pkg="apf" name="mrapf_main" type="mrapf_main.py" output="screen" />
 
   <!-- Load RVIZ -->
   <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d /home/morteza/mo_ws/src/mr_apf/rviz/apf_arviz.rviz" />
 
-  
+
 </launch>
