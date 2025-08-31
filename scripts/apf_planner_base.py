@@ -1,4 +1,7 @@
 #! /usr/bin/env python
+
+""" MRAPF Planner Base, calculate forces and velocities """
+
 from typing import Tuple
 import numpy as np
 from geometry_msgs.msg import Pose2D
@@ -8,40 +11,37 @@ from apf.msg import RobotData, FleetData
 
 
 class APFPlannerBase:
+    """ APF Planner Base class """
     p: Params
     model: MRSModel
     robot: Robot
     pose: Pose2D
-    rd: RobotData
+    robot_data: RobotData
     fleet_data: FleetData
 
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
+
         # data
-        self.p = params
+        self.params = params
         self.model = model
         self.robot = robot
         self.map_data()
 
-        #
+        # robot fleet data
         self.pose = Pose2D()
-        self.rd = None
+        self.robot_data = None
         self.fleet_data = None
 
-        #
+        # velocity
         self.v = 0
         self.w = 0
 
-        #
+        # forces and phi
         self.f_r = 0
         self.f_theta = 0
         self.phi = 0
 
-        # compute vars
-        self.ad_rg_h = None
-        self.theta_rg = None
-        self.goal_dist = None
-        self.goal_theta = None
-        #
+        # forces
         self.robot_f: Tuple[float, float] = (0.0, 0.0)
         self.target_f: Tuple[float, float] = (0.0, 0.0)
         self.obs_f: Tuple[float, float] = (0.0, 0.0)
@@ -52,6 +52,7 @@ class APFPlannerBase:
         self.prev_stopped = False
 
         # control vars
+        self.ad_rg_h = None
         self.theta_rg = 0
         self.goal_theta = 0
         self.goal_dist = 1000
@@ -72,9 +73,10 @@ class APFPlannerBase:
         pass
 
     def forces(self):
-        # target
         f_r = 0
         f_theta = 0
+
+        # target
         self.f_target()
         f_r = self.target_f[0]
         f_theta = self.target_f[1]
@@ -116,10 +118,10 @@ class APFPlannerBase:
         self.goal_x = self.robot.xt
         self.goal_y = self.robot.yt
         # obstacles
-        self.obs_x = self.model.obst.x
-        self.obs_y = self.model.obst.y
-        self.obs_count = self.model.obst.count
-        self.obs_ind_main = [i for i in range(self.model.obst.count)]
+        self.obs_x = self.model.obsts.x
+        self.obs_y = self.model.obsts.y
+        self.obs_count = self.model.obsts.count
+        self.obs_ind_main = [i for i in range(self.model.obsts.count)]
 
     def cal_vel(self):
         #
@@ -129,20 +131,20 @@ class APFPlannerBase:
         if f_r < 0:
             v = 0
         else:
-            v = 1 * self.p.v_max * ((f_r / self.p.fix_f)**2) + self.p.v_min_2
+            v = 1 * self.params.v_max * ((f_r / self.params.fix_f)**2) + self.params.v_min_2
         # w
-        w = 3 * self.p.w_max * f_theta / self.p.fix_f
+        w = 3 * self.params.w_max * f_theta / self.params.fix_f
         if f_r < -1 and abs(w) < 0.05:
             w = 1*np.sign(w)
 
         # v
-        if (v <= self.p.v_min_2*2) and abs(w) < 0.03:
-            v = self.p.v_min_2*2
+        if (v <= self.params.v_min_2*2) and abs(w) < 0.03:
+            v = self.params.v_min_2*2
 
         # check bounds
-        v = min(v, self.p.v_max)
-        v = max(v, self.p.v_min)
-        wa = min(abs(w), self.p.w_max)
+        v = min(v, self.params.v_max)
+        v = max(v, self.params.v_min)
+        wa = min(abs(w), self.params.w_max)
         w = wa * np.sign(w)
         self.v = v
         self.w = w

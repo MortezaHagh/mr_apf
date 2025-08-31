@@ -10,17 +10,17 @@ from create_model import MRSModel, Robot
 from apf_planner_base import APFPlannerBase
 from apf_planner_1 import APFPlanner as APFPlanner1
 from apf_planner_2 import APFPlanner as APFPlanner2
-from apf.msg import FleetData
 from apf.srv import SendRobotUpdate, SendRobotUpdateRequest
+from apf.msg import FleetData
 
 
-class RobotPlanner:
+class RobotPlannerBase:
     do_viz: bool
     data_received: bool
     rid: int
     ns: str
     p: Params
-    ap: APFPlannerBase
+    mrapf: APFPlannerBase
     vs: RvizViusalizer
     pose: Pose2D
     pd: PlannerData  # planner data
@@ -39,11 +39,10 @@ class RobotPlanner:
         self.ns = robot.ns  # name space
 
         # apf planner
-        self.p = params
         if params.method == 1:
-            self.ap = APFPlanner1(model, robot, params)
+            self.mrapf = APFPlanner1(model, robot, params)
         elif params.method == 2:
-            self.ap = APFPlanner2(model, robot, params)
+            self.mrapf = APFPlanner2(model, robot, params)
         else:
             raise ValueError("method not defined")
 
@@ -58,8 +57,8 @@ class RobotPlanner:
         self.rate = rospy.Rate(f)
         rospy.on_shutdown(self.shutdown_hook)
 
-        # RvizViusalizer
-        self.vs = RvizViusalizer(model)
+        # RvizViusalizer for forces (arrow)
+        self.viusalizer = RvizViusalizer(model)
 
         # listener
         self.data_received = False
@@ -80,17 +79,60 @@ class RobotPlanner:
 
     def start(self):
         # start time
-        self.pd.start_t = rospy.get_time()
+        self.pd.set_start_time(rospy.get_time())
 
         self.go_to_goal()
+        self.after_reached()
         self.is_reached = True
 
         # end time
-        self.pd.end_t = rospy.get_time()
+        self.pd.set_end_time(rospy.get_time())
         self.pd.finalize()
 
     def go_to_goal(self):
         pass
+
+    def move(self):
+        self.mrapf.planner_move(self.pose, self.fleet_data)
+        self.v = self.mrapf.v
+        self.w = self.mrapf.w
+
+        # update planner data
+        self.pd.append_data(self.pose.x, self.pose.y, self.v, self.w)
+
+        # vizualize
+        if self.do_viz:
+            self.vizualize_force([self.mrapf.f_r, self.mrapf.f_theta], False)
+            if self.p.method == 2:
+                self.vs.vizualize_polygon(self.mrapf.mp_bound, self.ns, self.p.rid)
+                self.vs.draw_robot_circles(self.mrapf.multi_robots_vis, self.ns)
+
+        # publish cmd
+        move_cmd = Twist()
+        move_cmd.linear.x = self.v
+        move_cmd.angular.z = self.w
+        self.cmd_vel_pub.publish(move_cmd)
+
+        # check stop
+        if self.mrapf.stopped != self.mrapf.prev_stopped:
+            self.ruc_req.stopped = self.mrapf.stopped
+            self.robot_update_client(self.ruc_req)
+            self.mrapf.prev_stopped = self.mrapf.stopped
+
+        # log data
+        self.log_motion(self.mrapf.f_r, self.mrapf.f_theta)
+
+        # reached
+        if self.mrapf.reached:
+            rospy.loginfo(f"[planner_base, {self.ns}]: robot reached goal.")
+
+    def after_reached(self):
+        self.ruc_req.stopped = True
+        self.ruc_req.reached = True
+        self.robot_update_client(self.ruc_req)
+        self.stop()
+        self.stop()
+        rospy.loginfo(f"[planner_base, {self.ns}]: go_to_goal finished!")
 
     def stop(self):
         t = 0
@@ -106,7 +148,7 @@ class RobotPlanner:
             w = round(self.w, 2)
             fr = round(f_r, 2)
             ft = round(f_theta, 2)
-            # rospy.loginfo(f"[planner_base, {self.ns}]: {self.ap.stop_flag_multi}")
+            # rospy.loginfo(f"[planner_base, {self.ns}]: {self.mrapf.stop_flag_multi}")
             rospy.loginfo(f"[planner_base, {self.ns}]: f_r: {fr}, f_theta: {ft}")
             rospy.loginfo(f"[planner_base, {self.ns}]: v: {v}, w: {w}")
             rospy.loginfo(" --------------------------------------------------- ")
@@ -127,6 +169,6 @@ class RobotPlanner:
         theta = np.arctan2(np.sin(theta), np.cos(theta))
         theta = self.pose.theta + theta
         if ip:
-            self.vs.arrow(self.pose.x, self.pose.y, theta)
+            self.viusalizer.visualize_arrow(self.pose.x, self.pose.y, theta)
         else:
-            self.vs.arrow(self.pose.x, self.pose.y, theta, self.ns)
+            self.viusalizer.visualize_arrow(self.pose.x, self.pose.y, theta, self.ns)

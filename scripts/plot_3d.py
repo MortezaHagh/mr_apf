@@ -66,9 +66,9 @@ class Plot3D:
                 xx = X[i, j]
                 yy = Y[i, j]
 
-                for k in range(self.model.obst.count):
-                    dy = (self.model.obst.y[k] - yy)
-                    dx = (self.model.obst.x[k] - xx)
+                for k in range(self.model.obsts.count):
+                    dy = (self.model.obsts.y[k] - yy)
+                    dx = (self.model.obsts.x[k] - xx)
                     d_ro = np.sqrt(dx**2 + dy**2)
 
                     f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2

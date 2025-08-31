@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+""" Planning Clients for MRAPF, sending goals to each robot action server """
+
 from typing import List
 import rospy
 import actionlib

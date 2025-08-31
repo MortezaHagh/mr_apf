@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+""" Fleet Data Handler for MRAPF """
+
 from typing import Dict, Tuple, List
 import rospy
 import tf2_ros
@@ -10,7 +12,7 @@ from apf.msg import RobotData, FleetData
 from apf.srv import SendRobotUpdate, SendRobotUpdateRequest, SendRobotUpdateResponse
 
 
-class FleetDataH:
+class FleetDataHandler:
     nr: int
     rids: List[int]
     sns: Dict[int, str]
@@ -18,6 +20,7 @@ class FleetDataH:
     xyt: Dict[int, Tuple[float, float]]
     poses: Dict[int, Pose2D]
     fleet_data: Dict[int, RobotData]
+    frames: Dict[int, str]
 
     def __init__(self, params: Params):
 
@@ -29,6 +32,7 @@ class FleetDataH:
         self.xyt = {}
         self.poses = {}
         self.fleet_data = {}
+        self.frames = {}
 
         # settings
         self.global_frame = params.global_frame
@@ -56,6 +60,7 @@ class FleetDataH:
         self.poses[rid] = Pose2D()
         self.fleet_data[rid] = RobotData()
         self.fleet_data[rid].rid = rid
+        self.frames[rid] = sns + self.local_frame
 
     def update_goal(self, rid: int, xt: float, yt: float):
         self.xyt[rid] = (xt, yt)
@@ -79,14 +84,13 @@ class FleetDataH:
         else:
             fd.success = False
             self.pub.publish(fd)
-            rospy.logwarn("[FleetDataH]: Failed to get all TFs")
+            rospy.logwarn("[FleetDataHandler]: Failed to get all TFs")
 
     def get_all_tf(self) -> bool:
         for rid in self.rids:
             if self.fleet_data[rid].reached:
                 continue
-            frame = self.sns[rid] + self.local_frame
-            if not self.get_tf(rid, frame):
+            if not self.get_tf(rid, self.frames[rid]):
                 return False
         return True
 
@@ -96,10 +100,10 @@ class FleetDataH:
             translation = trans.transform.translation
             rotation = trans.transform.rotation
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-            rospy.logwarn(f"[FleetDataH]: TF Exception for robot with frame {frame}: {e}")
+            rospy.logwarn(f"[FleetDataHandler]: TF Exception for robot with frame {frame}: {e}")
             return False
         except Exception as e:  # pylint: disable-all
-            rospy.logwarn(f"[FleetDataH]: Exception for robot with frame {frame}: {e}")
+            rospy.logwarn(f"[FleetDataHandler]: Exception for robot with frame {frame}: {e}")
             return False
         # Extract the x, y, and yaw from the transformation
         x = translation.x
@@ -152,5 +156,5 @@ class FleetDataH:
         self.fleet_data[rid].reached = reached
         self.fleet_data[rid].priority = 0.0
 
-    def get_all_data(self) -> Dict[int, RobotData]:
-        return self.fleet_data
+    # def get_all_data(self) -> Dict[int, RobotData]:
+    #     return self.fleet_data

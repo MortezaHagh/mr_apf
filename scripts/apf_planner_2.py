@@ -17,19 +17,18 @@ from shapely.geometry import Point, shape, MultiPoint  # type: ignore # pylint: 
 
 
 class APFPlanner(APFPlannerBase):
-    multi_robots_vis: List[ApfRobot]
     new_robots: List[ApfRobot]
-    mp_bound: List[Tuple[array, array]]
+    multi_robots_vis: List[ApfRobot]
+    cluster_poly_xy: List[Tuple[array, array]]
 
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
         APFPlannerBase.__init__(self, model, robot, params)
         #
-        self.multi_robots_vis = []
-        self.mp_bound = []
         self.new_robots = []
+        self.multi_robots_vis = []
+        self.cluster_poly_xy = []
 
         #
-        self.is_multi = False
         self.near_obst = False
         self.near_robots = False
         self.stop_flag_full = False
@@ -40,9 +39,8 @@ class APFPlanner(APFPlannerBase):
     def reset_vals_2(self):
         #
         self.multi_robots_vis = []
-        self.mp_bound = []
+        self.cluster_poly_xy = []
         #
-        self.is_multi = False
         self.near_obst = False
         self.near_robots = False
         self.stop_flag_full = False
@@ -64,7 +62,7 @@ class APFPlanner(APFPlannerBase):
                 self.pose.x = crob.x
                 self.pose.y = crob.y
                 self.pose.theta = crob.h
-                self.rd = crob
+                self.robot_data = crob
                 break
 
         # check dist to goal
@@ -162,7 +160,7 @@ class APFPlanner(APFPlannerBase):
                 nr.H = o_rob.h
                 nr.h_rR = ad_h_rR
                 nr.theta_rR = theta_rR
-                nr.p = (not (o_rob.reached or o_rob.stopped)) and (o_rob.priority > self.rd.priority)
+                nr.prior = (not (o_rob.reached or o_rob.stopped)) and (o_rob.priority > self.robot_data.priority)
                 nr.stopped = o_rob.stopped
                 nr.reached = o_rob.reached
                 rc = self.p.robot_prec_d
@@ -186,7 +184,7 @@ class APFPlanner(APFPlannerBase):
                         nnr.H = o_rob.h
                         nnr.h_rR = ad_h_rR_
                         nnr.theta_rR = theta_rR_
-                        nnr.p = o_rob.priority > self.rd.priority
+                        nnr.prior = o_rob.priority > self.robot_data.priority
                         nnr.stopped = True
                         nnr.reached = True
                         nnr.r_prec = nr.r_prec/1.5  # $
@@ -234,14 +232,13 @@ class APFPlanner(APFPlannerBase):
         # groups - new_robots -----------------------------------
         for g in groups:
             if len(g) > 1:
-                self.is_multi = True
                 nr = ApfRobot()
-                nr.big = True
+                nr.cluster = True
                 is_robot_in = False
                 is_target_in = False
 
                 # priorities
-                P = [fd.fdata[i].priority > self.rd.priority for i in g]
+                P = [fd.fdata[i].priority > self.robot_data.priority for i in g]
 
                 # polygon
                 is_g2 = True
@@ -253,11 +250,11 @@ class APFPlanner(APFPlannerBase):
                         is_g2 = False
                         mpt = MultiPoint([shape(p) for p in polys_points])
                         mp = mpt.convex_hull
-                        mp_bound: CoordinateSequence = mp.boundary.coords
+                        cluster_poly_coords: CoordinateSequence = mp.boundary.coords
                         # mpc = mp.centroid.coords[0]
                         is_robot_in = mp.contains(point_robot)
                         is_target_in = mp.contains(point_target)
-                        self.mp_bound.append(mp_bound.xy)
+                        self.cluster_poly_xy.append(cluster_poly_coords.xy)
 
                         # get the minimum bounding circle of the convex hull
                         mbr = mp.minimum_rotated_rectangle
@@ -322,7 +319,7 @@ class APFPlanner(APFPlannerBase):
                 nr.h_rR = ad_h_rR
                 nr.theta_rR = theta_rR
                 if any(P):
-                    nr.p = True
+                    nr.prior = True
                 nr.r_prec = rc + self.p.robot_r + self.p.prec_d
                 # nr.r_prec = self.eval_obst(xc, yc, nr.r_prec, d_rR)
                 nr.r_half = 1.5 * nr.r_prec
@@ -401,7 +398,7 @@ class APFPlanner(APFPlannerBase):
         new_robots = self.new_robots
         for nr in new_robots:
             nr_force: Tuple[float, float] = (0, 0)
-            if (not nr.big):
+            if (not nr.cluster):
                 nr_force = self.compute_robot_force(nr)
             else:
                 # if (not self.near_robots) and (not self.near_obst):
@@ -502,7 +499,7 @@ class APFPlanner(APFPlannerBase):
         ad_Rr_H = cal_angle_diff((nr.theta_rR - np.pi), nr.H)
         ad_rR_h = cal_angle_diff(nr.theta_rR, self.pose.theta)
         if (ad_Rr_H*ad_rR_h) < 0:
-            if nr.p:
+            if nr.prior:
                 self.stop_flag_robots
                 R_coeff = -1
             #     print(self.rid, " ==== ")
@@ -514,14 +511,14 @@ class APFPlanner(APFPlannerBase):
         if (nr.d < nr.r_prec):
             if (abs(nr.h_rR) < (np.pi/4)):  # to check # np.pi/4 np.pi/2
                 self.stop_flag_robots = True
-            if (not nr.reached) and (not nr.stopped):  # and nr.p:
+            if (not nr.reached) and (not nr.stopped):  # and nr.prior:
                 if abs(ad_rR_h) < np.pi/2 and abs(ad_Rr_H) > np.pi/2:
                     self.stop_flag_full = True
                     # return [0, 0]
 
         # case hard!
         ad = cal_angle_diff(theta_Rg,  self.theta_rg)
-        if (nr.p) and abs(ad) < np.deg2rad(30) and d_Rg < self.goal_dist and abs(self.ad_rg_h) < np.deg2rad(40):
+        if (nr.prior) and abs(ad) < np.deg2rad(30) and d_Rg < self.goal_dist and abs(self.ad_rg_h) < np.deg2rad(40):
             if abs(cal_angle_diff(self.pose.theta, nr.H)) < np.deg2rad(90):
                 self.stop_flag_full = True
 

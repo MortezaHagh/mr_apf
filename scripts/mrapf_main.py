@@ -1,14 +1,16 @@
 #! /usr/bin/env python
 
+""" MRAPF Simulation for real-time applications """
+
 import json
 from typing import List
 from matplotlib.pylab import plt
 import rospy
 from plotter import Plotter
-from results import Results
 from parameters import Params
 from spawn_map import spawning
 from create_model import MRSModel
+from generate_results import Results
 from visualization import RvizViusalizer
 from robot_planner_l0_ac import RobotPlannerAc
 from planning_clinets import PlanningClients
@@ -18,18 +20,25 @@ from initiate_planners import initiate_robots_planners
 
 
 class Run():
+    """Run the MRAPF simulation.
+    """
     rate: rospy.Rate
     rate40: rospy.Rate
     params: Params
-    model: MRSModel
     test_info: TestInfo
+    model: MRSModel
     planners_data: AllPlannersData
 
     def __init__(self):
 
-        # data
+        rospy.loginfo(f"[{self.__class__.__name__}]: Start running MRAPF ...")
+
+        # settings
         self.params = Params()
         self.test_info = TestInfo(self.params)
+        self.central_mrapf_srv_name = "central_mrapf_srv"
+
+        # all simulation data, to be collected
         self.planners_data = AllPlannersData()
 
         # ros settings
@@ -37,31 +46,38 @@ class Run():
         self.rate40 = rospy.Rate(40)
         rospy.on_shutdown(self.shutdown_hook)
 
+        #
+        self.model = None
+        self.visualizer = None
+        self.cmrapf = None
+        self.planning_clients = None
+
+    def run(self):
+
         # create model
         path_unit = 0.7
         self.model = MRSModel(map_id=1, path_unit=path_unit, n_robots=self.params.nr)
 
-        if self.params.sim == "3D":
+        if self.params.simD == "3D":
             # spawn robots and obstacles
             spawning(model=self.model, path_unit=1.0)
 
         # visualize
         self.visualizer = RvizViusalizer(model=self.model)
 
-        # running central MRAPF Service Server *********************************
-        central_mrapf_srv_name = "central_mrapf_srv"
-        self.cmrapf = CentralMRAPF(self.model, central_mrapf_srv_name)
+        # running central MRAPF Service Server *************************************************************************
+        self.cmrapf = CentralMRAPF(self.model, self.central_mrapf_srv_name)
 
-        # creating distributed planners - by calling central service ***********
+        # creating distributed planners - by calling central service ***************************************************
         initiate_robots_planners(self.model)
         self.rate.sleep()
 
         # update fleet data
         for _ in range(20):
-            self.cmrapf.fleet_data_h.update_all()
+            self.cmrapf.fleet_data_handler.update_all()
             self.rate.sleep()
 
-        # planning clients - sending goals *************************************
+        # planning clients - sending goals *****************************************************************************
         self.planning_clients = PlanningClients(self.model.robots_data)
         self.planning_clients.send_goals()
 
@@ -72,15 +88,15 @@ class Run():
         self.final_results_plot()
 
     def check_status(self):
-        self.cmrapf.fleet_data_h.update_all()
+        self.cmrapf.fleet_data_handler.update_all()
         status = [c.get_state() for c in self.planning_clients.clients]
         s_flags = [s < 2 for s in status]
         while (not rospy.is_shutdown()) and (any(s_flags)):
-            self.cmrapf.fleet_data_h.update_all()
+            self.cmrapf.fleet_data_handler.update_all()
             status = [c.get_state() for c in self.planning_clients.clients]
             s_flags = [s < 2 for s in status]
-            self.visualizer.create_robot_circles(self.cmrapf.fleet_data_h.xy)
-            self.rate40.sleep()
+            self.visualizer.update_robot_vizuals(self.cmrapf.fleet_data_handler.xy)
+            self.rate.sleep()
 
         rospy.loginfo(" ---------------------------------")
         rospy.loginfo(f"[{self.__class__.__name__}]: APF Mission Accomplished.")
@@ -92,21 +108,21 @@ class Run():
         for ac in planners:
             self.planners_data.add_data(ac.planner_data)
 
-        #
-        Results(self.planners_data, self.test_info.res_file_p)
+        # generate results
+        Results(self.planners_data, self.test_info.res_file_path)
         self.save_data()
         self.plotting()
 
     def plotting(self):
-        plotter = Plotter(self.model, self.params, self.test_info.res_file_p)
+        plotter = Plotter(self.model, self.params, self.test_info.res_file_path)
         plotter.plot_all_paths(self.planners_data)
         plt.show()
 
     def save_data(self):
-        with open(self.test_info.res_file_p + "paths.json", "w") as outfile:
+        with open(self.test_info.res_file_path + "paths.json", "w") as outfile:
             json.dump(self.planners_data.all_xy, outfile)
-        # with open(self.test_info.res_file_p + "times.json", "w") as outfile:
-        #     json.dump(self.planners_data.all_times, outfile)
+        # with open(self.test_info.res_file_path + "times.json", "w") as outfile:
+        #     json.dump(self.planners_data.all_durations, outfile)
 
     def shutdown_hook(self):
         pass
@@ -115,3 +131,4 @@ class Run():
 if __name__ == "__main__":
     rospy.init_node("mrapf_node")
     run = Run()
+    run.run()

@@ -1,4 +1,5 @@
-""" test informaiton, result file paths """
+""" Classes TestInfo, PlannerData, AllPlannersData, ApfRobot """
+
 from typing import List, Dict
 import os
 import rospkg
@@ -7,32 +8,32 @@ from parameters import Params
 
 class TestInfo:
     name: str
-    sim: str
+    simD: str
     nr: int
     method: int
-    res_file_p: str
+    res_file_path: str
 
     def __init__(self, params: Params, name: str = ""):
         if name != "":
             name = name + "_"
         self.name = name
         self.nr = params.nr
-        self.sim = params.sim
+        self.simD = params.simD
         self.method = params.method
-        self.res_file_p = ""
+        self.res_file_path = ""
         self.create_paths()  # create result files paths
 
     def create_paths(self):
         # names
-        folder_name = self.name + "T" + str(self.nr) + "_M" + str(self.method) + "_" + self.sim
+        folder_name = self.name + "_M" + str(self.method) + "_" + self.simD + "N" + str(self.nr)
         # Create directory
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
-        result_folder = os.path.join(pkg_path, "results/tests")
-        result_path = os.path.join(result_folder, folder_name)
+        base_path = os.path.join(pkg_path, "results/tests")
+        result_path = os.path.join(base_path, folder_name)
         if not os.path.exists(result_path):
             os.makedirs(result_path)
-        self.res_file_p = result_path+'/'
+        self.res_file_path = result_path+'/'
 
 
 class PlannerData:
@@ -40,6 +41,8 @@ class PlannerData:
     start_t: float
     end_t: float
     dur_t: float
+    v: List[float]
+    w: List[float]
     x: List[float]
     y: List[float]
     xy: Dict[str, List[float]]
@@ -68,6 +71,17 @@ class PlannerData:
         self.f_ot = []
         self.phis = []
 
+    def append_data(self, x, y, v, w):
+        self.add_xy(x, y)
+        self.add_vw(v, w)
+        self.steps += 1
+
+    def set_start_time(self, start: float):
+        self.start_t = start
+
+    def set_end_time(self, end: float):
+        self.end_t = end
+
     def add_xy(self, x: float, y: float):
         self.x.append(round(x, 2))
         self.y.append(round(y, 2))
@@ -86,7 +100,7 @@ class AllPlannersData:
     all_steps: List[int]
     all_x: List[List[float]]
     all_y: List[List[float]]
-    all_times: Dict[str, float]
+    all_durations: Dict[str, float]
     planners_data: List[PlannerData]
     all_xy: Dict[str, Dict[str, List[int]]]
 
@@ -96,7 +110,7 @@ class AllPlannersData:
         self.all_y = []
         self.all_xy = {}
         self.all_steps = []
-        self.all_times = {}
+        self.all_durations = {}
         self.planners_data = []
 
     def add_data(self, p_data: PlannerData):
@@ -105,7 +119,7 @@ class AllPlannersData:
         self.all_y.append(p_data.y)
         self.all_xy[str(self.n)] = p_data.xy
         self.all_steps.append(p_data.steps)
-        self.all_times[str(self.n)] = p_data.dur_t
+        self.all_durations[str(self.n)] = p_data.dur_t
         self.n += 1
 
 
@@ -121,7 +135,7 @@ class ApfRobot:
         self.r_prec = 0
         self.r_half = 0
         self.r_start = 0
-        self.p = False
-        self.big = False
+        self.prior = False  # has higher priority
+        self.cluster = False
         self.stopped = False
         self.reached = False

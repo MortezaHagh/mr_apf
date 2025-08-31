@@ -1,15 +1,17 @@
 #! /usr/bin/env python
 
+""" MRAPF Simulation in 2D """
+
 import json
 from math import cos, sin
 from typing import List, Dict
 from matplotlib.pylab import plt
 import rospy
 from plotter import Plotter
-from results import Results
 from parameters import Params
-from fleet_data import FleetDataH
+from generate_results import Results
 from create_model import MRSModel, Robot
+from fleet_data_handler import FleetDataHandler
 from apf_planner_base import APFPlannerBase
 from apf_planner_1 import APFPlanner as APFPlanner1
 from apf_planner_2 import APFPlanner as APFPlanner2
@@ -20,12 +22,14 @@ class Run():
     params: Params
     model: MRSModel
     test_info: TestInfo
-    fdh: FleetDataH
+    fdh: FleetDataHandler
     planners: List[APFPlannerBase]
     apd: Dict[int, PlannerData]  # all planners data
     planners_data: AllPlannersData
 
     def __init__(self):
+
+        rospy.loginfo(f"[{self.__class__.__name__}]: Start running MRAPF ...")
 
         # data
         params = Params()
@@ -37,6 +41,11 @@ class Run():
         self.rate40 = rospy.Rate(40)
         rospy.on_shutdown(self.shutdown_hook)
 
+        #
+        self.model = None
+
+    def run(self):
+
         # create model
         path_unit = 0.7
         model = MRSModel(map_id=1, path_unit=path_unit, n_robots=self.params.nr)
@@ -47,10 +56,10 @@ class Run():
         self.planners_data = AllPlannersData()
         for r in model.robots:
             self.apd[r.rid] = PlannerData()
-            self.apd[r.rid].start_t = rospy.get_time()
+            self.apd[r.rid].set_start_time(rospy.get_time())
 
         # fleet data
-        fleet_data_h = FleetDataH(params)
+        fleet_data_h = FleetDataHandler(self.params)
 
        # planners - set fleet_data_h
         r: Robot
@@ -95,7 +104,7 @@ class Run():
                 fleet_data = self.fdh.get_fleet_data()
                 pl.planner_move(pose, fleet_data)
 
-                # record data
+                # update fleet data
                 self.apd[pl.robot.rid].add_xy(pose.x, pose.y)
                 self.apd[pl.robot.rid].add_vw(pl.v, pl.w)
                 self.apd[pl.robot.rid].steps += 1
@@ -109,7 +118,7 @@ class Run():
                 if pl.reached:
                     reaches[pl.robot.rid] = True
                     self.fdh.set_robot_data(pl.robot.rid, True, True)
-                    self.apd[pl.robot.rid].end_t = rospy.get_time()
+                    self.apd[pl.robot.rid].set_end_time(rospy.get_time())
                     self.apd[pl.robot.rid].finalize()
 
                 # sim move
@@ -149,21 +158,21 @@ class Run():
         for pd in self.apd.values():
             self.planners_data.add_data(pd)
 
-        #
-        Results(self.planners_data, self.test_info.res_file_p)
+        # generate results
+        Results(self.planners_data, self.test_info.res_file_path)
         self.save_data()
         self.plotting()
 
     def plotting(self):
-        plotter = Plotter(self.model, self.params, self.test_info.res_file_p)
+        plotter = Plotter(self.model, self.params, self.test_info.res_file_path)
         plotter.plot_all_paths(self.planners_data)
         plt.show()
 
     def save_data(self):
-        with open(self.test_info.res_file_p + "paths.json", "w") as outfile:
+        with open(self.test_info.res_file_path + "paths.json", "w") as outfile:
             json.dump(self.planners_data.all_xy, outfile)
-        # with open(self.test_info.res_file_p + "times.json", "w") as outfile:
-        #     json.dump(self.planners_data.all_times, outfile)
+        # with open(self.test_info.res_file_path + "times.json", "w") as outfile:
+        #     json.dump(self.planners_data.all_durations, outfile)
 
     def shutdown_hook(self):
         pass
@@ -172,3 +181,4 @@ class Run():
 if __name__ == "__main__":
     rospy.init_node("mrapf_node")
     run = Run()
+    run.run()

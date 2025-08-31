@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+""" Initiate Planners by calling central service for each robot """
+
 import rospy
 from create_model import MRSModel
 from apf.srv import InitRobot, InitRobotRequest

@@ -1,5 +1,6 @@
-""" MRPP APF Results """
 #! /usr/bin/env python
+
+""" Generate MRPP APF Results """
 
 import json
 import numpy as np
@@ -31,16 +32,16 @@ class Results:
             all_lengths.append(l)
             all_d_headings.append(dh)
         #
-        all_times = np.array([t for i, t in self.data.all_times.items()])
+        all_durations = np.array([t for i, t in self.data.all_durations.items()])
         all_lengths = np.round(all_lengths, 2)
         all_d_headings = np.round(all_d_headings, 2)
-        all_times = np.round(all_times, 2)
+        all_durations = np.round(all_durations, 2)
 
         #  total
         total_length = np.round(np.sum(all_lengths), 2)
         mean_length = np.round(total_length/self.n, 2)
-        total_time = np.round(np.sum(all_times), 2)
-        operation_time = np.max(all_times)
+        total_time = np.round(np.sum(all_durations), 2)
+        operation_time = np.max(all_durations)
         total_h = np.sum(all_d_headings)
         total_headings = np.array([total_h, np.rad2deg(total_h)])
         total_headings = np.round(total_headings, 2)
@@ -56,7 +57,7 @@ class Results:
                       "operation_time": operation_time,
                       "total_heading": total_headings.tolist(),
                       "all_lengths": all_lengths.tolist(),
-                      "all_times": all_times.tolist(),
+                      "all_durations": all_durations.tolist(),
                       "total_time": total_time,
                       "headings": all_d_headings.tolist()
                       }

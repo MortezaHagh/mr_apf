@@ -1,4 +1,5 @@
 """ create model based on model inputs"""
+
 from typing import List
 import numpy as np
 import matplotlib.pyplot as plt
@@ -52,7 +53,7 @@ class Obstacles:
 
 
 class MRSModel:
-    map_ind: int
+    map_id: int
     n_robots: int
     n_obst_orig: int
     path_unit: float
@@ -67,7 +68,7 @@ class MRSModel:
 
         # model inputs
         inputs = ModelInputs(map_id, path_unit, n_robots)
-        self.map_ind = inputs.map_ind
+        self.map_id = inputs.map_id
 
         #
         # self.path_unit = path_unit
@@ -79,7 +80,7 @@ class MRSModel:
 
         # Obstacles
         self.n_obst_orig = inputs.n_obst_orig
-        self.obst = Obstacles(inputs, path_unit)
+        self.obsts = Obstacles(inputs, path_unit)
 
         # Robot
         self.n_robots = inputs.n_robots

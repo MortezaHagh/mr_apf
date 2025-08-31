@@ -2,13 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from parameters import Params
+from create_model import MRSModel
 from mrapf_classes import AllPlannersData, PlannerData
 
 
 class Plotter:
     save_path: str
 
-    def __init__(self, model, settings: Params, save_path: str):
+    def __init__(self, model: MRSModel, settings: Params, save_path: str):
         # setting
         self.save_path = save_path
         obs_r = settings.obst_r
@@ -29,33 +30,30 @@ class Plotter:
         # robots start and target nodes
         colors = plt.cm.get_cmap('rainbow', len(model.robots))
         for i, robot in enumerate(model.robots):
-            ax.plot(robot.xs, robot.ys, marker='s', markersize=10,
-                    markeredgecolor=colors(i), markerfacecolor=colors(i))
-            ax.plot(robot.xt, robot.yt, marker='p', markersize=10,
-                    markeredgecolor=colors(i), markerfacecolor=colors(i))
+            ax.plot(robot.xs, robot.ys, marker='s', markersize=10, markeredgecolor=colors(i), markerfacecolor=colors(i))
+            ax.plot(robot.xt, robot.yt, marker='p', markersize=10, markeredgecolor=colors(i), markerfacecolor=colors(i))
             # text
-            ax.text(robot.xs, robot.ys, str(i+1), {'fontsize': 10, 'fontweight': 'normal',
-                    'horizontalalignment': 'center', 'fontname': 'serif'})
-            ax.text(robot.xt, robot.yt, str(i+1), {'fontsize': 10, 'fontweight': 'normal',
-                    'horizontalalignment': 'center', 'fontname': 'serif'})
+            ax.text(robot.xs, robot.ys, str(i+1),
+                    {'fontsize': 10, 'fontweight': 'normal', 'horizontalalignment': 'center', 'fontname': 'serif'})
+            ax.text(robot.xt, robot.yt, str(i+1),
+                    {'fontsize': 10, 'fontweight': 'normal', 'horizontalalignment': 'center', 'fontname': 'serif'})
 
         # # Obstacles
         thetas = np.linspace(0, np.pi*2, 20)
-        ax.plot(model.obst.x, model.obst.y, 'o',  markersize=5,
+        ax.plot(model.obsts.x, model.obsts.y, 'o',  markersize=5,
                 markeredgecolor='k', markerfacecolor='k')
-        for i in range(model.obst.count):
-            xor = [model.obst.x[i]+obst_prec_d*np.cos(t) for t in thetas]
-            yor = [model.obst.y[i]+obst_prec_d*np.sin(t) for t in thetas]
-            xdng = [model.obst.x[i]+obs_r*np.cos(t) for t in thetas]
-            ydng = [model.obst.y[i]+obs_r*np.sin(t) for t in thetas]
+        for i in range(model.obsts.count):
+            xor = [model.obsts.x[i]+obst_prec_d*np.cos(t) for t in thetas]
+            yor = [model.obsts.y[i]+obst_prec_d*np.sin(t) for t in thetas]
+            xdng = [model.obsts.x[i]+obs_r*np.cos(t) for t in thetas]
+            ydng = [model.obsts.y[i]+obs_r*np.sin(t) for t in thetas]
             ax.plot(xor, yor, '--k')
             ax.plot(xdng, ydng, 'r')
 
         # Walls
         lx = emap.x_max-emap.x_min + 1
         ly = emap.y_max-emap.y_min + 1
-        rect = patches.Rectangle((emap.x_min-0.5, emap.y_min-0.5),
-                                 lx, ly, linewidth=2, edgecolor='k', facecolor='none')
+        rect = patches.Rectangle((emap.x_min-0.5, emap.y_min-0.5), lx, ly, linewidth=2, edgecolor='k', facecolor='none')
         ax.add_patch(rect)
 
     def plot_all_paths(self, data: AllPlannersData):

@@ -27,7 +27,7 @@ class APFPlanner(APFPlannerBase):
                 self.pose.x = crob.x
                 self.pose.y = crob.y
                 self.pose.theta = crob.h
-                self.rd = crob
+                self.robot_data = crob
                 break
 
         # check dist to goal
@@ -67,7 +67,6 @@ class APFPlanner(APFPlannerBase):
         self.target_f = [fx, fy]
 
     def f_robots(self):
-        #
         robot_flag = False
         fd: FleetData = self.fleet_data
         #
@@ -78,28 +77,29 @@ class APFPlanner(APFPlannerBase):
         for rob in fd.fdata:
             if rob.rid == self.robot.rid:
                 continue
-            dx = -(rob.x - self.pose.x)
-            dy = -(rob.y - self.pose.y)
+            dx = self.pose.x - rob.x
+            dy = self.pose.y - rob.y
             d_ro = np.sqrt(dx**2 + dy**2)
             theta = np.arctan2(dy, dx)
             angle_diff = cal_angle_diff(theta, self.pose.theta)
 
+            # check distance
             if d_ro > 1 * self.p.robot_start_d:
                 continue
 
-            # and abs(angle_diff) > np.pi/2:
-            if (not rob.reached) and d_ro < self.p.obst_half_d and rob.priority > self.rd.priority:
+            # check if robot should stop
+            if (not rob.reached) and (d_ro < self.p.obst_half_d) and (rob.priority > self.robot_data.priority):
                 self.stopped = True
                 break
 
+            # force
             robot_flag = True
-            f = ((self.p.robot_z * 1) * ((1 / d_ro) -
-                 (1 / self.p.robot_start_d))**2) * (1 / d_ro)**2
+            f = ((self.p.robot_z * 1) * ((1 / d_ro) - (1 / self.p.robot_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
-
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
 
+        # final force
         coeff_f = 1
         if robot_flag:
             self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
@@ -110,25 +110,25 @@ class APFPlanner(APFPlannerBase):
         self.obs_f = [0, 0]
         obs_f = [0, 0]
         for i in range(self.obs_count):
-            dy = -(self.obs_y[i] - self.pose.y)
-            dx = -(self.obs_x[i] - self.pose.x)
+            dy = self.pose.y - self.obs_y[i]
+            dx = self.pose.x - self.obs_x[i]
             d_ro = np.sqrt(dx**2 + dy**2)
 
+            # check distance
             if d_ro > self.p.obst_start_d:
                 continue
 
             obst_flag = True
             theta = np.arctan2(dy, dx)
-            angle_diff = theta - self.pose.theta
-            angle_diff = np.arctan2(np.sin(angle_diff), np.cos(angle_diff))
+            angle_diff = cal_angle_diff(theta, self.pose.theta)
 
-            f = ((self.p.obst_z * 1) * ((1 / d_ro) -
-                 (1 / self.p.obst_start_d))**2) * (1 / d_ro)**2
+            # force
+            f = ((self.p.obst_z * 1) * ((1 / d_ro) - (1 / self.p.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
-
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)
 
+        # final force
         coeff_f = 1
         if obst_flag:
             self.obs_f[0] += round(obs_f[0] * coeff_f, 3)

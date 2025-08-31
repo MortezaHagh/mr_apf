@@ -83,7 +83,6 @@ class PlannerRT(object):
         self.rec.f_tt = []
         self.rec.f_or = []
         self.rec.f_ot = []
-        self.is_multi = False
         self.near_obst = False
         self.near_robots = False
         self.stop_flag_full = False
@@ -134,9 +133,7 @@ class PlannerRT(object):
 
         # init_params.w_coeff       # angular velocity coeff
         self.p.w_coeff = 1
-        # init_params.dis_tresh     # distance thresh to finish
         self.p.goal_dis_tresh = 0.06
-        # init_params.theta_thresh  # for velocity calculation
         self.p.theta_thresh = np.deg2rad(30)
 
     def exec_cb(self):
@@ -257,7 +254,6 @@ class PlannerRT(object):
 
         f_r = 0
         f_theta = 0
-        self.is_multi = False
         self.near_obst = False
         self.near_robots = False
         self.stop_flag_full = False
@@ -434,7 +430,6 @@ class PlannerRT(object):
         # groups - new_robots -----------------------------------
         for g in groups:
             if len(g) > 1:
-                self.is_multi = True
                 nr = NewRobots()
                 nr.big = True
                 is_robot_in = False
@@ -458,7 +453,7 @@ class PlannerRT(object):
                         mpc = mp.centroid.coords[0]
                         is_robot_in = mp.contains(point_robot)
                         is_target_in = mp.contains(point_target)
-                        self.vs.robot_poly([[], mp_bound], self.p.ns)
+                        self.vs.vizualize_polygon([[], mp_bound], self.p.ns)
 
                         # get the minimum bounding circle of the convex hull
                         mbr = mp.minimum_rotated_rectangle
@@ -870,10 +865,10 @@ class PlannerRT(object):
         self.goal_x = self.robot.xt
         self.goal_y = self.robot.yt
         # obstacles:
-        self.obs_x = self.model.obst.x
-        self.obs_y = self.model.obst.y
-        self.obs_count = self.model.obst.count
-        self.obs_ind_main = [i for i in range(self.model.obst.count)]
+        self.obs_x = self.model.obsts.x
+        self.obs_y = self.model.obsts.y
+        self.obs_count = self.model.obsts.count
+        self.obs_ind_main = [i for i in range(self.model.obsts.count)]
 
     def angle_diff(self, a1, a2):
         ad = a1 - a2
@@ -901,7 +896,7 @@ class PlannerRT(object):
             theta = np.arctan2(np.sin(theta), np.cos(theta))
             theta = self.r_h + theta
             if ip:
-                self.vs.arrow(self.r_x, self.r_y, theta)
+                self.vs.visualize_arrow(self.r_x, self.r_y, theta)
             else:
                 self.vs.arrow_f(self.r_x, self.r_y, theta, self.p.ns)
 

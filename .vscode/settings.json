@@ -18,6 +18,10 @@
         "--max-line-length=120",
         "--disable=D100"
     ],
+    "pylint.args": [
+        "disable=C0116", // missing-function-docstring
+        "--max-line-length=120"
+    ],
     "python.autoComplete.extraPaths": [
         "/home/morteza/mo_ws/devel/lib/python3/dist-packages",
         "/home/morteza/catkin_ws/devel/lib/python3/dist-packages",

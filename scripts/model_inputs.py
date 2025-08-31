@@ -1,4 +1,5 @@
 """ model inputs - obstacles - robots """
+
 import os
 import json
 import random
@@ -15,7 +16,7 @@ class ModelInputs:
     y_min: int
     x_max: int
     y_max: int
-    map_ind: int
+    map_id: int
     n_robots: int
     rids = List[int]
     xs = List[float]
@@ -28,7 +29,7 @@ class ModelInputs:
     heading = List[float]
 
     def __init__(self, map_id: int = 1, path_unit: float = 1.0, n_robots: int = 1):
-        print(f"[{self.__class__.__name__}]Inputs for creating model")
+        print(f"[{self.__class__.__name__}] Inputs for creating model")
         self.path_unit = path_unit
         #
         if map_id == 1:
@@ -65,7 +66,7 @@ class ModelInputs:
         self.y_min = 0
         self.x_max = lim
         self.y_max = lim
-        self.map_ind = 1
+        self.map_id = 1
 
         # obstacles
         xc1 = [3, 3, 5, 5, 7, 7, 9, 9, 11, 11]
@@ -125,7 +126,7 @@ class ModelInputs:
         self.y_min = 0
         self.x_max = lim
         self.y_max = lim
-        self.map_ind = 1
+        self.map_id = 1
 
         # obstacles
         # xc1 = [3, 3, 5, 5, 7, 7, 9, 9, 11, 11]
@@ -205,7 +206,7 @@ class ModelInputs:
 
     def random_map_2(self, ind=1):
         #
-        self.map_ind = ind
+        self.map_id = ind
         obst_n = 22
         robots_n = 8
         self.n_robots = robots_n
@@ -320,7 +321,7 @@ class ModelInputs:
             data = json.load(file)
 
         # map index
-        self.map_ind = data['map_ind']
+        self.map_id = data['map_id']
 
         # area
         lim = data['lim']
@@ -387,7 +388,7 @@ class ModelInputs:
         self.y_min = 0
         self.x_max = lim
         self.y_max = lim
-        self.map_ind = 1
+        self.map_id = 1
 
         # obstacles
         xc2 = [3.1, 3.9]
@@ -427,7 +428,7 @@ class ModelInputs:
         self.y_min = 0
         self.x_max = lim
         self.y_max = lim
-        self.map_ind = 1
+        self.map_id = 1
 
         # obstacles
         xc2 = [3.5]

@@ -10,7 +10,7 @@ from gazebo_msgs.srv import SpawnModel, SpawnModelRequest
 from create_model import MRSModel
 
 
-class Initialize(object):
+class SimData(object):
     rids: List[int]
     model: MRSModel
     path_unit: float
@@ -29,11 +29,11 @@ class Initialize(object):
 
     def create_spawn_data(self):
         # obstacles
-        for i in range(self.model.obst.count):
+        for i in range(self.model.obsts.count):
             p = Pose()
             p.position.z = 0
-            p.position.x = self.model.obst.x[i]*self.path_unit
-            p.position.y = self.model.obst.x[i]*self.path_unit
+            p.position.x = self.model.obsts.x[i]*self.path_unit
+            p.position.y = self.model.obsts.x[i]*self.path_unit
             p.orientation.w = 1.0
             self.all_obsts.append(p)
 
@@ -53,14 +53,14 @@ class Initialize(object):
 def spawning(model, path_unit=1.0):
 
     # get data
-    init_obj = Initialize(model, path_unit)
+    sim_data = SimData(model, path_unit)
 
     # spawn_urdf_model service
     rospy.loginfo("[spawning]: Waiting for gazebo spawn_urdf_model services for robots...")
     rospy.wait_for_service("gazebo/spawn_urdf_model")
     spawn_robots_servie = rospy.ServiceProxy("gazebo/spawn_urdf_model", SpawnModel)
 
-    # robot file
+    # robot model file
     rospack = rospkg.RosPack()
     pkg_path = rospack.get_path('apf')
     with open(pkg_path+'/Models/TB3_model_simple.urdf', 'r') as file:
@@ -70,10 +70,10 @@ def spawning(model, path_unit=1.0):
     name = 'robot'
     reference_frame = 'map'
 
-    for i, pose in enumerate(init_obj.all_robots):
-        rospy.loginfo("spawning robot: " + str(init_obj.rids[i]))
+    for i, pose in enumerate(sim_data.all_robots):
+        rospy.loginfo("[spawning]: spawn robot: " + str(sim_data.rids[i]))
         sm = SpawnModelRequest()
-        id = init_obj.rids[i]
+        id = sim_data.rids[i]
         sm.model_name = name+str(id)
         sm.model_xml = robot_file
         sm.robot_namespace = '/r'+str(id)
@@ -102,7 +102,7 @@ def spawning(model, path_unit=1.0):
     # model_namespace = ''
     # reference_frame = 'world'
 
-    # for i, pose in enumerate(init_obj.all_obsts):
+    # for i, pose in enumerate(sim_data.all_obsts):
     #     model_name = name+str(i)
     #     spawn_obst(model_name, model_file, model_namespace, pose, reference_frame)
     #     rospy.sleep(0.2)

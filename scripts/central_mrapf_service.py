@@ -1,12 +1,13 @@
 #! /usr/bin/env python
-""" central service,  create RobotPlanner for each request """
+
+""" central service,  includes fleet_data_handler, and create a RobotPlanner for each request """
 
 from typing import List
 import numpy as np
 import rospy
 from parameters import Params
 from create_model import MRSModel, Robot
-from fleet_data import FleetDataH
+from fleet_data_handler import FleetDataHandler
 from robot_planner_l0_ac import RobotPlannerAc
 from apf.srv import InitRobot, InitRobotResponse, InitRobotRequest
 
@@ -15,7 +16,7 @@ class CentralMRAPF:
     n_robots: int
     robot_ids: List[int]
     model: MRSModel
-    fleet_data_h: FleetDataH
+    fleet_data_handler: FleetDataHandler
     robots: List[Robot]
     planners: List[RobotPlannerAc]
 
@@ -32,8 +33,7 @@ class CentralMRAPF:
         self.robot_ids = []
 
         # send_robot_update_srv
-        params = Params(-1)
-        self.fleet_data_h = FleetDataH(params)
+        self.fleet_data_handler = FleetDataHandler(Params(-1))
 
         # init_robot_srv Service Server
         self.robot_srv = rospy.Service(central_mrapf_srv_name, InitRobot, self.apf_srv_callback)
@@ -46,7 +46,7 @@ class CentralMRAPF:
         # robot object
         rid = req.rid
         heading = np.deg2rad(req.theta)
-        robot = Robot(req.rid, req.xs, req.ys, heading, req.xt, req.yt)
+        robot = Robot(req.rid, req.xs, req.ys, heading, req.xt, req.yt, path_unit=1.0)
 
         # update robotic system data
         self.n_robots += 1
@@ -54,8 +54,8 @@ class CentralMRAPF:
         self.robots.append(robot)
 
         # update fleet data handler
-        self.fleet_data_h.add_robot(rid, robot.sns)
-        self.fleet_data_h.update_goal(rid, robot.xt, robot.yt)
+        self.fleet_data_handler.add_robot(rid, robot.sns)
+        self.fleet_data_handler.update_goal(rid, robot.xt, robot.yt)
 
         # motion_action action *************************************************
         rospy.loginfo(f"[{self.__class__.__name__}]: Creating Initial Robot Action: {robot.ns}/motion_action ...")
