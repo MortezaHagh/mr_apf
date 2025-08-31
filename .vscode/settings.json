@@ -1,0 +1,48 @@
+{
+    "editor.formatOnSave": true,
+    "editor.rulers": [
+        80,
+        120
+    ],
+    // Python linting with flake8 (ROS 2 standard)
+    // Python auto-formatting with autopep8
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8",
+        "editor.formatOnSave": true
+    },
+    "autopep8.args": [
+        "--max-line-length=120"
+    ],
+    "flake8.enabled": true,
+    "flake8.args": [
+        "--max-line-length=120",
+        "--disable=D100"
+    ],
+    "python.autoComplete.extraPaths": [
+        "/home/morteza/mo_ws/devel/lib/python3/dist-packages",
+        "/home/morteza/catkin_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/morteza/mo_ws/devel/lib/python3/dist-packages",
+        "/home/morteza/catkin_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    // json
+    "json.format.enable": true,
+    // xml
+    "xml.format.enabled": true,
+    "xml.format.maxLineWidth": 120,
+    // Excludes
+    "files.exclude": {
+        "**/*.pyc": true,
+        "**/LICENSE": false,
+        "**/*gitignore": false,
+        "**/*pycache*": true
+    },
+    "search.exclude": {
+        "**/build": true,
+        "**/install": true,
+        "**/log": true
+    }
+}
