@@ -13,7 +13,7 @@ class Plot3D:
         # path
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
-        self.save_path = os.path.join(pkg_path, 'Results-APF/map3d')
+        self.save_path = os.path.join(pkg_path, 'results/map3d')
 
         # test name and version
         version = 1
@@ -25,8 +25,8 @@ class Plot3D:
         self.path_unit = 0.7
         n_robots = self.test_id
         self.model = MRSModel(map_id=1,
-                                 path_unit=path_unit,
-                                 n_robots=n_robots)
+                              path_unit=path_unit,
+                              n_robots=n_robots)
 
         self.init()
         self.plot_f_obstacle()

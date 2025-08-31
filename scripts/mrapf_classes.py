@@ -28,7 +28,7 @@ class TestInfo:
         # Create directory
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
-        result_folder = os.path.join(pkg_path, "Results-APF/Tests")
+        result_folder = os.path.join(pkg_path, "results/tests")
         result_path = os.path.join(result_folder, folder_name)
         if not os.path.exists(result_path):
             os.makedirs(result_path)

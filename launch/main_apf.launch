@@ -1,7 +1,3 @@
 <launch>
-    <node pkg="apf" name="mrapf_main" type="mrapf_main.py" output="screen"/>
-
-    <!-- <node pkg="apf" name="main" type="apf_init.py" output="screen"/>
-    <node pkg="apf" name="initiate_robots_planners" type="initiate_robots_planners.py" output="screen"/>
-    <node pkg="apf" name="send_goals" type="send_goals.py" output="screen"/> -->
+    <node pkg="apf" name="mrapf_main" type="mrapf_main.py" output="screen" />
 </launch>

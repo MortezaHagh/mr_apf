@@ -2,10 +2,11 @@ import os
 import json
 import pandas as pd
 
+
 class JsonResults:
     def __init__(self):
         pass
-    
+
     def get_json_value(self, file_path, key):
         with open(file_path) as f:
             data = json.load(f)
@@ -30,7 +31,7 @@ class JsonResults:
         print(f"The value of the key '{key}' is '{value}'")
 
     def create_table(self, directory, keys):
-        
+
         # List to store values for each file
         file_values = []
 
@@ -85,7 +86,7 @@ class JsonResults:
                 values = [self.get_json_value(file_path, key) for key in keys]
                 values.insert(0, v)
                 values.insert(0, t)
-                
+
                 # Add the values to the file_values list
                 file_values.append(values)
 
@@ -169,6 +170,7 @@ class JsonResults:
 
 # ------------------------------------------------------------------------
 
+
 jr = JsonResults()
 
 # Directory containing JSON files
@@ -190,6 +192,5 @@ jr.create_table_2(directory, keys)
 
 
 # # directory = "/home/morteza/Documents/Morteza/CurrentAPF"
-# directory = '/home/morteza/Documents/Morteza/Results-APF'
+# directory = '/home/morteza/Documents/Morteza/results'
 # jr.delete_empty_subdirectories(directory)
-

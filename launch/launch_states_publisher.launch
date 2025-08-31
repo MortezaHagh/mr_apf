@@ -1,40 +1,45 @@
 <?xml version="1.0"?>
 <launch>
-  
-    <group ns = "/r0">
-        <param name="robot_description" command="$(find xacro)/xacro --inorder $(find init_sim)/models/TB3_model_simple.urdf.xacro" />
+
+    <group ns="/r0">
+        <param name="robot_description"
+            command="$(find xacro)/xacro --inorder $(find init_sim)/models/TB3_model_simple.urdf.xacro" />
         <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
             <param name="publish_frequency" type="double" value="50.0" />
             <param name="tf_prefix" value="r0" />
         </node>
     </group>
 
-    <group ns = "/r1">
-        <param name="robot_description" command="$(find xacro)/xacro --inorder $(find init_sim)/models/TB3_model_simple.urdf.xacro" />
+    <group ns="/r1">
+        <param name="robot_description"
+            command="$(find xacro)/xacro --inorder $(find init_sim)/models/TB3_model_simple.urdf.xacro" />
         <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
             <param name="publish_frequency" type="double" value="50.0" />
             <param name="tf_prefix" value="r1" />
         </node>
     </group>
 
-    <group ns = "/r2">
-        <param name="robot_description" command="$(find xacro)/xacro --inorder $(find init_sim)/models/TB3_model_simple.urdf.xacro" />
+    <group ns="/r2">
+        <param name="robot_description"
+            command="$(find xacro)/xacro --inorder $(find init_sim)/models/TB3_model_simple.urdf.xacro" />
         <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
             <param name="publish_frequency" type="double" value="50.0" />
             <param name="tf_prefix" value="r2" />
         </node>
     </group>
 
-    <group ns = "/r3">
-        <param name="robot_description" command="$(find xacro)/xacro --inorder $(find init_sim)/models/TB3_model_simple.urdf.xacro" />
+    <group ns="/r3">
+        <param name="robot_description"
+            command="$(find xacro)/xacro --inorder $(find init_sim)/models/TB3_model_simple.urdf.xacro" />
         <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
             <param name="publish_frequency" type="double" value="50.0" />
             <param name="tf_prefix" value="r3" />
         </node>
     </group>
 
-    <group ns = "/r4">
-        <param name="robot_description" command="$(find xacro)/xacro --inorder $(find init_sim)/models/TB3_model_simple.urdf.xacro" />
+    <group ns="/r4">
+        <param name="robot_description"
+            command="$(find xacro)/xacro --inorder $(find init_sim)/models/TB3_model_simple.urdf.xacro" />
         <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
             <param name="publish_frequency" type="double" value="50.0" />
             <param name="tf_prefix" value="r4" />

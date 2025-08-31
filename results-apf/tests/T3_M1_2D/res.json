@@ -1,0 +1,27 @@
+{
+  "n_robots": 3,
+  "max_steps": 1142,
+  "mean_length": 5.68,
+  "total_length": 17.04,
+  "operation_time": 24.28,
+  "total_heading": [
+    2112.09,
+    121013.84
+  ],
+  "all_lengths": [
+    6.4,
+    5.74,
+    4.9
+  ],
+  "all_times": [
+    24.28,
+    22.25,
+    21.14
+  ],
+  "total_time": 67.67,
+  "headings": [
+    282.1,
+    927.98,
+    902.01
+  ]
+}
