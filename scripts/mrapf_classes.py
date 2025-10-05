@@ -7,29 +7,27 @@ from parameters import Params
 
 
 class TestInfo:
-    name: str
-    simD: str
-    nr: int
-    method: int
-    res_file_path: str
 
     def __init__(self, params: Params, name: str = ""):
         if name != "":
             name = name + "_"
-        self.name = name
-        self.nr = params.nr
-        self.simD = params.simD
-        self.method = params.method
-        self.res_file_path = ""
+        self.name: str = name
+        self.map_id: int = params.map_id
+        self.nr: int = params.nr
+        self.simD: str = params.simD
+        self.method: int = params.method
+        self.results_folder: str = params.results_folder
+        self.res_file_path: str = ""
         self.create_paths()  # create result files paths
 
     def create_paths(self):
         # names
-        folder_name = self.name + "_M" + str(self.method) + "_" + self.simD + "N" + str(self.nr)
+        folder_name = self.name + "Map" + str(self.map_id) + "_M" + str(self.method) + \
+            "_" + self.simD + "_N" + str(self.nr)
         # Create directory
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
-        base_path = os.path.join(pkg_path, "results/tests")
+        base_path = os.path.join(pkg_path, self.results_folder)
         result_path = os.path.join(base_path, folder_name)
         if not os.path.exists(result_path):
             os.makedirs(result_path)
@@ -37,39 +35,24 @@ class TestInfo:
 
 
 class PlannerData:
-    steps: int
-    start_t: float
-    end_t: float
-    dur_t: float
-    v: List[float]
-    w: List[float]
-    x: List[float]
-    y: List[float]
-    xy: Dict[str, List[float]]
-    f_tt: List[float]
-    f_tr: List[float]
-    f_or: List[float]
-    f_ot: List[float]
-    phis: List[float]
-
     def __init__(self):
-        self.start_t = None
-        self.end_t = None
-        self.dur_t = None
-        self.steps = 0
+        self.steps: int = 0
+        self.start_t: float = None
+        self.end_t: float = None
+        self.dur_t: float = None
         # v
-        self.v = []
-        self.w = []
+        self.v: List[float] = []
+        self.w: List[float] = []
         # xy
-        self.x = []
-        self.y = []
-        self.xy = {"x": [], "y": []}
-        # f
-        self.f_tr = []
-        self.f_tt = []
-        self.f_or = []
-        self.f_ot = []
-        self.phis = []
+        self.x: List[float] = []
+        self.y: List[float] = []
+        self.xy: Dict[str, List[float]] = {"x": [], "y": []}
+        # forces
+        self.f_tt: List[float] = []
+        self.f_tr: List[float] = []
+        self.f_or: List[float] = []
+        self.f_ot: List[float] = []
+        self.phis: List[float] = []
 
     def append_data(self, x, y, v, w):
         self.add_xy(x, y)

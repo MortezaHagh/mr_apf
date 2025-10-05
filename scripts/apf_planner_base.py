@@ -12,34 +12,28 @@ from apf.msg import RobotData, FleetData
 
 class APFPlannerBase:
     """ APF Planner Base class """
-    p: Params
-    model: MRSModel
-    robot: Robot
-    pose: Pose2D
-    robot_data: RobotData
-    fleet_data: FleetData
 
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
 
         # data
-        self.params = params
-        self.model = model
-        self.robot = robot
+        self.params: Params = params
+        self.model: MRSModel = model
+        self.robot: Robot = robot
         self.map_data()
 
         # robot fleet data
-        self.pose = Pose2D()
-        self.robot_data = None
-        self.fleet_data = None
+        self.pose: Pose2D = Pose2D()
+        self.robot_data: RobotData = None
+        self.fleet_data: FleetData = None
 
         # velocity
-        self.v = 0
-        self.w = 0
+        self.v: float = 0
+        self.w: float = 0
 
         # forces and phi
-        self.f_r = 0
-        self.f_theta = 0
-        self.phi = 0
+        self.f_r: float = 0
+        self.f_theta: float = 0
+        self.phi: float = 0
 
         # forces
         self.robot_f: Tuple[float, float] = (0.0, 0.0)
@@ -133,13 +127,13 @@ class APFPlannerBase:
         else:
             v = 1 * self.params.v_max * ((f_r / self.params.fix_f)**2) + self.params.v_min_2
         # w
-        w = 3 * self.params.w_max * f_theta / self.params.fix_f
-        if f_r < -1 and abs(w) < 0.05:
+        w = 5 * self.params.w_max * f_theta / self.params.fix_f
+        if v == 0 and abs(w) < 0.05:
             w = 1*np.sign(w)
 
         # v
-        if (v <= self.params.v_min_2*2) and abs(w) < 0.03:
-            v = self.params.v_min_2*2
+        if (v == 0) and abs(w) < 0.03:
+            v = self.params.v_min_2*1
 
         # check bounds
         v = min(v, self.params.v_max)

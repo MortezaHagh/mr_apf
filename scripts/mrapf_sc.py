@@ -19,22 +19,15 @@ from mrapf_classes import TestInfo, AllPlannersData, PlannerData
 
 
 class Run():
-    params: Params
-    model: MRSModel
-    test_info: TestInfo
-    fdh: FleetDataHandler
-    planners: List[APFPlannerBase]
-    apd: Dict[int, PlannerData]  # all planners data
-    planners_data: AllPlannersData
 
     def __init__(self):
 
         rospy.loginfo(f"[{self.__class__.__name__}]: Start running MRAPF ...")
 
         # data
-        params = Params()
+        params = Params(static=True)
         self.params = params
-        self.test_info = TestInfo(params, "S")
+        self.test_info = TestInfo(params)
 
         # ros settings
         self.rate = rospy.Rate(20)
@@ -42,13 +35,17 @@ class Run():
         rospy.on_shutdown(self.shutdown_hook)
 
         #
-        self.model = None
+        self.model: MRSModel = None
+        self.fdh: FleetDataHandler = None
+        self.planners: List[APFPlannerBase] = []
+        self.apd: Dict[int, PlannerData]  # all planners data
+        self.planners_data: AllPlannersData
 
     def run(self):
 
         # create model
         path_unit = 0.7
-        model = MRSModel(map_id=1, path_unit=path_unit, n_robots=self.params.nr)
+        model = MRSModel(map_id=self.params.map_id, path_unit=path_unit, n_robots=self.params.nr)
         self.model = model
 
         # initialize planners data

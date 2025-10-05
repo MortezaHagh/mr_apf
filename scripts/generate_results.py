@@ -4,19 +4,19 @@
 
 import json
 import numpy as np
+from parameters import Params
 from mrapf_classes import AllPlannersData
 
 
 class Results:
-    planners_data: AllPlannersData
-    path_unit: float
 
     def __init__(self, planners_data: AllPlannersData, result_path: str):
 
         # settings
         self.path_unit = 1
-        self.data = planners_data
+        self.data: AllPlannersData = planners_data
         self.n = planners_data.n
+        self.params: Params = Params()
 
         #
         all_lengths = []
@@ -50,17 +50,21 @@ class Results:
         max_steps = max(self.data.all_steps)
 
         # final data
-        final_data = {"n_robots": self.n,
-                      "max_steps": max_steps,
-                      "mean_length": mean_length,
-                      "total_length": total_length,
-                      "operation_time": operation_time,
-                      "total_heading": total_headings.tolist(),
-                      "all_lengths": all_lengths.tolist(),
-                      "all_durations": all_durations.tolist(),
-                      "total_time": total_time,
-                      "headings": all_d_headings.tolist()
-                      }
+        final_data = {
+            "map_id": self.params.map_id,
+            "nD": self.params.simD,
+            "method": self.params.method,
+            "n_robots": self.n,
+            "operation_time": operation_time,
+            "max_steps": max_steps,
+            "mean_length": mean_length,
+            "total_length": total_length,
+            "total_heading": total_headings.tolist(),
+            "all_lengths": all_lengths.tolist(),
+            "all_durations": all_durations.tolist(),
+            "total_time": total_time,
+            "headings": all_d_headings.tolist()
+        }
 
         # save data JSON
         with open(result_path + "res.json", "w") as outfile:

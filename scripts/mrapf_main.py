@@ -22,20 +22,14 @@ from initiate_planners import initiate_robots_planners
 class Run():
     """Run the MRAPF simulation.
     """
-    rate: rospy.Rate
-    rate40: rospy.Rate
-    params: Params
-    test_info: TestInfo
-    model: MRSModel
-    planners_data: AllPlannersData
 
     def __init__(self):
 
         rospy.loginfo(f"[{self.__class__.__name__}]: Start running MRAPF ...")
 
         # settings
-        self.params = Params()
-        self.test_info = TestInfo(self.params)
+        self.params: Params = Params()
+        self.test_info: TestInfo = TestInfo(self.params)
         self.central_mrapf_srv_name = "central_mrapf_srv"
 
         # all simulation data, to be collected
@@ -47,16 +41,16 @@ class Run():
         rospy.on_shutdown(self.shutdown_hook)
 
         #
-        self.model = None
-        self.visualizer = None
-        self.cmrapf = None
-        self.planning_clients = None
+        self.model: MRSModel = None
+        self.visualizer: RvizViusalizer = None
+        self.cmrapf: CentralMRAPF = None
+        self.planning_clients: PlanningClients = None
 
     def run(self):
 
         # create model
         path_unit = 0.7
-        self.model = MRSModel(map_id=1, path_unit=path_unit, n_robots=self.params.nr)
+        self.model = MRSModel(map_id=self.params.map_id, path_unit=path_unit, n_robots=self.params.nr)
 
         if self.params.simD == "3D":
             # spawn robots and obstacles
@@ -74,7 +68,7 @@ class Run():
 
         # update fleet data
         for _ in range(20):
-            self.cmrapf.fleet_data_handler.update_all()
+            self.cmrapf.fleet_data_handler.update_fleet_data()
             self.rate.sleep()
 
         # planning clients - sending goals *****************************************************************************
@@ -88,11 +82,11 @@ class Run():
         self.final_results_plot()
 
     def check_status(self):
-        self.cmrapf.fleet_data_handler.update_all()
+        self.cmrapf.fleet_data_handler.update_fleet_data()
         status = [c.get_state() for c in self.planning_clients.clients]
         s_flags = [s < 2 for s in status]
         while (not rospy.is_shutdown()) and (any(s_flags)):
-            self.cmrapf.fleet_data_handler.update_all()
+            self.cmrapf.fleet_data_handler.update_fleet_data()
             status = [c.get_state() for c in self.planning_clients.clients]
             s_flags = [s < 2 for s in status]
             self.visualizer.update_robot_vizuals(self.cmrapf.fleet_data_handler.xy)

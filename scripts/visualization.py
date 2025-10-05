@@ -2,7 +2,7 @@
 
 """ Visualization class for MRAPF """
 
-from typing import List, Dict, Tuple
+from typing import Dict, List, Tuple
 from array import array
 import numpy as np
 import rospy
@@ -18,8 +18,6 @@ from mrapf_classes import ApfRobot
 class RvizViusalizer:
     """Rviz visualizer for MRAPF simulation.
     """
-    model: MRSModel
-    params: Params
 
     def __init__(self, model: MRSModel):
 

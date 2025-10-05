@@ -17,16 +17,13 @@ from shapely.geometry import Point, shape, MultiPoint  # type: ignore # pylint: 
 
 
 class APFPlanner(APFPlannerBase):
-    new_robots: List[ApfRobot]
-    multi_robots_vis: List[ApfRobot]
-    cluster_poly_xy: List[Tuple[array, array]]
 
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
         APFPlannerBase.__init__(self, model, robot, params)
         #
-        self.new_robots = []
-        self.multi_robots_vis = []
-        self.cluster_poly_xy = []
+        self.new_robots: List[ApfRobot] = []
+        self.multi_robots_vis: List[ApfRobot] = []
+        self.cluster_poly_xy: List[Tuple[array, array]] = []
 
         #
         self.near_obst = False
@@ -66,7 +63,7 @@ class APFPlanner(APFPlannerBase):
                 break
 
         # check dist to goal
-        if self.goal_dist < self.p.goal_dis_tresh:
+        if self.goal_dist < self.params.goal_dis_tresh:
             print(f"[planner_move, {self.robot.rid}], reached goal!")
             self.reached = True
             return
@@ -92,7 +89,7 @@ class APFPlanner(APFPlannerBase):
                 self.v = 0
                 # self.w = 0
                 if abs(self.w) < (np.deg2rad(2)):
-                    self.v = self.p.v_min_2
+                    self.v = self.params.v_min_2
 
             # check stop_flag_full
             if self.stop_flag_full:
@@ -123,7 +120,7 @@ class APFPlanner(APFPlannerBase):
 
         # is_goal_close
         goal_dist = cal_distance(self.pose.x, self.pose.y, self.goal_x, self.goal_y)
-        if (goal_dist < (c_r*self.p.robot_start_d)):
+        if (goal_dist < (c_r*self.params.robot_start_d)):
             is_goal_close = True
 
         # get indices of robots in proximity circle
@@ -142,17 +139,17 @@ class APFPlanner(APFPlannerBase):
             ad_H_Rr_abs = abs(ad_H_Rr)
             AD_h_rR[o_rob.rid] = ad_h_rR
 
-            if (d_rR > (c_r * self.p.robot_start_d)):
+            if (d_rR > (c_r * self.params.robot_start_d)):
                 continue
 
-            # if (not o_rob.reached) or (d_rR < (1 * self.p.robot_start_d)):
-            # if (d_rR < (1 * self.p.robot_start_d)) or ((not o_rob.reached) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr_abs < np.pi/2)):
+            # if (not o_rob.reached) or (d_rR < (1 * self.params.robot_start_d)):
+            # if (d_rR < (1 * self.params.robot_start_d)) or ((not o_rob.reached) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr_abs < np.pi/2)):
 
-            if (not o_rob.reached) or (d_rR < (1 * self.p.robot_start_d)):
+            if (not o_rob.reached) or (d_rR < (1 * self.params.robot_start_d)):
                 robots_inds.append(o_rob.rid)
 
             # individual robots
-            if (d_rR < (1 * self.p.robot_start_d)):
+            if (d_rR < (1 * self.params.robot_start_d)):
                 nr = ApfRobot()
                 nr.d = d_rR
                 nr.x = o_rob.x
@@ -163,14 +160,14 @@ class APFPlanner(APFPlannerBase):
                 nr.prior = (not (o_rob.reached or o_rob.stopped)) and (o_rob.priority > self.robot_data.priority)
                 nr.stopped = o_rob.stopped
                 nr.reached = o_rob.reached
-                rc = self.p.robot_prec_d
+                rc = self.params.robot_prec_d
                 nr.r_prec = rc
                 nr.r_half = 1.5 * rc
                 nr.r_start = 2.0 * rc
-                nr.z = 4 * self.p.fix_f * rc**4
+                nr.z = 4 * self.params.fix_f * rc**4
                 new_robots.append(nr)
                 if o_rob.reached:
-                    XY: List[Tuple[float, float]] = self.eval_obst(o_rob.x, o_rob.y, self.p.robot_prec_d, d_rR)
+                    XY: List[Tuple[float, float]] = self.eval_obst(o_rob.x, o_rob.y, self.params.robot_prec_d, d_rR)
                     for xy in XY:
                         dx_ = (xy[0] - self.pose.x)
                         dy_ = (xy[1] - self.pose.y)
@@ -190,7 +187,7 @@ class APFPlanner(APFPlannerBase):
                         nnr.r_prec = nr.r_prec/1.5  # $
                         nnr.r_half = 1.5 * nnr.r_prec
                         nnr.r_start = 2 * nnr.r_prec
-                        nnr.z = 4 * self.p.fix_f * nnr.r_prec**4
+                        nnr.z = 4 * self.params.fix_f * nnr.r_prec**4
                         new_robots.append(nnr)
                         multi_robots_vis.append(nnr)
 
@@ -212,7 +209,7 @@ class APFPlanner(APFPlannerBase):
                 for ind_j in robots_inds_2:
                     # if not (fd.fdata[p].reached and fd.fdata[ind_j].reached):
                     dist = cal_distance(fd.fdata[p].x, fd.fdata[p].y, fd.fdata[ind_j].x, fd.fdata[ind_j].y)
-                    if (dist < (self.p.robot_prec_d*2.2)):    # param 2
+                    if (dist < (self.params.robot_prec_d*2.2)):    # param 2
                         robots_inds_f[p].append(ind_j)
 
             # detect groups
@@ -263,8 +260,8 @@ class APFPlanner(APFPlannerBase):
                         radius = mbr.exterior.distance(mbr.centroid)
                         xc = circum_center[0]
                         yc = circum_center[1]
-                        rc = c_radius*radius  # + self.p.robot_r + self.p.prec_d    # param 3
-                        rc = max(rc, 2*self.p.robot_prec_d)
+                        rc = c_radius*radius  # + self.params.robot_r + self.params.prec_d    # param 3
+                        rc = max(rc, 2*self.params.robot_prec_d)
 
                 # if robot is in the polygon
                 if (not is_target_in) and is_robot_in:
@@ -320,11 +317,11 @@ class APFPlanner(APFPlannerBase):
                 nr.theta_rR = theta_rR
                 if any(P):
                     nr.prior = True
-                nr.r_prec = rc + self.p.robot_r + self.p.prec_d
+                nr.r_prec = rc + self.params.robot_r + self.params.prec_d
                 # nr.r_prec = self.eval_obst(xc, yc, nr.r_prec, d_rR)
                 nr.r_half = 1.5 * nr.r_prec
                 nr.r_start = 2.0 * nr.r_prec
-                nr.z = 4 * self.p.fix_f * nr.r_prec**4
+                nr.z = 4 * self.params.fix_f * nr.r_prec**4
                 # new_robots.append(nr)
                 multi_robots.append(nr)
 
@@ -350,7 +347,7 @@ class APFPlanner(APFPlannerBase):
             xo = self.obs_x[oi]
             yo = self.obs_y[oi]
             do = cal_distance(xo, yo, self.pose.x, self.pose.y)
-            if do < self.p.obst_start_d:
+            if do < self.params.obst_start_d:
                 f_obsts_inds.append(oi)
         self.f_obsts_inds = f_obsts_inds
 
@@ -363,8 +360,8 @@ class APFPlanner(APFPlannerBase):
             d_Ro = cal_distance(xo, yo, xc, yc)
             d_ro = cal_distance(xo, yo, self.pose.x, self.pose.y)
             if True:  # d_rR>rc: #d_ro<d_rR and
-                if (rc > (d_Ro-self.p.obst_prec_d)) and rc < (d_Ro+self.p.obst_prec_d):
-                    # ros.append(d_Ro+self.p.obst_prec_d*1)
+                if (rc > (d_Ro-self.params.obst_prec_d)) and rc < (d_Ro+self.params.obst_prec_d):
+                    # ros.append(d_Ro+self.params.obst_prec_d*1)
                     x = (xo+xc)/2
                     y = (yo+yc)/2
                     xy.append((x, y))
@@ -379,8 +376,8 @@ class APFPlanner(APFPlannerBase):
         dx = self.goal_x - self.pose.x
         dy = self.goal_y - self.pose.y
         goal_dist = np.sqrt(dx**2 + dy**2)
-        # f = self.p.zeta * goal_dist
-        f = self.p.fix_f
+        # f = self.params.zeta * goal_dist
+        f = self.params.fix_f
         if goal_dist < 0.5:
             f = 2*f
         theta_rg = np.arctan2(dy, dx)
@@ -574,10 +571,10 @@ class APFPlanner(APFPlannerBase):
             theta_ro = np.arctan2(dy, dx)
             ad_h_ro = cal_angle_diff(self.pose.theta, theta_ro)
 
-            if (d_ro < self.p.obst_half_d):
+            if (d_ro < self.params.obst_half_d):
                 self.near_obst = True
 
-            # if (d_ro < self.p.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
+            # if (d_ro < self.params.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
             #     self.stop_flag_obsts = True
 
             dx = self.goal_x - self.obs_x[i]
@@ -599,8 +596,7 @@ class APFPlanner(APFPlannerBase):
             angle_turn_t = theta_ro + (np.pi/2)*np.sign(ad_h_ro)*coeff
             ad_c_t = cal_angle_diff(angle_turn_t, self.pose.theta)
 
-            f = ((self.p.obst_z * 1) * ((1 / d_ro) -
-                 (1 / self.p.obst_start_d))**2) * (1 / d_ro)**2
+            f = ((self.params.obst_z * 1) * ((1 / d_ro) - (1 / self.params.obst_start_d))**2) * (1 / d_ro)**2
             o_force = [f * -np.cos(ad_h_ro), f * np.sin(ad_h_ro)]
 
             # fo = f + 2
@@ -610,9 +606,9 @@ class APFPlanner(APFPlannerBase):
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
 
             if target_other_side:
-                if (self.p.obst_prec_d < d_ro and d_ro < self.p.obst_half_d):
+                if (self.params.obst_prec_d < d_ro and d_ro < self.params.obst_half_d):
                     o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
-                elif (self.p.obst_half_d < d_ro):
+                elif (self.params.obst_half_d < d_ro):
                     if (abs(ad_h_ro) < np.pi/2):
                         o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
 
@@ -631,20 +627,20 @@ class APFPlanner(APFPlannerBase):
         if f_r < 0:
             v = 0
         else:
-            v = 1 * self.p.v_max * ((f_r / self.p.fix_f)**2)  # + self.p.v_min_2
+            v = 1 * self.params.v_max * ((f_r / self.params.fix_f)**2)  # + self.params.v_min_2
         # w
-        w = 5 * self.p.w_max * f_theta / self.p.fix_f
+        w = 5 * self.params.w_max * f_theta / self.params.fix_f
         if f_r < -1 and abs(w) < 0.05:
             w = 1*np.sign(w)
 
         # v
         if (v == 0) and abs(w) < 0.03:
-            v = self.p.v_min_2*1
+            v = self.params.v_min_2*1
 
         # check bounds
-        v = min(v, self.p.v_max)
-        v = max(v, self.p.v_min)
-        wa = min(abs(w), self.p.w_max)
+        v = min(v, self.params.v_max)
+        v = max(v, self.params.v_min)
+        wa = min(abs(w), self.params.w_max)
         w = wa * np.sign(w)
         self.v = v
         self.w = w

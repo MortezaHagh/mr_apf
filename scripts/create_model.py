@@ -2,14 +2,11 @@
 
 from typing import List
 import numpy as np
-import matplotlib.pyplot as plt
-from plotter import Plotter
 from parameters import Params
 from model_inputs import ModelInputs
 
 
 class RobotsData:
-    rids: List[int]
 
     def __init__(self, inputs: ModelInputs, path_unit: float):
         self.xs = [x*path_unit for x in inputs.xs]
@@ -17,7 +14,7 @@ class RobotsData:
         self.xt = [x*path_unit for x in inputs.xt]
         self.yt = [y*path_unit for y in inputs.yt]
         self.heading = list(inputs.heading)
-        self.rids = inputs.rids
+        self.rids: List[int] = inputs.rids
         self.ns = ["/r"+str(id) for id in inputs.rids]
         self.n_robots = len(inputs.rids)
 
@@ -53,14 +50,6 @@ class Obstacles:
 
 
 class MRSModel:
-    map_id: int
-    n_robots: int
-    n_obst_orig: int
-    path_unit: float
-    emap: Map
-    obst: Obstacles
-    robots: List[Robot]
-    robots_data: RobotsData
 
     def __init__(self, map_id: int = 1, path_unit: float = 1.0, n_robots: int = 1):
 
@@ -68,7 +57,7 @@ class MRSModel:
 
         # model inputs
         inputs = ModelInputs(map_id, path_unit, n_robots)
-        self.map_id = inputs.map_id
+        self.map_id: int = inputs.map_id
 
         #
         # self.path_unit = path_unit
@@ -76,32 +65,34 @@ class MRSModel:
 
         # Map
         emap = Map(inputs, path_unit)
-        self.emap = emap
+        self.emap: Map = emap
 
         # Obstacles
-        self.n_obst_orig = inputs.n_obst_orig
-        self.obsts = Obstacles(inputs, path_unit)
+        self.n_obst_orig: int = inputs.n_obst_orig
+        self.obsts: Obstacles = Obstacles(inputs, path_unit)
 
         # Robot
-        self.n_robots = inputs.n_robots
+        self.n_robots: int = inputs.n_robots
         heading = inputs.heading
         xs = inputs.xs
         ys = inputs.ys
         xt = inputs.xt
         yt = inputs.yt
-        self.robots = []
+        self.robots: List[Robot] = []
 
         #
         for i in range(self.n_robots):
             self.robots.append(Robot(i, xs[i], ys[i], xt[i], yt[i], heading[i], path_unit))
 
         # robots Data
-        self.robots_data = RobotsData(inputs, path_unit)
+        self.robots_data: RobotsData = RobotsData(inputs, path_unit)
 
 # -------------------------------- __main__  -----------------------------------
 
 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    from plotter import Plotter
     params = Params()
     model = MRSModel(map_id=1)
     Plotter(model, params, "")

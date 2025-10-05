@@ -1,8 +1,7 @@
 #! /usr/bin/env python
 
 """ Fleet Data Handler for MRAPF """
-
-from typing import Dict, Tuple, List
+from typing import Dict, List, Tuple
 import rospy
 import tf2_ros
 import tf_conversions
@@ -13,26 +12,18 @@ from apf.srv import SendRobotUpdate, SendRobotUpdateRequest, SendRobotUpdateResp
 
 
 class FleetDataHandler:
-    nr: int
-    rids: List[int]
-    sns: Dict[int, str]
-    xy: Dict[int, Tuple[float, float]]
-    xyt: Dict[int, Tuple[float, float]]
-    poses: Dict[int, Pose2D]
-    fleet_data: Dict[int, RobotData]
-    frames: Dict[int, str]
 
     def __init__(self, params: Params):
 
         # data
-        self.nr = 0
-        self.rids = []
-        self.sns = {}
-        self.xy = {}
-        self.xyt = {}
-        self.poses = {}
-        self.fleet_data = {}
-        self.frames = {}
+        self.nr: int = 0
+        self.rids: List[int] = []
+        self.sns: Dict[int, str] = {}
+        self.xy: Dict[int, Tuple[float, float]] = {}
+        self.xyt: Dict[int, Tuple[float, float]] = {}
+        self.poses: Dict[int, Pose2D] = {}
+        self.fleet_data: Dict[int, RobotData] = {}
+        self.frames: Dict[int, str] = {}
 
         # settings
         self.global_frame = params.global_frame
@@ -49,7 +40,7 @@ class FleetDataHandler:
         self.pub = rospy.Publisher(params.fleet_data_topic, FleetData, queue_size=10)
 
         # # update and pubish data
-        # self.update_all()
+        # self.update_fleet_data()
 
     def add_robot(self, rid: int, sns: str = ""):
         self.nr += 1
@@ -73,9 +64,9 @@ class FleetDataHandler:
         resp.success = True
         return resp
 
-    def update_all(self):
+    def update_fleet_data(self):
         fd = FleetData()
-        if self.get_all_tf():
+        if self.get_all_tfs():
             self.update_priority()
             fd.success = True
             fd.nr = self.nr
@@ -86,7 +77,7 @@ class FleetDataHandler:
             self.pub.publish(fd)
             rospy.logwarn("[FleetDataHandler]: Failed to get all TFs")
 
-    def get_all_tf(self) -> bool:
+    def get_all_tfs(self) -> bool:
         for rid in self.rids:
             if self.fleet_data[rid].reached:
                 continue

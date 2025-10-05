@@ -15,30 +15,21 @@ from apf.msg import FleetData
 
 
 class RobotPlannerBase:
-    do_viz: bool
-    data_received: bool
-    rid: int
-    ns: str
-    p: Params
-    mrapf: APFPlannerBase
-    vs: RvizViusalizer
-    pose: Pose2D
-    pd: PlannerData  # planner data
-    fleet_data: FleetData
 
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
 
         #
         self.v = 0
         self.w = 0
-        self.do_viz = True
+        self.do_viz: bool = True
         self.is_reached = False
 
         #
-        self.rid = robot.rid
-        self.ns = robot.ns  # name space
+        self.rid: int = robot.rid
+        self.ns: str = robot.ns  # name space
 
         # apf planner
+        self.params: Params = params
         if params.method == 1:
             self.mrapf = APFPlanner1(model, robot, params)
         elif params.method == 2:
@@ -61,7 +52,7 @@ class RobotPlannerBase:
         self.viusalizer = RvizViusalizer(model)
 
         # listener
-        self.data_received = False
+        self.data_received: bool = False
         rospy.Subscriber(params.fleet_data_topic, FleetData, self.fleet_data_cb, queue_size=2)
 
         # /cmd_vel puplisher
@@ -103,9 +94,9 @@ class RobotPlannerBase:
         # vizualize
         if self.do_viz:
             self.vizualize_force([self.mrapf.f_r, self.mrapf.f_theta], False)
-            if self.p.method == 2:
-                self.vs.vizualize_polygon(self.mrapf.mp_bound, self.ns, self.p.rid)
-                self.vs.draw_robot_circles(self.mrapf.multi_robots_vis, self.ns)
+            if self.params.method == 2:
+                self.viusalizer.vizualize_polygon(self.mrapf.cluster_poly_xy, self.ns, self.params.rid)
+                self.viusalizer.draw_robot_circles(self.mrapf.multi_robots_vis, self.ns)
 
         # publish cmd
         move_cmd = Twist()

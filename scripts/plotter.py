@@ -7,11 +7,10 @@ from mrapf_classes import AllPlannersData, PlannerData
 
 
 class Plotter:
-    save_path: str
 
     def __init__(self, model: MRSModel, settings: Params, save_path: str):
         # setting
-        self.save_path = save_path
+        self.save_path: str = save_path
         obs_r = settings.obst_r
         obst_prec_d = settings.obst_prec_d
         emap = model.emap

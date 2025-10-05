@@ -31,7 +31,7 @@ class APFPlanner(APFPlannerBase):
                 break
 
         # check dist to goal
-        if self.goal_dist < self.p.goal_dis_tresh:
+        if self.goal_dist < self.params.goal_dis_tresh:
             print(f"[planner_move, {self.robot.rid}], reached goal!")
             self.reached = True
             return
@@ -53,9 +53,9 @@ class APFPlanner(APFPlannerBase):
         dx = self.goal_x - self.pose.x
         dy = self.goal_y - self.pose.y
         goal_dist = np.sqrt(dx**2 + dy**2)
-        f = self.p.zeta * goal_dist
-        f = max(f, self.p.fix_f2)  # change
-        # f = self.p.fix_f
+        f = self.params.zeta * goal_dist
+        # f = max(f, self.params.fix_f2)  # change
+        # f = self.params.fix_f
         theta_rg = np.arctan2(dy, dx)
         ad_rg_h = cal_angle_diff(theta_rg, self.pose.theta)
         self.ad_rg_h = ad_rg_h
@@ -84,17 +84,17 @@ class APFPlanner(APFPlannerBase):
             angle_diff = cal_angle_diff(theta, self.pose.theta)
 
             # check distance
-            if d_ro > 1 * self.p.robot_start_d:
+            if d_ro > 1 * self.params.robot_start_d:
                 continue
 
             # check if robot should stop
-            if (not rob.reached) and (d_ro < self.p.obst_half_d) and (rob.priority > self.robot_data.priority):
+            if (not rob.reached) and (d_ro < self.params.obst_half_d) and (rob.priority > self.robot_data.priority):
                 self.stopped = True
                 break
 
             # force
             robot_flag = True
-            f = ((self.p.robot_z * 1) * ((1 / d_ro) - (1 / self.p.robot_start_d))**2) * (1 / d_ro)**2
+            f = ((self.params.robot_z * 1) * ((1 / d_ro) - (1 / self.params.robot_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
             robot_f[0] += round(templ[0], 3)
             robot_f[1] += round(templ[1], 3)
@@ -115,7 +115,7 @@ class APFPlanner(APFPlannerBase):
             d_ro = np.sqrt(dx**2 + dy**2)
 
             # check distance
-            if d_ro > self.p.obst_start_d:
+            if d_ro > self.params.obst_start_d:
                 continue
 
             obst_flag = True
@@ -123,7 +123,7 @@ class APFPlanner(APFPlannerBase):
             angle_diff = cal_angle_diff(theta, self.pose.theta)
 
             # force
-            f = ((self.p.obst_z * 1) * ((1 / d_ro) - (1 / self.p.obst_start_d))**2) * (1 / d_ro)**2
+            f = ((self.params.obst_z * 1) * ((1 / d_ro) - (1 / self.params.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)

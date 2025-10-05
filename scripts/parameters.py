@@ -4,22 +4,30 @@
 
 
 class Params:
-    simD: str
-    rid: int
-    ns: str
-    sns: str
-    ac_name: str
-    cmd_topic: str
-    global_frame: str
-    odom_frame: str
-    local_frame: str
-    fleet_data_topic: str
+    def __init__(self, rid: int = -1, static: bool = False):
+        self.ns: str = ''
+        self.sns: str = ''
+        self.results_folder: str = ''
+        self.ac_name: str = ''
+        self.cmd_topic: str = ''
+        self.global_frame: str = ''
+        self.odom_frame: str = ''
+        self.local_frame: str = ''
+        self.fleet_data_topic: str = ''
+        #
+        self.static: bool = static
+        self.simD: str = "3D"  # 3D 2D
+        self.nr: int = 4
+        self.method: int = 1
+        self.map_id: int = 1
+        self.rid: int = rid
 
-    def __init__(self, rid: int = -1):
-        self.simD = "3D"  # 3D
-        self.nr = 3
-        self.method = 2
-        self.rid = rid
+        #
+        if self.static:
+            self.results_folder = "results/static_tests"
+        else:
+            self.results_folder = "results/tests"
+
         self.sim_params(rid)
 
     def set_ns(self, ns: str):
@@ -76,3 +84,6 @@ class Params:
         self.robot_start_d = 2 * self.robot_prec_d
         self.robot_half_d = 1.5 * self.robot_prec_d
         self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
+
+        # 2d
+        self.obs_effect_r = 1.0          # obstacles effective radius

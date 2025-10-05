@@ -4,22 +4,23 @@
 
 
 class Params:
-    simD: str
-    rid: int
-    ns: str
-    sns: str
-    ac_name: str
-    cmd_topic: str
-    global_frame: str
-    odom_frame: str
-    local_frame: str
-    fleet_data_topic: str
 
     def __init__(self, rid: int = -1):
-        self.simD = "2D"
-        self.nr = 3
-        self.method = 2
-        self.rid = rid
+        self.ns: str = ""
+        self.sns: str = None
+        self.ac_name: str = None
+        self.cmd_topic: str = None
+        self.global_frame: str = None
+        self.odom_frame: str = None
+        self.local_frame: str = None
+        self.fleet_data_topic: str = None
+        #
+        self.simD: str = "2D"
+        self.nr: int = 3
+        self.method: int = 2
+        self.map_id: int = 1
+        self.rid: int = rid
+        self.results_folder: str = "results/static_tests"
         self.sim_params(rid)
 
     def set_ns(self, ns: str):

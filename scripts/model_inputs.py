@@ -1,36 +1,34 @@
 """ model inputs - obstacles - robots """
-
+from typing import List
 import os
 import json
 import random
-from typing import List
 import numpy as np
 import rospkg
 from my_utils import cal_distance
 
 
 class ModelInputs:
-    path_unit: float
-    lim: int
-    x_min: int
-    y_min: int
-    x_max: int
-    y_max: int
-    map_id: int
-    n_robots: int
-    rids = List[int]
-    xs = List[float]
-    ys = List[float]
-    xt = List[float]
-    yt = List[float]
-    n_obst_orig: int
-    x_obst: List[float]
-    y_obst: List[float]
-    heading = List[float]
 
     def __init__(self, map_id: int = 1, path_unit: float = 1.0, n_robots: int = 1):
         print(f"[{self.__class__.__name__}] Inputs for creating model")
-        self.path_unit = path_unit
+        self.path_unit: float = path_unit
+        self.lim: int = None
+        self.x_min: int = None
+        self.y_min: int = None
+        self.x_max: int = None
+        self.y_max: int = None
+        self.map_id: int = None
+        self.n_robots: int = None
+        self.rids: List[int] = None
+        self.xs: List[float] = None
+        self.ys: List[float] = None
+        self.xt: List[float] = None
+        self.yt: List[float] = None
+        self.n_obst_orig: int = None
+        self.x_obst: List[float] = None
+        self.y_obst: List[float] = None
+        self.heading: List[float] = None
         #
         if map_id == 1:
             self.map_0(n_robots)

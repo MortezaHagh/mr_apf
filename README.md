@@ -1,88 +1,103 @@
 # MR-APF: Multi-Robot Artificial Potential Fields Path Planning
 
-A ROS-based implementation of distributed multi-robot path planning using Artificial Potential Fields (APF) for real-time navigation and obstacle avoidance.
+A ROS-based implementation for distributed multi-robot path planning using Artificial Potential Fields (APF) for real-time navigation and obstacle avoidance. Features adaptive and multi-robot convergence avoidance potential fields for improved planning.
 
 ## Overview
 
-This project implements a multi-robot artificial potential fields path planning system that enables multiple robots to navigate autonomously while avoiding obstacles and each other. The system supports both real-time Gazebo simulation and simplified point-robot simulation with RViz visualization.
+This project provides a multi-robot APF path planning system, enabling multiple robots to autonomously navigate while avoiding obstacles and each other. It supports both real-time Gazebo simulation and lightweight point-robot simulation with RViz visualization.
+
+Key improvements include:
+
+- Adaptive obstacle avoidance potentials
+- Adaptive inter-robot collision avoidance
+- New convergence avoidance potentials to prevent robot clustering
 
 ## Features
 
-- **Distributed Planning**: Each robot runs its own planner while sharing fleet data
-- **Real-time Visualization**: Live monitoring through RViz
-- **Dual Simulation Modes**: Gazebo for realistic physics or simplified point-robot simulation
-- **Obstacle Avoidance**: Dynamic obstacle and inter-robot collision avoidance
-- **Fleet Coordination**: Centralized fleet data management with distributed execution
+- **Distributed Planning**: Each robot runs its own planner, sharing fleet data
+- **Real-time Visualization**: Live monitoring in RViz
+- **Dual Simulation Modes**: Choose between Gazebo (realistic physics) or point-robot simulation (fast, scalable)
+- **Dynamic Obstacle Avoidance**: Handles moving obstacles and inter-robot collisions
+- **Fleet Coordination**: Centralized data management with distributed execution
 - **Result Analysis**: Automatic path recording and visualization
 
 ## System Architecture
 
-![Design Overview](design/design.png)
+<img src="design/design.png" alt="Design Overview" width="600"/>
 
-The system consists of:
+The system includes:
+
 - **Central MRAPF Service**: Coordinates fleet data and robot initialization
 - **Robot Planners**: Individual APF-based planners for each robot
 - **Fleet Data Handler**: Manages robot positions and states
-- **Visualization System**: RViz-based real-time monitoring
+- **Visualization System**: Real-time RViz monitoring
 
 ## Simulation Modes
 
+Set the mode in the parameters file.
+
 ### 1. Real-time Gazebo Simulation
+
 - Full physics simulation with TurtleBot3 models
-- Realistic sensor data and dynamics
-- Complete ROS navigation stack integration
+- Realistic sensor data and robot dynamics
 
 ### 2. Simple Point-Robot Simulation
-- Lightweight simulation for algorithm testing
-- Robots represented as circular agents
-- Faster execution for large fleet testing
 
-Both modes provide:
-- Real-time visualization in RViz
+- Lightweight, fast simulation for algorithm testing
+- Robots modeled as circular agents
+- Scalable to large fleets
+
+Both modes offer:
+
+- Real-time RViz visualization
 - Path recording and analysis
 - Performance metrics collection
 
 ## Sample Environment
 
-![Sample Map](design/sample_map.png)
+<img src="design/sample_map.png" alt="Sample Map" width="400"/>
 
 ## Installation
 
 1. Clone the repository into your ROS workspace:
-```bash
-cd ~/catkin_ws/src
-git clone https://github.com/MortezaHagh/mr_apf.git
-```
+
+  ```bash
+  cd ~/catkin_ws/src
+  git clone https://github.com/MortezaHagh/mr_apf.git
+  ```
 
 2. Build the package:
-```bash
-cd ~/catkin_ws
-catkin_make
-source devel/setup.bash
-```
+
+  ```bash
+  cd ~/catkin_ws
+  catkin_make
+  source devel/setup.bash
+  ```
 
 ## Usage
 
 ### Quick Start
-```bash
-# Launch the main APF simulation
-roslaunch mr_apf main_apf.launch
 
-# For Gazebo simulation with TurtleBot3
-roslaunch mr_apf turtlebot3_walls2.launch
+```bash
+# For multi robot path planning in Gazebo simulation with TurtleBot3
+roslaunch mr_apf launch_map_robots.launch
+
+# for multi robot path planning - Simple Point-Robot Simulation
+rosrun apf mrapf_sc.py
 ```
 
 ### Configuration
+
 - Edit `scripts/parameters.py` for algorithm parameters
-- Modify launch files for different robot configurations
-- Adjust map files in model_inputs.py
+- Modify launch files for robot configurations
+- Adjust map files in `model_inputs.py`
 
 ## Project Structure
 
-```
+```bash
 mr_apf/
 ├── action/          # ROS action definitions
-├── design/          # Architecture diagrams and documentation
+├── design/          # Architecture diagrams and docs
 ├── launch/          # ROS launch files
 ├── maps/            # Environment maps (JSON, PNG, SVG)
 ├── models/          # Robot and obstacle models
@@ -101,33 +116,27 @@ mr_apf/
 
 - **APF Planners**: Core artificial potential field algorithms
 - **Fleet Management**: Centralized coordination system
-- **Visualization**: Real-time RViz display system
+- **Visualization**: Real-time RViz display
 - **Model Creation**: Environment and robot model generation
-- **Results Analysis**: Path analysis and performance metrics
+- **Results Analysis**: Path and performance metrics
 
 ## Results
 
-Results are automatically saved to the `results/` directory, including:
+Simulation results are saved in the `results/` directory, including:
+
 - Robot trajectories and paths
 - Performance metrics
 - Visualization plots
 - JSON data for further analysis
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Citation
 
 If you use this work in your research, please cite:
+
 ```bibtex
 @misc{mr_apf,
   title={Multi-Robot Artificial Potential Fields Path Planning},

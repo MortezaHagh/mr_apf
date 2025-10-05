@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 """ central service,  includes fleet_data_handler, and create a RobotPlanner for each request """
-
 from typing import List
 import numpy as np
 import rospy
@@ -13,24 +12,18 @@ from apf.srv import InitRobot, InitRobotResponse, InitRobotRequest
 
 
 class CentralMRAPF:
-    n_robots: int
-    robot_ids: List[int]
-    model: MRSModel
-    fleet_data_handler: FleetDataHandler
-    robots: List[Robot]
-    planners: List[RobotPlannerAc]
 
     def __init__(self, model: MRSModel, central_mrapf_srv_name: str):
         rospy.loginfo(f"[{self.__class__.__name__}]: Initializing Central MRAPF Path Planning Service Server.")
 
         # data
-        self.model = model
+        self.model: MRSModel = model
 
         # all robots
-        self.n_robots = 0
-        self.robots = []
-        self.planners = []
-        self.robot_ids = []
+        self.n_robots: int = 0
+        self.robots: List[Robot] = []
+        self.planners: List[RobotPlannerAc] = []
+        self.robot_ids: List[int] = []
 
         # send_robot_update_srv
         self.fleet_data_handler = FleetDataHandler(Params(-1))

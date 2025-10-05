@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 """ Planning Clients for MRAPF, sending goals to each robot action server """
-
 from typing import List
 import rospy
 import actionlib
@@ -10,14 +9,12 @@ from create_model import RobotsData
 
 
 class PlanningClients:
-    robots: RobotsData
-    clients: List[actionlib.SimpleActionClient]
 
     def __init__(self, robots: RobotsData):
         rospy.loginfo("[PlanningClients], Initializing Path Planning Clinets.")
         self.rids = robots.rids
-        self.robots = robots
-        self.clients = []
+        self.robots: RobotsData = robots
+        self.clients: List[actionlib.SimpleActionClient] = []
 
     def send_goals(self):
         for rid in self.rids:

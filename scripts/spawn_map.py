@@ -11,18 +11,13 @@ from create_model import MRSModel
 
 
 class SimData(object):
-    rids: List[int]
-    model: MRSModel
-    path_unit: float
-    all_obsts: List[Pose]
-    all_robots: List[Pose]
 
     def __init__(self, model: MRSModel, path_unit: float = 1.0):
-        self.model = model
-        self.path_unit = path_unit
-        self.rids = []
-        self.all_obsts = []
-        self.all_robots = []
+        self.model: MRSModel = model
+        self.path_unit: float = path_unit
+        self.rids: List[int] = []
+        self.all_obsts: List[Pose] = []
+        self.all_robots: List[Pose] = []
 
         # create spawning data
         self.create_spawn_data()
@@ -63,7 +58,7 @@ def spawning(model, path_unit=1.0):
     # robot model file
     rospack = rospkg.RosPack()
     pkg_path = rospack.get_path('apf')
-    with open(pkg_path+'/Models/TB3_model_simple.urdf', 'r') as file:
+    with open(pkg_path+'/models/TB3_model_simple.urdf', 'r') as file:
         robot_file = file.read()
 
     # spawn robots
@@ -94,7 +89,7 @@ def spawning(model, path_unit=1.0):
     # spawn_obst = rospy.ServiceProxy("gazebo/spawn_sdf_model", SpawnModel)
 
     # # model file
-    # with open(pkg_path+'/Models/cylinder1/model2.sdf', 'r') as file2:
+    # with open(pkg_path+'/models/cylinder1/model2.sdf', 'r') as file2:
     #     model_file = file2.read()
 
     # # spawn models
