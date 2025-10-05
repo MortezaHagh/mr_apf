@@ -12,6 +12,21 @@ Key improvements include:
 - Adaptive inter-robot collision avoidance
 - New convergence avoidance potentials to prevent robot clustering
 
+<table style="padding:10px">
+  <tr>
+    <td><img src="results/media/mrapf-m2.png" alt="Simulation-image" alt=1></td>
+    <td><img src="results/media/mrapf-m2.gif" alt="Simulation-gif" alt=2></td>
+  </tr>
+</table>
+
+<!-- <img src="results/media/mrapf-m2.png" alt="Simulation-image" width="350"/>
+<img src="results/media/mrapf-m2.gif" alt="Simulation-gif" width="400"/> -->
+
+<!-- <video width="400" height="400" controls>
+  <source src="results/media/mrapf-m2.mp4" type="video/mp4">
+</video> -->
+
+
 ## Features
 
 - **Distributed Planning**: Each robot runs its own planner, sharing fleet data
@@ -137,11 +152,17 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 If you use this work in your research, please cite:
 
+[Paper Link](https://ieeexplore.ieee.org/document/11163011)
+
+
 ```bibtex
-@misc{mr_apf,
-  title={Multi-Robot Artificial Potential Fields Path Planning},
-  author={MortezaHagh},
+@inproceedings{haghbeigi2025adaptive,
+  title={Adaptive Potential Fields for Multi-Robot Path Planning with Convergence Avoidance},
+  author={Haghbeigi, Morteza and Ordys, Andrzej},
+  booktitle={2025 European Conference on Mobile Robots (ECMR)},
+  pages={1--6},
   year={2025},
-  url={https://github.com/MortezaHagh/mr_apf}
+  organization={IEEE},
+  doi={10.1109/ECMR65884.2025.11163011}}
 }
 ```

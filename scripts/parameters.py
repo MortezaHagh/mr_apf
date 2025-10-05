@@ -17,7 +17,7 @@ class Params:
         #
         self.static: bool = static
         self.simD: str = "2D"  # 3D 2D
-        self.nr: int = 3
+        self.nr: int = 4
         self.method: int = 2
         self.map_id: int = 1
         self.rid: int = rid
