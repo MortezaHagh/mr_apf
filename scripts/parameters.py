@@ -16,15 +16,16 @@ class Params:
         self.fleet_data_topic: str = ''
         #
         self.static: bool = static
-        self.simD: str = "3D"  # 3D 2D
-        self.nr: int = 4
-        self.method: int = 1
+        self.simD: str = "2D"  # 3D 2D
+        self.nr: int = 3
+        self.method: int = 2
         self.map_id: int = 1
         self.rid: int = rid
 
         #
         if self.static:
             self.results_folder = "results/static_tests"
+            self.simD = "2D"
         else:
             self.results_folder = "results/tests"
 
