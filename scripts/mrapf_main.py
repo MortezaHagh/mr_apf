@@ -52,12 +52,11 @@ class Run():
     def run(self):
 
         # create model
-        path_unit = 0.7
-        self.model = MRSModel(path_unit=path_unit, params=self.params)
+        self.model = MRSModel(params=self.params)
 
         if self.params.simD == "3D":
             # spawn robots and obstacles
-            spawning(model=self.model, path_unit=1.0)
+            spawning(model=self.model)
 
         # visualize
         self.visualizer = RvizViusalizer(model=self.model)

@@ -6,9 +6,9 @@ from typing import Dict, List, Tuple
 import numpy as np
 import rospy
 from sensor_msgs.msg import PointCloud
+from tf.transformations import quaternion_from_euler
 from geometry_msgs.msg import Point32, Polygon, PolygonStamped
 from visualization_msgs.msg import Marker, MarkerArray
-from tf.transformations import quaternion_from_euler
 from create_model import MRSModel
 from mrapf_classes import ApfRobot
 
@@ -70,7 +70,7 @@ class RvizViusalizer:
 
     def publish_obsts_markers(self):
         marker_array = MarkerArray()
-        for obst in self.model.obstacles:
+        for i, obst in enumerate(self.model.obstacles):
             marker = Marker()
             marker.header.frame_id = "map"
             marker.header.stamp = rospy.Time.now()
@@ -78,8 +78,8 @@ class RvizViusalizer:
             marker.type = marker.CYLINDER
             marker.id = i+1
             # Set the scale of the marker
-            marker.scale.x = self.params.obst_r
-            marker.scale.y = self.params.obst_r
+            marker.scale.x = obst.r
+            marker.scale.y = obst.r
             marker.scale.z = 0.4
             # Set the color
             marker.color.r = 0.0
@@ -134,8 +134,8 @@ class RvizViusalizer:
             c_y = obst.y
             for th in thetas:
                 p = Point32()
-                p.x = c_x + self.params.obst_start_d*np.cos(th)
-                p.y = c_y + self.params.obst_start_d*np.sin(th)
+                p.x = c_x + obst.obst_start_d*np.cos(th)
+                p.y = c_y + obst.obst_start_d*np.sin(th)
                 prec_circles.append(p)
             obst_start_points.extend(prec_circles)
         #

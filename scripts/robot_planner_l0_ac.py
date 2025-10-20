@@ -51,8 +51,8 @@ class RobotPlannerAc:
         rospy.loginfo(f"[RobotPlannerAC, {self.ns}]: Robot Action Server [{self.ac_name}] is called.")
 
         # goal received
-        self.robot.xt = goal.xt * self.params.path_unit
-        self.robot.yt = goal.yt * self.params.path_unit
+        self.robot.xt = goal.xt
+        self.robot.yt = goal.yt
 
         # motion planning   # ==================================================
         success = False

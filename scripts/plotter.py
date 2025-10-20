@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from parameters import Params
-from mrapf_classes import ApfObstacle
 from create_model import MRSModel, Obstacle
 from mrapf_classes import AllPlannersData, PlannerData
 
@@ -13,12 +12,6 @@ class Plotter:
         # setting
         self.save_path: str = save_path
         emap = model.emap
-
-        # apf obstacles
-        obstacles = []
-        for obst in model.obstacles:
-            apf_obst = ApfObstacle(obst, params)
-            obstacles.append(apf_obst)
 
         # figure
         fig, ax = plt.subplots(1, 1)
@@ -44,8 +37,8 @@ class Plotter:
 
         # # Obstacles
         thetas = np.linspace(0, np.pi*2, 20)
-        obst: ApfObstacle = None
-        for obst in obstacles:
+        obst: Obstacle = None
+        for obst in model.obstacles:
             ax.plot(obst.x, obst.y, 'o',  markersize=5, markeredgecolor='k', markerfacecolor='k')
             xor = [obst.x + obst.obst_prec_d*np.cos(t) for t in thetas]
             yor = [obst.y + obst.obst_prec_d*np.sin(t) for t in thetas]

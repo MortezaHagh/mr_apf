@@ -1,10 +1,11 @@
 #! /usr/bin/env python3
 
 import os
-import rospkg
+import rospkg  # type: ignore
 import numpy as np
 import matplotlib.pyplot as plt
 from create_model import MRSModel
+from parameters import Params
 
 
 class Plot3D:
@@ -21,12 +22,10 @@ class Plot3D:
         self.test_name = "T" + str(self.test_id) + "_v" + str(version)
 
         # create model
-        path_unit = 1  # 0.7
+        param = Params()
         self.path_unit = 0.7
         n_robots = self.test_id
-        self.model = MRSModel(map_id=1,
-                              path_unit=path_unit,
-                              n_robots=n_robots)
+        self.model = MRSModel(params=param)
 
         self.init()
         self.plot_f_obstacle()

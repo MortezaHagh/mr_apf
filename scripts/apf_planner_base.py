@@ -7,9 +7,8 @@ import numpy as np
 from geometry_msgs.msg import Pose2D
 from logger import MyLogger
 from parameters import Params
-from mrapf_classes import ApfObstacle
-from create_model import MRSModel, Robot
 from apf.msg import RobotData, FleetData
+from create_model import MRSModel, Robot, Obstacle
 
 
 class APFPlannerBase:
@@ -23,8 +22,8 @@ class APFPlannerBase:
         self.model: MRSModel = model
         self.robot: Robot = robot
 
-        # obstacles
-        self.obstacles: List[ApfObstacle] = []
+        # map data
+        self.obstacles: List[Obstacle] = model.obstacles
         self.parse_map_data()
 
         # robot fleet data
@@ -162,11 +161,6 @@ class APFPlannerBase:
         # robot target
         self.goal_x = self.robot.xt
         self.goal_y = self.robot.yt
-        # obstacles
-        self.n_obsts = self.model.n_obstacles
-        for obst in self.model.obstacles:
-            apf_obst = ApfObstacle(obst, self.params)
-            self.obstacles.append(apf_obst)
 
     def calculate_velocity(self):
         #

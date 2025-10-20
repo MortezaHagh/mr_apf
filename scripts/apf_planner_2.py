@@ -6,11 +6,11 @@ from shapely.coords import CoordinateSequence
 from shapely.geometry import Point, shape, MultiPoint
 from logger import MyLogger
 from parameters import Params
-from create_model import MRSModel, Robot
+from mrapf_classes import ApfRobot
 from apf.msg import RobotData, FleetData
 from apf_planner_base import APFPlannerBase
-from mrapf_classes import ApfRobot, ApfObstacle
 from my_utils import cal_distance, cal_angle_diff
+from create_model import MRSModel, Robot, Obstacle
 
 
 class APFPlanner(APFPlannerBase):
@@ -599,7 +599,7 @@ class APFPlanner(APFPlannerBase):
         obs_f = [0, 0]
         self.obs_f = [0, 0]
 
-        obst: ApfObstacle = None
+        obst: Obstacle = None
         for i in self.f_obsts_inds:
             obst = self.obstacles[i]
             dy = (obst.y - self.pose.y)

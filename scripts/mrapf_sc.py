@@ -47,8 +47,7 @@ class Run():
     def run(self):
 
         # create model
-        path_unit = 0.7
-        model = MRSModel(path_unit=path_unit, params=self.params)
+        model = MRSModel(params=self.params)
         self.model = model
 
         # initialize planners data

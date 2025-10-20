@@ -5,21 +5,23 @@ import json
 import random
 import numpy as np
 import rospkg  # type: ignore
+from parameters import Params
 from my_utils import cal_distance
 
 
 class ModelInputs:
 
-    def __init__(self, map_id: int = 1, path_unit: float = 1.0, n_robots: int = 1):
+    def __init__(self, params: Params):
         print(f"[{self.__class__.__name__}] Inputs for creating model")
-        self.path_unit: float = path_unit
+        self.n_robots: int = params.nr
+        self.map_id: int = params.map_id
+        self.path_unit: float = params.path_unit
+        #
         self.lim: int = None
         self.x_min: int = None
         self.y_min: int = None
         self.x_max: int = None
         self.y_max: int = None
-        self.map_id: int = None
-        self.n_robots: int = None
         self.rids: List[int] = None
         self.x_starts: List[float] = None
         self.y_starts: List[float] = None
@@ -30,15 +32,15 @@ class ModelInputs:
         self.y_obsts: List[float] = None
         self.headings: List[float] = None
         #
-        if map_id == 1:
-            self.map_0(n_robots)
+        if self.map_id == 1:
+            self.map_0(self.n_robots)
             # self.collide()
             # self.obstacles2()
             # self.random_map_2(n_robots)
             # self.from_json_file(n_robots, path_unit)
         #
         self.rids = list(range(0, self.n_robots))
-        self.apply_path_unit(path_unit)
+        self.apply_path_unit(self.path_unit)
 
     def apply_path_unit(self, path_unit: float = 1.0):
         # map

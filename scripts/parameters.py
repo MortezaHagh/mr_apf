@@ -34,7 +34,7 @@ class Params:
         self.fleet_data_topic = "fleet_data"
 
         # general
-        self.path_unit = 1.0
+        self.path_unit = 0.7
         self.priority = self.rid
         self.dt = 0.1
 

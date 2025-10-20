@@ -13,7 +13,6 @@ class Results:
     def __init__(self, planners_data: AllPlannersData, result_path: str, params: Params):
 
         # settings
-        self.path_unit = 1
         self.data: AllPlannersData = planners_data
         self.n = planners_data.n
         self.params = params
@@ -23,8 +22,8 @@ class Results:
         all_lengths = []
         all_d_headings = []
         for i in range(self.n):
-            dx = np.diff(self.data.all_x[i]) * self.path_unit
-            dy = np.diff(self.data.all_y[i]) * self.path_unit
+            dx = np.diff(self.data.all_x[i])
+            dy = np.diff(self.data.all_y[i])
             l = np.sum(np.sqrt(dx**2, dy**2))
             h = np.arctan2(dy, dx)
             dh = np.diff(h)

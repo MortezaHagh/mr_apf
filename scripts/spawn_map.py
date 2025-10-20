@@ -2,7 +2,7 @@
 #! /usr/bin/env python
 
 from typing import List
-import rospkg
+import rospkg  # type: ignore
 import rospy
 import tf
 from geometry_msgs.msg import Pose, Quaternion
@@ -12,9 +12,8 @@ from create_model import MRSModel
 
 class SimData(object):
 
-    def __init__(self, model: MRSModel, path_unit: float = 1.0):
+    def __init__(self, model: MRSModel):
         self.model: MRSModel = model
-        self.path_unit: float = path_unit
         self.rids: List[int] = []
         self.all_obsts: List[Pose] = []
         self.all_robots: List[Pose] = []
@@ -27,8 +26,8 @@ class SimData(object):
         for obst in self.model.obstacles:
             p = Pose()
             p.position.z = 0
-            p.position.x = obst.x * self.path_unit
-            p.position.y = obst.y * self.path_unit
+            p.position.x = obst.x
+            p.position.y = obst.y
             p.orientation.w = 1.0
             self.all_obsts.append(p)
 
@@ -38,17 +37,17 @@ class SimData(object):
             self.rids.append(robot.rid)
             p = Pose()
             p.position.z = 0.0
-            p.position.x = robot.xs*self.path_unit
-            p.position.y = robot.ys*self.path_unit
+            p.position.x = robot.xs
+            p.position.y = robot.ys
             theta = tf.transformations.quaternion_from_euler(0, 0, robot.heading)
             p.orientation = Quaternion(*theta)
             self.all_robots.append(p)
 
 
-def spawning(model, path_unit=1.0):
+def spawning(model):
 
     # get data
-    sim_data = SimData(model, path_unit)
+    sim_data = SimData(model)
 
     # spawn_urdf_model service
     rospy.loginfo("[spawning]: Waiting for gazebo spawn_urdf_model services for robots...")

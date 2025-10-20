@@ -124,20 +124,3 @@ class ApfRobot:
         self.cluster = False
         self.stopped = False
         self.reached = False
-
-
-class ApfObstacle:
-    def __init__(self, obstacle: Obstacle, params: Params, robot_r: float = None):
-        robot_r = robot_r
-        if robot_r is None:
-            robot_r = params.robot_r  # todo
-
-        #
-        self.x = obstacle.x
-        self.y = obstacle.y
-        self.r = obstacle.r
-        #
-        self.obst_prec_d = robot_r + self.r + params.prec_d  # 0.57
-        self.obst_start_d = 2 * self.obst_prec_d
-        self.obst_half_d = 1.5 * self.obst_prec_d
-        self.obst_z = 4 * params.fix_f * self.obst_prec_d**4

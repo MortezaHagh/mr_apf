@@ -39,7 +39,7 @@ class CentralMRAPF:
         # robot object
         rid = req.rid
         heading = np.deg2rad(req.theta)
-        robot = Robot(req.rid, req.xs, req.ys, heading, req.xt, req.yt, path_unit=1.0)
+        robot = Robot(req.rid, req.xs, req.ys, heading, req.xt, req.yt)
 
         # update robotic system data
         self.n_robots += 1
