@@ -23,7 +23,7 @@ class APFPlanner(APFPlannerBase):
         self.lg = MyLogger(f"APFPlanner2_r{robot.rid}")
 
         #
-        self.new_robots: List[ApfRobot] = []
+        self.apf_robots: List[ApfRobot] = []
         self.multi_robots_vis: List[ApfRobot] = []
         self.cluster_poly_xy: List[Tuple[array, array]] = []
 
@@ -34,6 +34,10 @@ class APFPlanner(APFPlannerBase):
         self.stop_flag_obsts = False
         self.stop_flag_robots = False
         self.stop_flag_multi = False
+
+        # config
+        self.c_radius = 2.5  # 2.5          #$ param 3
+        self.c_r = 2.5     # 2.5 3.0      #$ param 1
 
     def reset_vals_2(self):
         #
@@ -46,6 +50,8 @@ class APFPlanner(APFPlannerBase):
         self.stop_flag_obsts = False
         self.stop_flag_robots = False
         self.stop_flag_multi = False
+        #
+        self.apf_robots = []
 
     def calculate_planner_forces(self) -> bool:
         """ planner specific force calculations
@@ -56,8 +62,11 @@ class APFPlanner(APFPlannerBase):
 
         self.reset_vals_2()
 
+        # detect obstacles
+        self.detect_obstacles_in_proximity()
+
         # detect and group
-        self.detect_group()
+        self.create_all_fake_obstacles()
 
         # check stop_flag_multi
         if self.stop_flag_multi:
@@ -86,135 +95,203 @@ class APFPlanner(APFPlannerBase):
                 return False
         return True
 
-    def detect_group(self) -> None:
-
-        #
-        c_r = 2.5       # 2.5 3.0      #$ param 1
-        c_radius = 2.5  # 2.5          #$ param 3
-        is_goal_close = False
+    def create_all_fake_obstacles(self) -> None:
+        """ create all fake obstacles from fleet data. \n
+        includes local minima avoidance and clustering.
+        """
 
         # reset
-        groups = []
+        is_goal_close = False
+        apf_robots: List[ApfRobot] = []
         AD_h_rR: Dict[int, float] = {}
-        new_robots: List[ApfRobot] = []
+        cluster_r_inds_1: List[int] = []
         multi_robots: List[ApfRobot] = []
         multi_robots_vis: List[ApfRobot] = []
-        robots_inds: List[int] = []
-        robots_inds_f = {}
-        self.new_robots = []
-
-        # detect obsts
-        self.detect_obsts()
 
         # is_goal_close
         goal_dist = cal_distance(self.pose.x, self.pose.y, self.goal_x, self.goal_y)
-        if (goal_dist < (c_r*self.params.robot_start_d)):
+        if (goal_dist < (self.c_r*self.params.robot_start_d)):
             is_goal_close = True
 
-        # get indices of robots in proximity circle
+        # evaluate fleet data ##################################################
+        # create new apf_robots and
+        apf_robots, cluster_r_inds_1, AD_h_rR = self.eval_fleet_data()
+
+        # create fake_apf_robots_1 for local minima avoidance ##################
+        # fake_apf_robots_1: List[ApfRobot]
+        fake_apf_robots_1 = self.create_fake_obsts_loc_min_avoid(apf_robots)
+
+        # add fake_apf_robots_1 to the apf_robots and multi_robots_vis lists
+        apf_robots.extend(fake_apf_robots_1)
+        multi_robots_vis.extend(fake_apf_robots_1)
+
+        # if there is none robots in proximity
+        # if goal is close, don't create fake obstacles from clustering
+        if not (is_goal_close or len(cluster_r_inds_1) == 0):
+
+            # create fake obstacles from clustering ############################
+            multi_robots = self.create_fake_obst_clusters(cluster_r_inds_1, AD_h_rR)
+            if len(multi_robots) > 0:
+                multi_robots_vis.append(multi_robots[0])
+                apf_robots.append(multi_robots[0])
+
+        #
+        self.multi_robots_vis = multi_robots_vis
+        self.apf_robots = apf_robots
+        return
+
+    def detect_obstacles_in_proximity(self):
+        """ detect obstacles in proximity circle"""
+        f_obsts_inds = []
+        for oi in self.obst_orig_inds:
+            xo = self.obs_x[oi]
+            yo = self.obs_y[oi]
+            do = cal_distance(xo, yo, self.pose.x, self.pose.y)
+            if do < self.params.obst_start_d:
+                f_obsts_inds.append(oi)
+        self.f_obsts_inds = f_obsts_inds
+
+    def eval_fleet_data(self) -> Tuple[List[ApfRobot], List[int], Dict[int, float]]:
+        """
+        evaluate fleet data
+
+        Returns:
+            tuple containing
+            - apf_robots(List[ApfRobot]): list of new ApfRobot instances based on fleet data
+            - cluster_r_inds_1(List[int]): list of robots indices for clustering
+            - AD_h_rR(Dict[int, float]): angle differences of heading with rR to other robots
+        """
+
+        #
+        apf_robots: List[ApfRobot] = []
+        cluster_r_inds_1: List[int] = []
+        AD_h_rR: Dict[int, float] = {}
+
+        # eval fleet data
+        # find robots in proximity circle for clustering and create ApfRobot instances
         fd: FleetData = self.fleet_data
-        o_rob: RobotData = None
-        for o_rob in fd.fdata:
-            if o_rob.rid == self.robot.rid:
+        orob: RobotData = None
+        for orob in fd.fdata:
+            if orob.rid == self.robot.rid:
                 continue
-            dx = (o_rob.x - self.pose.x)
-            dy = (o_rob.y - self.pose.y)
+            dx = (orob.x - self.pose.x)
+            dy = (orob.y - self.pose.y)
             d_rR = np.sqrt(dx**2 + dy**2)
             theta_rR = np.arctan2(dy, dx)
             ad_h_rR = cal_angle_diff(self.pose.theta, theta_rR)
-            ad_h_rR_abs = abs(ad_h_rR)
-            ad_H_Rr = cal_angle_diff(o_rob.h, (theta_rR - np.pi))
-            ad_H_Rr_abs = abs(ad_H_Rr)
-            AD_h_rR[o_rob.rid] = ad_h_rR
+            AD_h_rR[orob.rid] = ad_h_rR
+            # ad_h_rR_abs = abs(ad_h_rR)
+            # ad_H_Rr = cal_angle_diff(orob.h, (theta_rR - np.pi))
+            # ad_H_Rr_abs = abs(ad_H_Rr)
 
-            if (d_rR > (c_r * self.params.robot_start_d)):
+            # check distance for clustering
+            if (d_rR > (self.c_r * self.params.robot_start_d)):
                 continue
 
-            # if (not o_rob.reached) or (d_rR < (1 * self.params.robot_start_d)):
-            # if (d_rR < (1 * self.params.robot_start_d)) or ((not o_rob.reached) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr_abs < np.pi/2)):
+            # if (not orob.reached) or (d_rR < (1 * self.params.robot_start_d)):
+            # if (d_rR < (1 * self.params.robot_start_d)) or ((not orob.reached) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr_abs < np.pi/2)):
 
-            if (not o_rob.reached) or (d_rR < (1 * self.params.robot_start_d)):
-                robots_inds.append(o_rob.rid)
+            if (not orob.reached) or (d_rR < (1 * self.params.robot_start_d)):
+                cluster_r_inds_1.append(orob.rid)
 
-            # individual robots
-            if (d_rR < (1 * self.params.robot_start_d)):
-                nr = ApfRobot()
-                nr.d = d_rR
-                nr.x = o_rob.x
-                nr.y = o_rob.y
-                nr.H = o_rob.h
-                nr.h_rR = ad_h_rR
-                nr.theta_rR = theta_rR
-                nr.prior = (not (o_rob.reached or o_rob.stopped)) and (o_rob.priority > self.robot_data.priority)
-                nr.stopped = o_rob.stopped
-                nr.reached = o_rob.reached
-                rc = self.params.robot_prec_d
-                nr.r_prec = rc
-                nr.r_half = 1.5 * rc
-                nr.r_start = 2.0 * rc
-                nr.z = 4 * self.params.fix_f * rc**4
-                new_robots.append(nr)
-                if o_rob.reached:
-                    XY: List[Tuple[float, float]] = self.eval_obst(o_rob.x, o_rob.y, self.params.robot_prec_d, d_rR)
-                    for xy in XY:
-                        dx_ = (xy[0] - self.pose.x)
-                        dy_ = (xy[1] - self.pose.y)
-                        d_rR_ = np.sqrt(dx_**2 + dy_**2)
-                        theta_rR_ = np.arctan2(dy_, dx_)
-                        ad_h_rR_ = cal_angle_diff(self.pose.theta, theta_rR_)
-                        nnr = ApfRobot()
-                        nnr.d = d_rR_
-                        nnr.x = xy[0]
-                        nnr.y = xy[1]
-                        nnr.H = o_rob.h
-                        nnr.h_rR = ad_h_rR_
-                        nnr.theta_rR = theta_rR_
-                        nnr.prior = o_rob.priority > self.robot_data.priority
-                        nnr.stopped = True
-                        nnr.reached = True
-                        nnr.r_prec = nr.r_prec/1.5  # $
-                        nnr.r_half = 1.5 * nnr.r_prec
-                        nnr.r_start = 2 * nnr.r_prec
-                        nnr.z = 4 * self.params.fix_f * nnr.r_prec**4
-                        new_robots.append(nnr)
-                        multi_robots_vis.append(nnr)
+            # create ApfRobot instances as individual robots
+            if d_rR < (1 * self.params.robot_start_d):
+                new_robot = self.create_new_apf_robot(orob, d_rR, ad_h_rR, theta_rR)
+                apf_robots.append(new_robot)
 
-        # if there is none robots in proximity
-        if len(robots_inds) == 0:
-            if len(multi_robots_vis) > 0:
-                self.new_robots = new_robots
-                self.multi_robots_vis = multi_robots_vis
-            return
+        #
+        return apf_robots, cluster_r_inds_1, AD_h_rR
+
+    def create_fake_obsts_loc_min_avoid(self, apf_robots: List[ApfRobot]) -> List[ApfRobot]:
+        """ create fake obstacles between robot and obstacle.
+            for local minima avoidance
+        """
+        fake_apf_robots_1: List[ApfRobot] = []
+        for orob in apf_robots:
+            if not orob.reached:
+                continue
+            XY: List[Tuple[float, float]] = self.eval_for_fake_obst_min_loc_avoid(orob.x, orob.y, orob.r_prec, orob.d)
+            for xy in XY:
+                dx_ = (xy[0] - self.pose.x)
+                dy_ = (xy[1] - self.pose.y)
+                d_rR_ = np.sqrt(dx_**2 + dy_**2)
+                theta_rR_ = np.arctan2(dy_, dx_)
+                ad_h_rR_ = cal_angle_diff(self.pose.theta, theta_rR_)
+                robo = ApfRobot(x=xy[0], y=xy[1], d=d_rR_, H=orob.H)
+                robo.h_rR = ad_h_rR_
+                robo.theta_rR = theta_rR_
+                robo.prior = orob.priority > self.robot_data.priority
+                robo.stopped = True
+                robo.reached = True
+                robo.r_prec = orob.r_prec/1.5  # $
+                robo.r_half = 1.5 * robo.r_prec
+                robo.r_start = 2 * robo.r_prec
+                robo.z = 4 * self.params.fix_f * robo.r_prec**4
+                fake_apf_robots_1.append(robo)
+        return fake_apf_robots_1
+
+    def eval_for_fake_obst_min_loc_avoid(self, xc, yc, prec_d, d_rR) -> List[Tuple[float, float]]:
+        """ evaluate for fake obstacles between robot and obstacle.
+            for local minima avoidance
+        """
+        xy: List[Tuple[float, float]] = []
+        for oi in self.obst_orig_inds:
+            xo = self.obs_x[oi]
+            yo = self.obs_y[oi]
+            d_Ro = cal_distance(xo, yo, xc, yc)
+            # d_ro = cal_distance(xo, yo, self.pose.x, self.pose.y)
+            if True:  # d_rR>rc: #d_ro<d_rR and
+                if (prec_d > (d_Ro-self.params.obst_prec_d)) and prec_d < (d_Ro+self.params.obst_prec_d):
+                    # ros.append(d_Ro+self.params.obst_prec_d*1)
+                    x = (xo+xc)/2
+                    y = (yo+yc)/2
+                    xy.append((x, y))
+
+        # if ros!=[]:
+        #     do_max = max(ros)
+        #     rc = do_max
+        return xy  # rc
+
+    def create_fake_obst_clusters(self, cluster_r_inds_1: List[int], AD_h_rR: Dict[int, float]) -> List[ApfRobot]:
+        """ create fake obstacles from clustering
+        """
+
+        #
+        robots_inds_f = {}
+        groups = []
+        multi_robots: List[ApfRobot] = []
+
+        # fleet data
+        fd: FleetData = self.fleet_data
 
         # generate robots_inds_f (neighbor robots in proximity circle)
-        if (not is_goal_close):
-            robots_inds_2 = robots_inds[:]
-            while (len(robots_inds_2) > 0):
-                p = robots_inds_2.pop(0)
-                robots_inds_f[p] = [p]
-                if len(robots_inds_2) == 0:
-                    break
-                for ind_j in robots_inds_2:
-                    # if not (fd.fdata[p].reached and fd.fdata[ind_j].reached):
-                    dist = cal_distance(fd.fdata[p].x, fd.fdata[p].y, fd.fdata[ind_j].x, fd.fdata[ind_j].y)
-                    if (dist < (self.params.robot_prec_d*2.2)):    # param 2
-                        robots_inds_f[p].append(ind_j)
+        robots_inds_2 = cluster_r_inds_1[:]
+        while (len(robots_inds_2) > 0):
+            p = robots_inds_2.pop(0)
+            robots_inds_f[p] = [p]
+            if len(robots_inds_2) == 0:
+                break
+            for ind_j in robots_inds_2:
+                # if not (fd.fdata[p].reached and fd.fdata[ind_j].reached):
+                dist = cal_distance(fd.fdata[p].x, fd.fdata[p].y, fd.fdata[ind_j].x, fd.fdata[ind_j].y)
+                if (dist < (self.params.robot_prec_d*2.2)):    # param 2
+                    robots_inds_f[p].append(ind_j)
 
-            # detect groups
-            robots_inds_3 = robots_inds[:]
-            while len(robots_inds_3) > 0:
-                groups.append([])
-                p = robots_inds_3.pop(0)
-                gset = set(robots_inds_f[p])
-                robots_inds_4 = robots_inds_3[:]
-                for ind_j in robots_inds_4:
-                    nset = set(robots_inds_f[ind_j])
-                    if len(gset.intersection(nset)) > 0:
-                        gset = gset.union(nset)
-                        robots_inds_3.remove(ind_j)
-                groups[-1] = list(gset)
+        # detect groups
+        robots_inds_3 = cluster_r_inds_1[:]
+        while len(robots_inds_3) > 0:
+            groups.append([])
+            p = robots_inds_3.pop(0)
+            gset = set(robots_inds_f[p])
+            robots_inds_4 = robots_inds_3[:]
+            for ind_j in robots_inds_4:
+                nset = set(robots_inds_f[ind_j])
+                if len(gset.intersection(nset)) > 0:
+                    gset = gset.union(nset)
+                    robots_inds_3.remove(ind_j)
+            groups[-1] = list(gset)
 
-        # groups - new_robots -----------------------------------
+        # groups - apf_robots -----------------------------------
         for g in groups:
             if len(g) > 1:
                 nr = ApfRobot()
@@ -248,7 +325,7 @@ class APFPlanner(APFPlannerBase):
                         radius = mbr.exterior.distance(mbr.centroid)
                         xc = circum_center[0]
                         yc = circum_center[1]
-                        rc = c_radius*radius  # + self.params.robot_r + self.params.prec_d    # param 3
+                        rc = self.c_radius*radius  # + self.params.robot_r + self.params.prec_d    # param 3
                         rc = max(rc, 2*self.params.robot_prec_d)
 
                 # if robot is in the polygon
@@ -310,7 +387,7 @@ class APFPlanner(APFPlannerBase):
                 nr.r_half = 1.5 * nr.r_prec
                 nr.r_start = 2.0 * nr.r_prec
                 nr.z = 4 * self.params.fix_f * nr.r_prec**4
-                # new_robots.append(nr)
+                # apf_robots.append(nr)
                 multi_robots.append(nr)
 
         if len(multi_robots) > 1:
@@ -318,46 +395,24 @@ class APFPlanner(APFPlannerBase):
             rcs = np.array(rcs)
             max_ind = np.argmax(rcs)
             multi_robots = [multi_robots[max_ind]]
-            multi_robots_vis.append(multi_robots[0])
-            new_robots.append(multi_robots[0])
-        elif len(multi_robots) == 1:
-            multi_robots_vis.append(multi_robots[0])
-            new_robots.append(multi_robots[0])
+        return multi_robots
 
-        #
-        self.multi_robots_vis = multi_robots_vis
-        self.new_robots = new_robots
-        return
-
-    def detect_obsts(self):
-        f_obsts_inds = []
-        for oi in self.obs_ind_main:
-            xo = self.obs_x[oi]
-            yo = self.obs_y[oi]
-            do = cal_distance(xo, yo, self.pose.x, self.pose.y)
-            if do < self.params.obst_start_d:
-                f_obsts_inds.append(oi)
-        self.f_obsts_inds = f_obsts_inds
-
-    def eval_obst(self, xc, yc, rc, d_rR) -> List[Tuple[float, float]]:
-        xy: List[Tuple[float, float]] = []
-        # ros = [rc]
-        for oi in self.obs_ind_main:
-            xo = self.obs_x[oi]
-            yo = self.obs_y[oi]
-            d_Ro = cal_distance(xo, yo, xc, yc)
-            d_ro = cal_distance(xo, yo, self.pose.x, self.pose.y)
-            if True:  # d_rR>rc: #d_ro<d_rR and
-                if (rc > (d_Ro-self.params.obst_prec_d)) and rc < (d_Ro+self.params.obst_prec_d):
-                    # ros.append(d_Ro+self.params.obst_prec_d*1)
-                    x = (xo+xc)/2
-                    y = (yo+yc)/2
-                    xy.append((x, y))
-
-        # if ros!=[]:
-        #     do_max = max(ros)
-        #     rc = do_max
-        return xy  # rc
+    def create_new_apf_robot(self, orob: RobotData, d_rR: float, ad_h_rR: float, theta_rR: float) -> ApfRobot:
+        """ create new ApfRobot instance for calculating forces
+        """
+        robo = ApfRobot(x=orob.x, y=orob.y, d=d_rR, H=orob.h)
+        robo.h_rR = ad_h_rR
+        robo.theta_rR = theta_rR
+        robo.priority = orob.priority
+        robo.prior = (not (orob.reached or orob.stopped)) and (orob.priority > self.robot_data.priority)
+        robo.stopped = orob.stopped
+        robo.reached = orob.reached
+        rc = self.params.robot_prec_d
+        robo.r_prec = rc
+        robo.r_half = 1.5 * rc
+        robo.r_start = 2.0 * rc
+        robo.z = 4 * self.params.fix_f * rc**4
+        return robo
 
     def f_target(self):
         # r_g
@@ -380,7 +435,7 @@ class APFPlanner(APFPlannerBase):
 
     def f_robots(self):
         fx, fy = 0.0, 0.0
-        new_robots = self.new_robots
+        new_robots = self.apf_robots
         for nr in new_robots:
             nr_force: Tuple[float, float] = (0, 0)
             if (not nr.cluster):

@@ -107,18 +107,19 @@ class AllPlannersData:
 
 
 class ApfRobot:
-    def __init__(self):
-        self.x = 0
-        self.y = 0
-        self.z = 1
-        self.d = 0
-        self.H = 0
+    def __init__(self, x: float = 0, y: float = 0, d: float = 0, H: float = 0):
+        self.x = x
+        self.y = y
+        self.d = d
+        self.H = H
         self.h_rR = 0
         self.theta_rR = 0
+        self.z = 1
         self.r_prec = 0
         self.r_half = 0
         self.r_start = 0
         self.prior = False  # has higher priority
+        self.priority = 0
         self.cluster = False
         self.stopped = False
         self.reached = False

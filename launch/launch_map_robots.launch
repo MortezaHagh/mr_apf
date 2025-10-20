@@ -1,17 +1,25 @@
 <?xml version="1.0"?>
 <launch>
 
-  <!-- launch gazebo world -->
-  <include file="$(find init_sim)/launch/empty_world_complete.launch">
-    <arg name="world_name" value="$(find init_sim)/worlds/empty_world_1.world" />
-    <!-- walls3 empty_wall empty_world_1 columns1.world-->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <!-- <arg name="world_name" value="$(find apf)/worlds/empty_world_1.world" /> -->
+    <arg name="paused" value="false" />
+    <arg name="use_sim_time" value="true" />
+    <arg name="gui" value="false" />
+    <arg name="headless" value="false" />
+    <arg name="debug" value="false" />
+  </include>
 
+  <!-- walls3 empty_wall empty_world_1 columns1.world-->
+  <!-- launch gazebo world -->
+  <!-- <include file="$(find init_sim)/launch/empty_world_complete.launch">
+    <arg name="world_name" value="$(find init_sim)/worlds/empty_world_1.world" />
     <arg name="paused" value="false" />
     <arg name="use_sim_time" value="true" />
     <arg name="gui" value="false" />
     <arg name="recording" value="false" />
     <arg name="debug" value="false" />
-  </include>
+  </include> -->
 
   <!-- static transform publishers -->
   <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 50" />

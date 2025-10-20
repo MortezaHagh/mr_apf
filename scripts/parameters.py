@@ -9,7 +9,7 @@ class Params:
         # configs
         self.point: bool = point
         self.simD: str = "2D"  # 3D 2D
-        self.nr: int = 4
+        self.nr: int = 5
         self.method: int = 2
         self.map_id: int = 1
         self.rid: int = -1

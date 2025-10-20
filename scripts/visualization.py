@@ -10,7 +10,6 @@ from sensor_msgs.msg import PointCloud
 from geometry_msgs.msg import Point32, Polygon, PolygonStamped
 from visualization_msgs.msg import Marker, MarkerArray
 from tf.transformations import quaternion_from_euler
-from parameters import Params
 from create_model import MRSModel
 from mrapf_classes import ApfRobot
 

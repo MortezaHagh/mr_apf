@@ -162,7 +162,7 @@ class APFPlannerBase:
         self.obs_x = self.model.obsts.x
         self.obs_y = self.model.obsts.y
         self.obs_count = self.model.obsts.count
-        self.obs_ind_main = [i for i in range(self.model.obsts.count)]
+        self.obst_orig_inds = [i for i in range(self.model.obsts.count)]
 
     def calculate_velocity(self):
         #

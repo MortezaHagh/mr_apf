@@ -543,7 +543,7 @@ class PlannerRT(object):
 
     def detect_obsts(self):
         f_obsts_inds = []
-        for oi in self.obs_ind_main:
+        for oi in self.obst_orig_inds:
             xo = self.obs_x[oi]
             yo = self.obs_y[oi]
             do = self.distance(xo, yo, self.r_x, self.r_y)
@@ -554,7 +554,7 @@ class PlannerRT(object):
     def eval_obst(self, xc, yc, rc, d_rR):
         xy = []
         # ros = [rc]
-        for oi in self.obs_ind_main:
+        for oi in self.obst_orig_inds:
             xo = self.obs_x[oi]
             yo = self.obs_y[oi]
             d_Ro = self.distance(xo, yo, xc, yc)
@@ -867,7 +867,7 @@ class PlannerRT(object):
         self.obs_x = self.model.obsts.x
         self.obs_y = self.model.obsts.y
         self.obs_count = self.model.obsts.count
-        self.obs_ind_main = [i for i in range(self.model.obsts.count)]
+        self.obst_orig_inds = [i for i in range(self.model.obsts.count)]
 
     def angle_diff(self, a1, a2):
         ad = a1 - a2
