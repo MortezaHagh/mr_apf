@@ -27,6 +27,10 @@ class Planner2D (RobotPlannerBase):
 
     def go_to_goal(self):
         while (not self.mrapf.reached) and (not rospy.is_shutdown()):
+            if self.abort:
+                self.stop()
+                return False
+
             if not self.data_received:
                 rospy.loginfo(f"[planner_2d, {self.ns}]: waiting for fleet data...")
                 self.broadcast_transform()
@@ -40,6 +44,8 @@ class Planner2D (RobotPlannerBase):
             # sim robot movement
             self.move_robot()
             self.broadcast_transform()
+        self.stop()
+        return True
 
     def move_robot(self):
         self.pose.x += (self.v * self.dt) * cos(self.pose.theta)

@@ -15,6 +15,9 @@ class FleetDataHandler:
 
     def __init__(self, params: Params):
 
+        #
+        self.all_stuck: bool = False
+
         # data
         self.nr: int = 0
         self.rids: List[int] = []
@@ -24,6 +27,7 @@ class FleetDataHandler:
         self.poses: Dict[int, Pose2D] = {}
         self.fleet_data: Dict[int, RobotData] = {}
         self.frames: Dict[int, str] = {}
+        self.progressing: Dict[int, bool] = {}
 
         # settings
         self.global_frame = params.global_frame
@@ -34,10 +38,13 @@ class FleetDataHandler:
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
         # service
-        self.srv = rospy.Service(params.sru_srv_name, SendRobotUpdate, self.sru_cb)
+        self.srv = None
+        self.pub = None
+        if not params.point:
+            self.srv = rospy.Service(params.sru_srv_name, SendRobotUpdate, self.sru_cb)
 
-        # publisher
-        self.pub = rospy.Publisher(params.fleet_data_topic, FleetData, queue_size=10)
+            # publisher
+            self.pub = rospy.Publisher(params.fleet_data_topic, FleetData, queue_size=10)
 
         # # update and pubish data
         # self.update_fleet_data()
@@ -52,6 +59,7 @@ class FleetDataHandler:
         self.fleet_data[rid] = RobotData()
         self.fleet_data[rid].rid = rid
         self.frames[rid] = sns + self.local_frame
+        self.progressing[rid] = True
 
     def update_goal(self, rid: int, xt: float, yt: float):
         self.xyt[rid] = (xt, yt)
@@ -60,11 +68,19 @@ class FleetDataHandler:
         rid = req.rid
         self.fleet_data[rid].stopped = req.stopped
         self.fleet_data[rid].reached = req.reached
+        self.progressing[rid] = (not req.stopped) and req.progressing
         resp = SendRobotUpdateResponse()
         resp.success = True
         return resp
 
-    def update_fleet_data(self):
+    def check_all_stuck(self) -> bool:
+        all_p = self.progressing.values()
+        self.all_stuck = not any(all_p)
+        if self.all_stuck:
+            rospy.logerr(f"[FleetDataHandler]: All robots stuck: {self.all_stuck}")
+        return self.all_stuck
+
+    def update_fleet_data(self) -> bool:
         fd = FleetData()
         if self.get_all_tfs():
             self.update_priority()
@@ -72,10 +88,12 @@ class FleetDataHandler:
             fd.nr = self.nr
             fd.fdata = list(self.fleet_data.values())
             self.pub.publish(fd)
+            return True
         else:
             fd.success = False
             self.pub.publish(fd)
-            rospy.logwarn("[FleetDataHandler]: Failed to get all TFs")
+            rospy.logerr("[FleetDataHandler]: Failed to get all TFs")
+            return False
 
     def get_all_tfs(self) -> bool:
         for rid in self.rids:
@@ -146,6 +164,9 @@ class FleetDataHandler:
         self.fleet_data[rid].stopped = stopped
         self.fleet_data[rid].reached = reached
         self.fleet_data[rid].priority = 0.0
+
+    def set_progressing(self, rid: int, progressing: bool):
+        self.progressing[rid] = progressing
 
     # def get_all_data(self) -> Dict[int, RobotData]:
     #     return self.fleet_data

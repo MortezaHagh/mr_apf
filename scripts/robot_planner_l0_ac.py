@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from copy import deepcopy
 import rospy
 import actionlib
 from parameters import Params
@@ -26,10 +27,14 @@ class RobotPlannerAc:
 
         # setting - parameters
         ns = "r" + str(robot.rid)
-        params = Params(robot.rid)
+        params = deepcopy(self.model.params)
+        params.set_rid(robot.rid)
         params.set_ns(ns)
         self.params = params
         self.ns = params.ns
+
+        # planner
+        self.planner: RobotPlannerBase = None
 
         # shutdown hook
         rospy.on_shutdown(self.shutdown)
@@ -51,27 +56,30 @@ class RobotPlannerAc:
 
         # motion planning   # ==================================================
         success = False
-        planner: RobotPlannerBase = None
+        self.planner: RobotPlannerBase = None
         if self.params.simD == "2D":
-            planner = Planner2D(self.model, self.robot, self.params)
+            self.planner = Planner2D(self.model, self.robot, self.params)
         else:  # "3D"
-            planner = PlannerRT(self.model, self.robot, self.params)
-        planner.start()
-        success = planner.is_reached
+            self.planner = PlannerRT(self.model, self.robot, self.params)
+        self.planner.start()
+        success = self.planner.is_reached
+        self.planner_data = self.planner.pd
 
         # result
         if success:
-            self.planner_data = planner.pd
             # ac result
             self.result.result = True
-            self.result.path_x = planner.pd.x
-            self.result.path_y = planner.pd.y
+            self.result.path_x = self.planner.pd.x
+            self.result.path_y = self.planner.pd.y
             rospy.loginfo(f"[RobotPlannerAC, {self.ns}]: Succeeded!")
             self._as.set_succeeded(self.result)
         else:
             rospy.loginfo(f"[RobotPlannerAC, {self.ns}]: Failed!")
             self._as.set_aborted(self.result)
 
+    def stop_planner(self):
+        rospy.loginfo(f"[RobotPlannerAC, {self.ns}]: stopping planner ... ")
+        self.planner.stop_planner()
+
     def shutdown(self):
         rospy.loginfo(f"[RobotPlannerAC, {self.ns}]: shutting down ... ")
-        # rospy.sleep(1)

@@ -83,9 +83,13 @@ class APFPlanner(APFPlannerBase):
             # calculate velocities
             self.cal_vel()
 
+            # check progressing
+            self.check_progress()
+
             # check stop flags
             if self.stop_flag_obsts or self.stop_flag_robots:
                 print(f"[planner_move, {self.robot.rid}], stop_flag_obsts or stop_flag_robots")
+                self.stopped = True
                 self.v = 0
                 # self.w = 0
                 if abs(self.w) < (np.deg2rad(2)):

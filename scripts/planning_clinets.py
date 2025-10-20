@@ -27,3 +27,8 @@ class PlanningClients:
             client.send_goal(goal)
             self.clients.append(client)
         rospy.sleep(0.4)
+
+    def stop_planners(self):
+        for c in self.clients:
+            c.cancel_all_goals()
+        rospy.sleep(0.4)

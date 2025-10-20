@@ -12,6 +12,10 @@ class PlannerRT(RobotPlannerBase):
 
     def go_to_goal(self):
         while (not self.mrapf.reached) and (not rospy.is_shutdown()):
+            if self.abort:
+                self.stop()
+                return False
+
             if not self.data_received:
                 rospy.loginfo(f"[planner_ros, {self.ns}]: waiting for fleet data...")
                 self.rate.sleep()
@@ -24,3 +28,5 @@ class PlannerRT(RobotPlannerBase):
             #
             if self.mrapf.reached:
                 rospy.loginfo(f"[planner_ros, {self.ns}]: robot reached goal.")
+        self.stop()
+        return True

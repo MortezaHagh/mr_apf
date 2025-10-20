@@ -22,7 +22,7 @@ class RvizViusalizer:
     def __init__(self, model: MRSModel):
 
         rospy.loginfo("[RvizViusalizer]: Initializing RvizViusalizer ...")
-        self.params = Params()
+        self.params = model.params
         self.model = model
         self.rate = rospy.Rate(10)
 
@@ -205,7 +205,7 @@ class RvizViusalizer:
             marker.pose.orientation.w = 1.0
             # marker array
             marker_array.markers.append(marker)
-        self.publish_normal(self.robots_text_pub, marker_array, "robots_texts ...")
+        self.publish_normal(self.robots_text_pub, marker_array, "vis: robots_texts ...")
 
     def draw_robot_circles(self, nrs: List[ApfRobot], ns):
         robot_circles = []

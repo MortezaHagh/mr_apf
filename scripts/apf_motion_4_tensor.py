@@ -310,7 +310,6 @@ class PlannerRT(object):
         # get data
         req_poses = SharePosesRequest()
         req_posesrid = self.rid
-        req_poses.update = False
         req_poses.stopped = False
         resp_poses = self.pose_client(req_poses)
         robots_x = resp_poses.x

@@ -42,6 +42,9 @@ class APFPlanner(APFPlannerBase):
         # calculate velocities
         self.cal_vel()
 
+        # check progressing
+        self.check_progress()
+
         # check stop_flag_full
         if self.stopped:
             print(f"[planner_move, {self.robot.rid}], stopped.")
@@ -53,7 +56,7 @@ class APFPlanner(APFPlannerBase):
         dx = self.goal_x - self.pose.x
         dy = self.goal_y - self.pose.y
         goal_dist = np.sqrt(dx**2 + dy**2)
-        f = self.params.zeta * goal_dist
+        f = self.params.zeta * goal_dist + 0.5
         # f = max(f, self.params.fix_f2)  # change
         # f = self.params.fix_f
         theta_rg = np.arctan2(dy, dx)

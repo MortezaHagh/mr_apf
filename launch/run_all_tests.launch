@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="apf" name="run_tests" type="run_tests.py" output="screen">
+        <param name="use_sim_time" value="true" />
+    </node>
+</launch>

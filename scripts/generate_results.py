@@ -10,13 +10,14 @@ from mrapf_classes import AllPlannersData
 
 class Results:
 
-    def __init__(self, planners_data: AllPlannersData, result_path: str):
+    def __init__(self, planners_data: AllPlannersData, result_path: str, params: Params):
 
         # settings
         self.path_unit = 1
         self.data: AllPlannersData = planners_data
         self.n = planners_data.n
-        self.params: Params = Params()
+        self.params = params
+        total_success = planners_data.n_reached == planners_data.n
 
         #
         all_lengths = []
@@ -55,6 +56,8 @@ class Results:
             "nD": self.params.simD,
             "method": self.params.method,
             "n_robots": self.n,
+            "n_reached": planners_data.n_reached,
+            "success": total_success,
             "operation_time": operation_time,
             "max_steps": max_steps,
             "mean_length": mean_length,

@@ -26,7 +26,7 @@ class CentralMRAPF:
         self.robot_ids: List[int] = []
 
         # send_robot_update_srv
-        self.fleet_data_handler = FleetDataHandler(Params(-1))
+        self.fleet_data_handler = FleetDataHandler(model.params)
 
         # init_robot_srv Service Server
         self.robot_srv = rospy.Service(central_mrapf_srv_name, InitRobot, self.apf_srv_callback)

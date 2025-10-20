@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="apf" name="mrapf_sc" type="mrapf_sc.py" output="screen">
+        <param name="use_sim_time" value="true" />
+    </node>
+</launch>

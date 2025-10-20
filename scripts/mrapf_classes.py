@@ -36,6 +36,7 @@ class TestInfo:
 
 class PlannerData:
     def __init__(self):
+        self.success: bool = False
         self.steps: int = 0
         self.start_t: float = None
         self.end_t: float = None
@@ -53,6 +54,9 @@ class PlannerData:
         self.f_or: List[float] = []
         self.f_ot: List[float] = []
         self.phis: List[float] = []
+
+    def set_success(self, success: bool):
+        self.success = success
 
     def append_data(self, x, y, v, w):
         self.add_xy(x, y)
@@ -79,22 +83,16 @@ class PlannerData:
 
 
 class AllPlannersData:
-    n: int
-    all_steps: List[int]
-    all_x: List[List[float]]
-    all_y: List[List[float]]
-    all_durations: Dict[str, float]
-    planners_data: List[PlannerData]
-    all_xy: Dict[str, Dict[str, List[int]]]
 
     def __init__(self):
-        self.n = 0
-        self.all_x = []
-        self.all_y = []
-        self.all_xy = {}
-        self.all_steps = []
-        self.all_durations = {}
-        self.planners_data = []
+        self.n: int = 0
+        self.n_reached: int = 0
+        self.all_x: List[List[float]] = []
+        self.all_y: List[List[float]] = []
+        self.all_xy: Dict[str, Dict[str, List[int]]] = {}
+        self.all_steps: List[int] = []
+        self.all_durations: Dict[str, float] = {}
+        self.planners_data: List[PlannerData] = []
 
     def add_data(self, p_data: PlannerData):
         self.planners_data.append(p_data)
@@ -104,6 +102,8 @@ class AllPlannersData:
         self.all_steps.append(p_data.steps)
         self.all_durations[str(self.n)] = p_data.dur_t
         self.n += 1
+        if p_data.success:
+            self.n_reached += 1
 
 
 class ApfRobot:

@@ -44,6 +44,8 @@ class APFPlannerBase:
         self.reached = False
         self.stopped = False
         self.prev_stopped = False
+        self.progressing = True
+        self.prev_progressing = True
 
         # control vars
         self.ad_rg_h = None
@@ -62,9 +64,11 @@ class APFPlannerBase:
         #
         self.reached = False
         self.stopped = False
+        self.progressing = True
 
     def planner_move(self, pose: Pose2D, fleet_data: FleetData):
-        pass
+        # should be implemented in child class
+        raise NotImplementedError("planner_move() must be implemented in child class")
 
     def forces(self):
         f_r = 0
@@ -142,3 +146,9 @@ class APFPlannerBase:
         w = wa * np.sign(w)
         self.v = v
         self.w = w
+
+    def check_progress(self):
+        if abs(self.v) < self.params.v_zero_tresh and abs(self.w) < self.params.w_zero_tresh:
+            self.progressing = False
+        else:
+            self.progressing = True

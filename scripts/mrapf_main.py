@@ -23,12 +23,15 @@ class Run():
     """Run the MRAPF simulation.
     """
 
-    def __init__(self):
+    def __init__(self, params_i: Params = None):
 
         rospy.loginfo(f"[{self.__class__.__name__}]: Start running MRAPF ...")
 
         # settings
-        self.params: Params = Params()
+        params = params_i
+        if params is None:
+            params = Params(point=False)
+        self.params: Params = params
         self.test_info: TestInfo = TestInfo(self.params)
         self.central_mrapf_srv_name = "central_mrapf_srv"
 
@@ -50,7 +53,7 @@ class Run():
 
         # create model
         path_unit = 0.7
-        self.model = MRSModel(map_id=self.params.map_id, path_unit=path_unit, n_robots=self.params.nr)
+        self.model = MRSModel(path_unit=path_unit, params=self.params)
 
         if self.params.simD == "3D":
             # spawn robots and obstacles
@@ -87,6 +90,7 @@ class Run():
         s_flags = [s < 2 for s in status]
         while (not rospy.is_shutdown()) and (any(s_flags)):
             self.cmrapf.fleet_data_handler.update_fleet_data()
+            self.cmrapf.fleet_data_handler.check_all_stuck()
             status = [c.get_state() for c in self.planning_clients.clients]
             s_flags = [s < 2 for s in status]
             self.visualizer.update_robot_vizuals(self.cmrapf.fleet_data_handler.xy)
@@ -96,6 +100,11 @@ class Run():
         rospy.loginfo(f"[{self.__class__.__name__}]: APF Mission Accomplished.")
         rospy.loginfo(" ---------------------------------")
 
+    def stop_all_planners(self):
+        # self.planning_clients.stop_planners()
+        for ac in self.cmrapf.planners:
+            ac.stop_planner()
+
     def final_results_plot(self):
         # planners_data
         planners: List[RobotPlannerAc] = self.cmrapf.planners
@@ -103,7 +112,7 @@ class Run():
             self.planners_data.add_data(ac.planner_data)
 
         # generate results
-        Results(self.planners_data, self.test_info.res_file_path)
+        Results(planners_data=self.planners_data, result_path=self.test_info.res_file_path, params=self.params)
         self.save_data()
         self.plotting()
 
@@ -119,7 +128,8 @@ class Run():
         #     json.dump(self.planners_data.all_durations, outfile)
 
     def shutdown_hook(self):
-        pass
+        rospy.loginfo("shutting down from main ... ")
+        self.stop_all_planners()
 
 
 if __name__ == "__main__":

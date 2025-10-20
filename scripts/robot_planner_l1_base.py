@@ -23,6 +23,7 @@ class RobotPlannerBase:
         self.w = 0
         self.do_viz: bool = True
         self.is_reached = False
+        self.abort: bool = False
 
         #
         self.rid: int = robot.rid
@@ -67,16 +68,17 @@ class RobotPlannerBase:
         self.ruc_req.yt = robot.yt
         self.ruc_req.stopped = False
         self.ruc_req.reached = False
+        self.ruc_req.progressing = True
 
     def start(self):
         # start time
         self.pd.set_start_time(rospy.get_time())
 
-        self.go_to_goal()
+        self.is_reached = self.go_to_goal()
         self.after_reached()
-        self.is_reached = True
 
         # end time
+        self.pd.set_success(self.is_reached)
         self.pd.set_end_time(rospy.get_time())
         self.pd.finalize()
 
@@ -110,6 +112,12 @@ class RobotPlannerBase:
             self.robot_update_client(self.ruc_req)
             self.mrapf.prev_stopped = self.mrapf.stopped
 
+        # check progress
+        if self.mrapf.progressing != self.mrapf.prev_progressing:
+            self.ruc_req.progressing = self.mrapf.progressing
+            self.robot_update_client(self.ruc_req)
+            self.mrapf.prev_progressing = self.mrapf.progressing
+
         # log data
         self.log_motion(self.mrapf.f_r, self.mrapf.f_theta)
 
@@ -118,16 +126,15 @@ class RobotPlannerBase:
             rospy.loginfo(f"[planner_base, {self.ns}]: robot reached goal.")
 
     def after_reached(self):
+        self.stop()
         self.ruc_req.stopped = True
         self.ruc_req.reached = True
         self.robot_update_client(self.ruc_req)
-        self.stop()
-        self.stop()
         rospy.loginfo(f"[planner_base, {self.ns}]: go_to_goal finished!")
 
     def stop(self):
         t = 0
-        while t < 5:
+        while t < 4:
             self.cmd_vel_pub.publish(Twist())
             self.rate.sleep()
             t += 1
@@ -150,6 +157,11 @@ class RobotPlannerBase:
         else:
             self.data_received = False
         self.fleet_data = msg
+
+    def stop_planner(self):
+        rospy.loginfo(f"[planner_base, {self.ns}]: stopping planner ... ")
+        self.abort = True
+        self.stop()
 
     def shutdown_hook(self):
         rospy.loginfo(f"[planner_base, {self.ns}]: shutting ...")

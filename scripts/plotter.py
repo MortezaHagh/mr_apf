@@ -59,8 +59,9 @@ class Plotter:
         colors = plt.cm.get_cmap('rainbow', data.n)
         for i in range(data.n):
             self.ax.plot(data.all_x[i], data.all_y[i], color=colors(i))
-        plt.savefig(self.save_path + "paths.svg", format="svg", dpi=1000)
-        plt.savefig(self.save_path + "paths.png", format="png", dpi=1000)
+        # plt.savefig(self.save_path + "paths.svg", format="svg", dpi=1000)
+        # plt.savefig(self.save_path + "paths.png", format="png", dpi=1000)
+        plt.savefig(self.save_path + "paths.png", format="png", dpi=600)
 
     def plot_forces(self, data: PlannerData):
         fig, (ax, ax2) = plt.subplots(2, 1)

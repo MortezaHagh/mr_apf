@@ -20,14 +20,17 @@ from mrapf_classes import TestInfo, AllPlannersData, PlannerData
 
 class Run():
 
-    def __init__(self):
+    def __init__(self, params_i: Params = None):
 
         rospy.loginfo(f"[{self.__class__.__name__}]: Start running MRAPF ...")
 
         # data
-        params = Params(static=True)
+        params = params_i
+        if params is None:
+            params = Params(point=True)
         self.params = params
         self.test_info = TestInfo(params)
+        self.abort = False
 
         # ros settings
         self.rate = rospy.Rate(20)
@@ -45,7 +48,7 @@ class Run():
 
         # create model
         path_unit = 0.7
-        model = MRSModel(map_id=self.params.map_id, path_unit=path_unit, n_robots=self.params.nr)
+        model = MRSModel(path_unit=path_unit, params=self.params)
         self.model = model
 
         # initialize planners data
@@ -91,12 +94,16 @@ class Run():
 
         # planning and moving
         pl: APFPlannerBase
-        while not all(reaches.values()):
+        while not (all(reaches.values()) or rospy.is_shutdown() or self.abort):
+            # check all stuck
+            if (self.fdh.check_all_stuck()):
+                break
+
             for pl in self.planners:
                 if pl.reached:
                     continue
 
-                # pland and move
+                # plan and move
                 pose = self.fdh.get_robot_pose(pl.robot.rid)
                 fleet_data = self.fdh.get_fleet_data()
                 pl.planner_move(pose, fleet_data)
@@ -111,10 +118,16 @@ class Run():
                     self.fdh.set_robot_data(pl.robot.rid, pl.stopped, False)
                     pl.prev_stopped = pl.stopped
 
+                # check progress
+                if pl.progressing != pl.prev_progressing:
+                    self.fdh.set_progressing(pl.robot.rid, pl.progressing)
+                    pl.prev_progressing = pl.progressing
+
                 # check reach
                 if pl.reached:
                     reaches[pl.robot.rid] = True
                     self.fdh.set_robot_data(pl.robot.rid, True, True)
+                    self.apd[pl.robot.rid].set_success(True)
                     self.apd[pl.robot.rid].set_end_time(rospy.get_time())
                     self.apd[pl.robot.rid].finalize()
 
@@ -127,6 +140,13 @@ class Run():
 
                 # log motion
                 self.log_motion(pl)
+
+        # set finishing time
+        for pl in self.planners:
+            if pl.reached:
+                continue
+            self.apd[pl.robot.rid].set_end_time(rospy.get_time())
+            self.apd[pl.robot.rid].finalize()
 
     def create_planner(self, robot: Robot) -> APFPlannerBase:
         if self.params.method == 1:
@@ -147,8 +167,11 @@ class Run():
             ft = round(pl.f_theta, 2)
             # rospy.loginfo(f"[planner_base, {self.ns}]: {self.ap.stop_flag_multi}")
             rospy.loginfo(f"[planner_base, r{rid}]: f_r: {fr}, f_theta: {ft}")
-            rospy.loginfo(f"[planner_base, r{rid}]: v: {v}, w: {w}")
-            rospy.loginfo(" --------------------------------------------------- ")
+            # rospy.loginfo(f"[planner_base, r{rid}]: v: {v}, w: {w}")
+            # rospy.loginfo(" --------------------------------------------------- ")
+
+    def stop_all_planners(self):
+        self.abort = True
 
     def final_results_plot(self):
         # planners_data
@@ -156,8 +179,8 @@ class Run():
             self.planners_data.add_data(pd)
 
         # generate results
-        Results(self.planners_data, self.test_info.res_file_path)
-        self.save_data()
+        Results(planners_data=self.planners_data, result_path=self.test_info.res_file_path, params=self.params)
+        # self.save_data()
         self.plotting()
 
     def plotting(self):
@@ -172,7 +195,8 @@ class Run():
         #     json.dump(self.planners_data.all_durations, outfile)
 
     def shutdown_hook(self):
-        pass
+        rospy.loginfo(f"[{self.__class__.__name__}]: Shutdown MRAPF node ...")
+        self.abort = True
 
 
 if __name__ == "__main__":

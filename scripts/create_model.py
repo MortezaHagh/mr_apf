@@ -51,12 +51,15 @@ class Obstacles:
 
 class MRSModel:
 
-    def __init__(self, map_id: int = 1, path_unit: float = 1.0, n_robots: int = 1):
+    def __init__(self, path_unit: float = 1.0, params: Params = None):
 
         print(f"[{self.__class__.__name__}]: Create Base Model")
 
+        # params
+        self.params: Params = params
+
         # model inputs
-        inputs = ModelInputs(map_id, path_unit, n_robots)
+        inputs = ModelInputs(params.map_id, path_unit, params.nr)
         self.map_id: int = inputs.map_id
 
         #
@@ -94,6 +97,6 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     from plotter import Plotter
     params = Params()
-    model = MRSModel(map_id=1)
+    model = MRSModel(map_id=1, params=params)
     Plotter(model, params, "")
     plt.show()
