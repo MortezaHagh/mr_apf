@@ -6,17 +6,17 @@ from parameters import Params
 from model_inputs import ModelInputs
 
 
-class RobotsData:
+# class RobotsData:
 
-    def __init__(self, inputs: ModelInputs, path_unit: float):
-        self.xs = [x*path_unit for x in inputs.xs]
-        self.ys = [y*path_unit for y in inputs.ys]
-        self.xt = [x*path_unit for x in inputs.xt]
-        self.yt = [y*path_unit for y in inputs.yt]
-        self.heading = list(inputs.heading)
-        self.rids: List[int] = inputs.rids
-        self.ns = ["/r"+str(id) for id in inputs.rids]
-        self.n_robots = len(inputs.rids)
+#     def __init__(self, inputs: ModelInputs, path_unit: float):
+#         self.x_starts = [x*path_unit for x in inputs.x_starts]
+#         self.ys = [y*path_unit for y in inputs.y_starts]
+#         self.xt = [x*path_unit for x in inputs.x_targets]
+#         self.yt = [y*path_unit for y in inputs.y_targets]
+#         self.heading = list(inputs.headings)
+#         self.rids: List[int] = inputs.rids
+#         self.ns = ["/r"+str(id) for id in inputs.rids]
+#         self.n_robots = len(inputs.rids)
 
 
 class Map:
@@ -29,7 +29,7 @@ class Map:
 
 
 class Robot:
-    def __init__(self, rid: int = -1, xs: float = None, ys: float = None, xt: float = None, yt: float = None, heading: float = 0.0, path_unit: float = 1.0):
+    def __init__(self, rid: int, xs: float, ys: float, xt: float, yt: float, r: float = None, heading: float = 0.0, path_unit: float = 1.0):
         self.rid = rid
         self.ns = "/r"+str(rid)
         self.sns = "r"+str(rid)
@@ -39,14 +39,26 @@ class Robot:
         self.yt = yt * path_unit
         self.heading = np.deg2rad(heading)
         self.priority = rid
+        self.r = r
+        if self.r is None:
+            self.r = 0.22  # default robot radius
 
 
-class Obstacles:
-    def __init__(self, inputs: ModelInputs, path_unit: float):
-        self.r = 0.25
-        self.x = [x*path_unit for x in inputs.x_obst]
-        self.y = [y*path_unit for y in inputs.y_obst]
-        self.count = len(self.x)
+class Obstacle:
+    def __init__(self, x: float, y: float, r: float = None, path_unit: float = 1.0):
+        self.x = x * path_unit
+        self.y = y * path_unit
+        self.r = r
+        if self.r is None:
+            self.r = 0.11  # default obstacle radius
+
+
+# class Obstacles:
+#     def __init__(self, inputs: ModelInputs, path_unit: float):
+#         self.r = 0.11
+#         self.x = [x*path_unit for x in inputs.x_obsts]
+#         self.y = [y*path_unit for y in inputs.y_obsts]
+#         self.count = len(self.x)
 
 
 class MRSModel:
@@ -62,7 +74,6 @@ class MRSModel:
         inputs = ModelInputs(params.map_id, path_unit, params.nr)
         self.map_id: int = inputs.map_id
 
-        #
         # self.path_unit = path_unit
         path_unit = 1.0
 
@@ -71,24 +82,28 @@ class MRSModel:
         self.emap: Map = emap
 
         # Obstacles
-        self.n_obst_orig: int = inputs.n_obst_orig
-        self.obsts: Obstacles = Obstacles(inputs, path_unit)
+        self.n_obstacles: int = inputs.n_obsts
+        self.obstacles: List[Obstacle] = []
+        for i in range(self.n_obstacles):
+            x = inputs.x_obsts[i]
+            y = inputs.y_obsts[i]
+            self.obstacles.append(Obstacle(x, y))
+        # self.obsts: Obstacles = Obstacles(inputs, path_unit)
 
         # Robot
         self.n_robots: int = inputs.n_robots
-        heading = inputs.heading
-        xs = inputs.xs
-        ys = inputs.ys
-        xt = inputs.xt
-        yt = inputs.yt
         self.robots: List[Robot] = []
-
-        #
         for i in range(self.n_robots):
-            self.robots.append(Robot(i, xs[i], ys[i], xt[i], yt[i], heading[i], path_unit))
+            rid = inputs.rids[i]
+            h = inputs.headings[i]
+            xs = inputs.x_starts[i]
+            ys = inputs.y_starts[i]
+            xt = inputs.x_targets[i]
+            yt = inputs.y_targets[i]
+            self.robots.append(Robot(rid, xs, ys, xt, yt, h, path_unit))
 
-        # robots Data
-        self.robots_data: RobotsData = RobotsData(inputs, path_unit)
+        # # robots Data
+        # self.robots_data: RobotsData = RobotsData(inputs, path_unit)
 
 # -------------------------------- __main__  -----------------------------------
 

@@ -24,11 +24,11 @@ class SimData(object):
 
     def create_spawn_data(self):
         # obstacles
-        for i in range(self.model.obsts.count):
+        for obst in self.model.obstacles:
             p = Pose()
             p.position.z = 0
-            p.position.x = self.model.obsts.x[i]*self.path_unit
-            p.position.y = self.model.obsts.x[i]*self.path_unit
+            p.position.x = obst.x * self.path_unit
+            p.position.y = obst.y * self.path_unit
             p.orientation.w = 1.0
             self.all_obsts.append(p)
 

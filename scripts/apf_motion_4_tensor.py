@@ -545,7 +545,7 @@ class PlannerRT(object):
         f_obsts_inds = []
         for oi in self.obst_orig_inds:
             xo = self.obs_x[oi]
-            yo = self.obs_y[oi]
+            yo = self.y_obsts[oi]
             do = self.distance(xo, yo, self.r_x, self.r_y)
             if do < self.p.obst_start_d:
                 f_obsts_inds.append(oi)
@@ -556,7 +556,7 @@ class PlannerRT(object):
         # ros = [rc]
         for oi in self.obst_orig_inds:
             xo = self.obs_x[oi]
-            yo = self.obs_y[oi]
+            yo = self.y_obsts[oi]
             d_Ro = self.distance(xo, yo, xc, yc)
             d_ro = self.distance(xo, yo, self.r_x, self.r_y)
             if True:  # d_rR>rc: #d_ro<d_rR and
@@ -774,7 +774,7 @@ class PlannerRT(object):
         self.near_obst = False
 
         for i in self.f_obsts_inds:
-            dy = (self.obs_y[i] - self.r_y)
+            dy = (self.y_obsts[i] - self.r_y)
             dx = (self.obs_x[i] - self.r_x)
             d_ro = np.sqrt(dx**2 + dy**2)
 
@@ -788,7 +788,7 @@ class PlannerRT(object):
             #     self.stop_flag_obsts = True
 
             dx = self.goal_x - self.obs_x[i]
-            dy = self.goal_y - self.obs_y[i]
+            dy = self.goal_y - self.y_obsts[i]
             theta_og = np.arctan2(dy, dx)
             theta_or = theta_ro - np.pi
             ad_og_or = self.angle_diff(theta_og, theta_or)
@@ -865,8 +865,8 @@ class PlannerRT(object):
         self.goal_y = self.robot.yt
         # obstacles:
         self.obs_x = self.model.obsts.x
-        self.obs_y = self.model.obsts.y
-        self.obs_count = self.model.obsts.count
+        self.y_obsts = self.model.obsts.y
+        self.n_obsts = self.model.obsts.count
         self.obst_orig_inds = [i for i in range(self.model.obsts.count)]
 
     def angle_diff(self, a1, a2):
@@ -913,25 +913,25 @@ class PlannerRT(object):
         N = 2
         or_radius_ind = [1 for o in range(N)]
         obs_x = self.obs_x[:N]
-        obs_y = self.obs_y[:N]
+        y_obsts = self.y_obsts[:N]
 
         if flag_robot:
             or_radius_ind.append(2)
             obs_x.append(self.new_robots[0].x)
-            obs_y.append(self.new_robots[0].y)
+            y_obsts.append(self.new_robots[0].y)
 
         # Define the center coordinates and radius of the circle
-        # center_x, center_y = obs_x[0], obs_y[0]
-        center_x, center_y = np.mean(obs_x), np.mean(obs_y)
+        # center_x, center_y = obs_x[0], y_obsts[0]
+        center_x, center_y = np.mean(obs_x), np.mean(y_obsts)
         radius = self.p.obst_prec_d/1.5
         radius2 = self.p.obst_prec_d*1.99
         r_min, r_max = self.p.obst_prec_d/1.5, self.p.obst_prec_d*2.6
 
         # # Define the range of x and y values
         # x_min, x_max = obs_x[0]-1, obs_x[0]+1
-        # y_min, y_max = obs_y[0]-1, obs_y[0]+1
+        # y_min, y_max = y_obsts[0]-1, y_obsts[0]+1
         x_min, x_max = min(obs_x)-1, max(obs_x)+1
-        y_min, y_max = min(obs_y)-1, max(obs_y)+1
+        y_min, y_max = min(y_obsts)-1, max(y_obsts)+1
         x_step, y_step = 0.06, 0.06
 
         # --------------------------------------------------------------------------------------------------
@@ -944,7 +944,7 @@ class PlannerRT(object):
             outside_circle = np.ones(X.shape)
 
             for j in range(2):
-                for jj, ox, oy in zip(range(N+1), obs_x, obs_y):
+                for jj, ox, oy in zip(range(N+1), obs_x, y_obsts):
                     if jj == N:
                         radius = self.new_robots[0].r_prec * 0.6
                     dist = np.sqrt((X - ox)**2 + (Y - oy)**2)
@@ -952,7 +952,7 @@ class PlannerRT(object):
                     outside_circle = np.logical_and(check_in, outside_circle)
 
                 temp = np.zeros(X.shape)
-                for jj, ox, oy in zip(range(N+1), obs_x, obs_y):
+                for jj, ox, oy in zip(range(N+1), obs_x, y_obsts):
                     if jj == N:
                         break  # radius2 = self.new_robots[0].r_prec*1.9
                     dist = np.sqrt((X - ox)**2 + (Y - oy)**2)
@@ -1075,7 +1075,7 @@ class PlannerRT(object):
         ax.plot(self.goal_x, self.goal_y, 'go', label='Target Point')
 
         # obstcale circles
-        for xo, yo in zip(obs_x[:N], obs_y[:N]):
+        for xo, yo in zip(obs_x[:N], y_obsts[:N]):
             ax.plot(xo, yo, 'ok')  # , marker_color='k', marker_size=5)
             thetas = np.linspace(0, np.pi*2, 100)
             xp = [xo + self.p.obst_prec_d*np.cos(t) for t in thetas]
@@ -1117,7 +1117,7 @@ class PlannerRT(object):
         f_obsts_inds = list(range(N))
 
         for i in f_obsts_inds:
-            dy = (self.obs_y[i] - y)
+            dy = (self.y_obsts[i] - y)
             dx = (self.obs_x[i] - x)
             d_ro = np.sqrt(dx**2 + dy**2)
 
@@ -1134,7 +1134,7 @@ class PlannerRT(object):
                 self.near_obst = True
 
             dx = self.goal_x - self.obs_x[i]
-            dy = self.goal_y - self.obs_y[i]
+            dy = self.goal_y - self.y_obsts[i]
             theta_og = np.arctan2(dy, dx)
             theta_or = theta_ro - np.pi
             ad_og_or = self.angle_diff(theta_og, theta_or)
@@ -1337,9 +1337,9 @@ class PlannerRT(object):
 
     def cal_theta(self, x, y, N):
         # obs_x = self.obs_x[:N]
-        # obs_y = self.obs_y[:N]
+        # y_obsts = self.y_obsts[:N]
         # dx = np.array(obs_x) - x
-        # dy = np.array(obs_y) - y
+        # dy = np.array(y_obsts) - y
         # d = np.sqrt(dx * dx + dy * dy)
         # ind = np.argmin(d)
         # dx = dx[ind]

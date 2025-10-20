@@ -3,7 +3,6 @@
 """ Visualization class for MRAPF """
 
 from typing import Dict, List, Tuple
-from array import array
 import numpy as np
 import rospy
 from sensor_msgs.msg import PointCloud
@@ -57,7 +56,8 @@ class RvizViusalizer:
         # self.publish_obsts_start_circles()
 
     def add_robot_publishers(self):
-        for ns in self.model.robots_data.ns:
+        for r in self.model.robots:
+            ns = r.ns
             self.robots_pubs[ns] = rospy.Publisher(ns+"/robot_data", PointCloud, queue_size=10)
             self.robots_poly_pubs[ns] = rospy.Publisher(ns+"/robot_poly", PolygonStamped, queue_size=10)
             self.robots_poly_pubs_2[ns] = rospy.Publisher(ns+"/robot_poly_2", PolygonStamped, queue_size=10)
@@ -70,7 +70,7 @@ class RvizViusalizer:
 
     def publish_obsts_markers(self):
         marker_array = MarkerArray()
-        for i in range(self.model.n_obst_orig):
+        for obst in self.model.obstacles:
             marker = Marker()
             marker.header.frame_id = "map"
             marker.header.stamp = rospy.Time.now()
@@ -87,8 +87,8 @@ class RvizViusalizer:
             marker.color.b = 0.0
             marker.color.a = 1.0
             # Set the pose of the marker
-            marker.pose.position.x = self.model.obsts.x[i]
-            marker.pose.position.y = self.model.obsts.y[i]
+            marker.pose.position.x = obst.x
+            marker.pose.position.y = obst.y
             marker.pose.position.z = 0.4/2
             marker.pose.orientation.x = 0.0
             marker.pose.orientation.y = 0.0
@@ -104,14 +104,14 @@ class RvizViusalizer:
         obst_prec_points = []
         thetas = np.linspace(0, np.pi*2, 360)
         #
-        for i in range(self.model.n_obst_orig):
+        for obst in self.model.obstacles:
             prec_circles = []
-            c_x = self.model.obsts.x[i]
-            c_y = self.model.obsts.y[i]
+            c_x = obst.x
+            c_y = obst.y
             for th in thetas:
                 p = Point32()
-                p.x = c_x + self.params.obst_prec_d*np.cos(th)
-                p.y = c_y + self.params.obst_prec_d*np.sin(th)
+                p.x = c_x + obst.obst_prec_d*np.cos(th)
+                p.y = c_y + obst.obst_prec_d*np.sin(th)
                 prec_circles.append(p)
             obst_prec_points.extend(prec_circles)
         #
@@ -128,10 +128,10 @@ class RvizViusalizer:
         obst_start_points = []
         thetas = np.linspace(0, np.pi*2, 360)
         #
-        for i in range(self.model.n_obst_orig):
+        for obst in self.model.obstacles:
             prec_circles = []
-            c_x = self.model.obsts.x[i][i]
-            c_y = self.model.obsts.y[i][i]
+            c_x = obst.x
+            c_y = obst.y
             for th in thetas:
                 p = Point32()
                 p.x = c_x + self.params.obst_start_d*np.cos(th)
@@ -224,7 +224,7 @@ class RvizViusalizer:
         robot_prec_pc.points = robot_circles
         self.robots_pubs[ns].publish(robot_prec_pc)
 
-    def vizualize_polygon(self, pols_xy: List[Tuple[array, array]], ns: str, rid: int) -> None:
+    def vizualize_polygon(self, pols_xy: List[Tuple], ns: str, rid: int) -> None:
         if len(pols_xy) == 0:
             return
         pol_stamp = PolygonStamped()

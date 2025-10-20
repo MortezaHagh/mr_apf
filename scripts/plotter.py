@@ -2,18 +2,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from parameters import Params
-from create_model import MRSModel
+from mrapf_classes import ApfObstacle
+from create_model import MRSModel, Obstacle
 from mrapf_classes import AllPlannersData, PlannerData
 
 
 class Plotter:
 
-    def __init__(self, model: MRSModel, settings: Params, save_path: str):
+    def __init__(self, model: MRSModel, params: Params, save_path: str):
         # setting
         self.save_path: str = save_path
-        obs_r = settings.obst_r
-        obst_prec_d = settings.obst_prec_d
         emap = model.emap
+
+        # apf obstacles
+        obstacles = []
+        for obst in model.obstacles:
+            apf_obst = ApfObstacle(obst, params)
+            obstacles.append(apf_obst)
 
         # figure
         fig, ax = plt.subplots(1, 1)
@@ -39,13 +44,13 @@ class Plotter:
 
         # # Obstacles
         thetas = np.linspace(0, np.pi*2, 20)
-        ax.plot(model.obsts.x, model.obsts.y, 'o',  markersize=5,
-                markeredgecolor='k', markerfacecolor='k')
-        for i in range(model.obsts.count):
-            xor = [model.obsts.x[i]+obst_prec_d*np.cos(t) for t in thetas]
-            yor = [model.obsts.y[i]+obst_prec_d*np.sin(t) for t in thetas]
-            xdng = [model.obsts.x[i]+obs_r*np.cos(t) for t in thetas]
-            ydng = [model.obsts.y[i]+obs_r*np.sin(t) for t in thetas]
+        obst: ApfObstacle = None
+        for obst in obstacles:
+            ax.plot(obst.x, obst.y, 'o',  markersize=5, markeredgecolor='k', markerfacecolor='k')
+            xor = [obst.x + obst.obst_prec_d*np.cos(t) for t in thetas]
+            yor = [obst.y + obst.obst_prec_d*np.sin(t) for t in thetas]
+            xdng = [obst.x + obst.r*np.cos(t) for t in thetas]
+            ydng = [obst.y + obst.r*np.sin(t) for t in thetas]
             ax.plot(xor, yor, '--k')
             ax.plot(xdng, ydng, 'r')
 

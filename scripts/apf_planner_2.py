@@ -1,19 +1,16 @@
 #! /usr/bin/env python
 
 from typing import List, Dict, Tuple
-from array import array
 import numpy as np
-from shapely.coords import CoordinateSequence  # type: ignore # pylint: disable-all
-from shapely.geometry import Point, shape, MultiPoint  # type: ignore # pylint: disable-all
-# from shapely.geometry.polygon import Polygon
+from shapely.coords import CoordinateSequence
+from shapely.geometry import Point, shape, MultiPoint
 from logger import MyLogger
 from parameters import Params
-from mrapf_classes import ApfRobot
-from my_utils import cal_distance
-from my_utils import cal_angle_diff
 from create_model import MRSModel, Robot
 from apf.msg import RobotData, FleetData
 from apf_planner_base import APFPlannerBase
+from mrapf_classes import ApfRobot, ApfObstacle
+from my_utils import cal_distance, cal_angle_diff
 
 
 class APFPlanner(APFPlannerBase):
@@ -25,7 +22,7 @@ class APFPlanner(APFPlannerBase):
         #
         self.apf_robots: List[ApfRobot] = []
         self.multi_robots_vis: List[ApfRobot] = []
-        self.cluster_poly_xy: List[Tuple[array, array]] = []
+        self.cluster_poly_xy: List[Tuple] = []
 
         #
         self.near_obst = False
@@ -41,6 +38,7 @@ class APFPlanner(APFPlannerBase):
 
     def reset_vals_2(self):
         #
+        self.apf_robots = []
         self.multi_robots_vis = []
         self.cluster_poly_xy = []
         #
@@ -50,8 +48,6 @@ class APFPlanner(APFPlannerBase):
         self.stop_flag_obsts = False
         self.stop_flag_robots = False
         self.stop_flag_multi = False
-        #
-        self.apf_robots = []
 
     def calculate_planner_forces(self) -> bool:
         """ planner specific force calculations
@@ -143,12 +139,10 @@ class APFPlanner(APFPlannerBase):
     def detect_obstacles_in_proximity(self):
         """ detect obstacles in proximity circle"""
         f_obsts_inds = []
-        for oi in self.obst_orig_inds:
-            xo = self.obs_x[oi]
-            yo = self.obs_y[oi]
-            do = cal_distance(xo, yo, self.pose.x, self.pose.y)
-            if do < self.params.obst_start_d:
-                f_obsts_inds.append(oi)
+        for i, obst in enumerate(self.obstacles):
+            do = cal_distance(obst.x, obst.y, self.pose.x, self.pose.y)
+            if do < obst.obst_start_d:
+                f_obsts_inds.append(i)
         self.f_obsts_inds = f_obsts_inds
 
     def eval_fleet_data(self) -> Tuple[List[ApfRobot], List[int], Dict[int, float]]:
@@ -235,13 +229,13 @@ class APFPlanner(APFPlannerBase):
             for local minima avoidance
         """
         xy: List[Tuple[float, float]] = []
-        for oi in self.obst_orig_inds:
-            xo = self.obs_x[oi]
-            yo = self.obs_y[oi]
+        for obst in self.obstacles:
+            xo = obst.x
+            yo = obst.y
             d_Ro = cal_distance(xo, yo, xc, yc)
             # d_ro = cal_distance(xo, yo, self.pose.x, self.pose.y)
             if True:  # d_rR>rc: #d_ro<d_rR and
-                if (prec_d > (d_Ro-self.params.obst_prec_d)) and prec_d < (d_Ro+self.params.obst_prec_d):
+                if (prec_d > (d_Ro-obst.obst_prec_d)) and prec_d < (d_Ro+obst.obst_prec_d):  # todo imp
                     # ros.append(d_Ro+self.params.obst_prec_d*1)
                     x = (xo+xc)/2
                     y = (yo+yc)/2
@@ -605,22 +599,24 @@ class APFPlanner(APFPlannerBase):
         obs_f = [0, 0]
         self.obs_f = [0, 0]
 
+        obst: ApfObstacle = None
         for i in self.f_obsts_inds:
-            dy = (self.obs_y[i] - self.pose.y)
-            dx = (self.obs_x[i] - self.pose.x)
+            obst = self.obstacles[i]
+            dy = (obst.y - self.pose.y)
+            dx = (obst.x - self.pose.x)
             d_ro = np.sqrt(dx**2 + dy**2)
 
             theta_ro = np.arctan2(dy, dx)
             ad_h_ro = cal_angle_diff(self.pose.theta, theta_ro)
 
-            if (d_ro < self.params.obst_half_d):
+            if (d_ro < obst.obst_half_d):
                 self.near_obst = True
 
             # if (d_ro < self.params.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
             #     self.stop_flag_obsts = True
 
-            dx = self.goal_x - self.obs_x[i]
-            dy = self.goal_y - self.obs_y[i]
+            dx = self.goal_x - obst.x
+            dy = self.goal_y - obst.y
             theta_og = np.arctan2(dy, dx)
             theta_or = theta_ro - np.pi
             ad_og_or = cal_angle_diff(theta_og, theta_or)
@@ -638,7 +634,7 @@ class APFPlanner(APFPlannerBase):
             angle_turn_t = theta_ro + (np.pi/2)*np.sign(ad_h_ro)*coeff
             ad_c_t = cal_angle_diff(angle_turn_t, self.pose.theta)
 
-            f = ((self.params.obst_z * 1) * ((1 / d_ro) - (1 / self.params.obst_start_d))**2) * (1 / d_ro)**2
+            f = ((obst.obst_z * 1) * ((1 / d_ro) - (1 / obst.obst_start_d))**2) * (1 / d_ro)**2
             o_force = [f * -np.cos(ad_h_ro), f * np.sin(ad_h_ro)]
 
             # fo = f + 2
@@ -648,9 +644,9 @@ class APFPlanner(APFPlannerBase):
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
 
             if target_other_side:
-                if (self.params.obst_prec_d < d_ro and d_ro < self.params.obst_half_d):
+                if (obst.obst_prec_d < d_ro and d_ro < obst.obst_half_d):
                     o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
-                elif (self.params.obst_half_d < d_ro):
+                elif (obst.obst_half_d < d_ro):
                     if (abs(ad_h_ro) < np.pi/2):
                         o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
 

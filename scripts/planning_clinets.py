@@ -5,23 +5,23 @@ from typing import List
 import rospy
 import actionlib
 from apf.msg import ApfAction, ApfGoal
-from create_model import RobotsData
+from create_model import Robot
 
 
 class PlanningClients:
 
-    def __init__(self, robots: RobotsData):
-        rospy.loginfo("[PlanningClients], Initializing Path Planning Clinets.")
-        self.rids = robots.rids
-        self.robots: RobotsData = robots
+    def __init__(self, robots: List[Robot]):
+        rospy.loginfo("[PlanningClients], Initializing Path Planning Clients.")
+        self.rids = [robot.rid for robot in robots]
+        self.robots: List[Robot] = robots
         self.clients: List[actionlib.SimpleActionClient] = []
 
     def send_goals(self):
-        for rid in self.rids:
+        for robot in self.robots:
             goal = ApfGoal()
-            goal.xt = self.robots.xt[rid]
-            goal.yt = self.robots.yt[rid]
-            name = "/r"+str(rid)+"/apf_action"
+            goal.xt = robot.xt
+            goal.yt = robot.yt
+            name = "/r"+str(robot.rid)+"/apf_action"
             client = actionlib.SimpleActionClient(name, ApfAction)
             client.wait_for_server()
             client.send_goal(goal)

@@ -58,14 +58,14 @@ class Params:
         self.fix_f2 = 10
 
         # radiuses and precaution distances
-        self.obst_r = 0.11
+        # self.obst_r = 0.11
         self.prec_d = 0.07
         self.robot_r = 0.22  # @ 0.22        # robots effective radius
-        #
-        self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
-        self.obst_start_d = 2 * self.obst_prec_d
-        self.obst_half_d = 1.5 * self.obst_prec_d
-        self.obst_z = 4 * self.fix_f * self.obst_prec_d**4
+        # #
+        # self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
+        # self.obst_start_d = 2 * self.obst_prec_d
+        # self.obst_half_d = 1.5 * self.obst_prec_d
+        # self.obst_z = 4 * self.fix_f * self.obst_prec_d**4
         #
         self.robot_prec_d = 2 * self.robot_r + self.prec_d  # 0.64
         self.robot_start_d = 2 * self.robot_prec_d

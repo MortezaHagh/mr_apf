@@ -75,7 +75,7 @@ class Run():
             self.rate.sleep()
 
         # planning clients - sending goals *****************************************************************************
-        self.planning_clients = PlanningClients(self.model.robots_data)
+        self.planning_clients = PlanningClients(self.model.robots)
         self.planning_clients.send_goals()
 
         # status checking

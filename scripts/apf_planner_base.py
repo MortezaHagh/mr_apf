@@ -2,11 +2,12 @@
 
 """ MRAPF Planner Base, calculate forces and velocities """
 
-from typing import Tuple
+from typing import Tuple, List
 import numpy as np
 from geometry_msgs.msg import Pose2D
 from logger import MyLogger
 from parameters import Params
+from mrapf_classes import ApfObstacle
 from create_model import MRSModel, Robot
 from apf.msg import RobotData, FleetData
 
@@ -21,7 +22,10 @@ class APFPlannerBase:
         self.params: Params = params
         self.model: MRSModel = model
         self.robot: Robot = robot
-        self.map_data()
+
+        # obstacles
+        self.obstacles: List[ApfObstacle] = []
+        self.parse_map_data()
 
         # robot fleet data
         self.pose: Pose2D = Pose2D()
@@ -154,15 +158,15 @@ class APFPlannerBase:
     def f_robots(self):
         pass
 
-    def map_data(self):
+    def parse_map_data(self):
         # robot target
         self.goal_x = self.robot.xt
         self.goal_y = self.robot.yt
         # obstacles
-        self.obs_x = self.model.obsts.x
-        self.obs_y = self.model.obsts.y
-        self.obs_count = self.model.obsts.count
-        self.obst_orig_inds = [i for i in range(self.model.obsts.count)]
+        self.n_obsts = self.model.n_obstacles
+        for obst in self.model.obstacles:
+            apf_obst = ApfObstacle(obst, self.params)
+            self.obstacles.append(apf_obst)
 
     def calculate_velocity(self):
         #

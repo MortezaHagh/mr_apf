@@ -55,7 +55,7 @@ class APFPlanner(APFPlannerBase):
                 continue
 
             # check if robot should stop
-            if (not rob.reached) and (d_ro < self.params.obst_half_d) and (rob.priority > self.robot_data.priority):
+            if (not rob.reached) and (d_ro < self.params.robot_half_d) and (rob.priority > self.robot_data.priority):
                 self.stopped = True
                 break
 
@@ -76,13 +76,13 @@ class APFPlanner(APFPlannerBase):
         obst_flag = False
         self.obs_f = [0, 0]
         obs_f = [0, 0]
-        for i in range(self.obs_count):
-            dy = self.pose.y - self.obs_y[i]
-            dx = self.pose.x - self.obs_x[i]
+        for obst in self.obstacles:
+            dy = self.pose.y - obst.y
+            dx = self.pose.x - obst.x
             d_ro = np.sqrt(dx**2 + dy**2)
 
             # check distance
-            if d_ro > self.params.obst_start_d:
+            if d_ro > obst.obst_start_d:
                 continue
 
             obst_flag = True
@@ -90,7 +90,7 @@ class APFPlanner(APFPlannerBase):
             angle_diff = cal_angle_diff(theta, self.pose.theta)
 
             # force
-            f = ((self.params.obst_z * 1) * ((1 / d_ro) - (1 / self.params.obst_start_d))**2) * (1 / d_ro)**2
+            f = ((obst.obst_z * 1) * ((1 / d_ro) - (1 / obst.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
             obs_f[0] += round(templ[0], 3)
             obs_f[1] += round(templ[1], 3)

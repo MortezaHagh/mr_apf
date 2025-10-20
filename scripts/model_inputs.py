@@ -4,7 +4,7 @@ import os
 import json
 import random
 import numpy as np
-import rospkg
+import rospkg  # type: ignore
 from my_utils import cal_distance
 
 
@@ -21,14 +21,14 @@ class ModelInputs:
         self.map_id: int = None
         self.n_robots: int = None
         self.rids: List[int] = None
-        self.xs: List[float] = None
-        self.ys: List[float] = None
-        self.xt: List[float] = None
-        self.yt: List[float] = None
-        self.n_obst_orig: int = None
-        self.x_obst: List[float] = None
-        self.y_obst: List[float] = None
-        self.heading: List[float] = None
+        self.x_starts: List[float] = None
+        self.y_starts: List[float] = None
+        self.x_targets: List[float] = None
+        self.y_targets: List[float] = None
+        self.n_obsts: int = None
+        self.x_obsts: List[float] = None
+        self.y_obsts: List[float] = None
+        self.headings: List[float] = None
         #
         if map_id == 1:
             self.map_0(n_robots)
@@ -48,13 +48,13 @@ class ModelInputs:
         self.x_max = self.x_max * path_unit
         self.y_max = self.y_max * path_unit
         # obstcles
-        self.x_obst = [x * path_unit for x in self.x_obst]
-        self.y_obst = [y * path_unit for y in self.y_obst]
+        self.x_obsts = [x * path_unit for x in self.x_obsts]
+        self.y_obsts = [y * path_unit for y in self.y_obsts]
         # start - target
-        self.xs = [x * path_unit for x in self.xs]
-        self.ys = [y * path_unit for y in self.ys]
-        self.xt = [x * path_unit for x in self.xt]
-        self.yt = [y * path_unit for y in self.yt]
+        self.x_starts = [x * path_unit for x in self.x_starts]
+        self.y_starts = [y * path_unit for y in self.y_starts]
+        self.x_targets = [x * path_unit for x in self.x_targets]
+        self.y_targets = [y * path_unit for y in self.y_targets]
 
     def map_0(self, robot_n: int):
         # area
@@ -71,21 +71,21 @@ class ModelInputs:
         yc1 = [3, 5, 3, 5, 3, 5, 3, 5, 3, 5]
         xc2 = xc1*2
         yc2 = yc1 + [y+6 for y in yc1]
-        self.x_obst = xc2
-        self.y_obst = yc2
-        self.n_obst_orig = len(self.x_obst)
+        self.x_obsts = xc2
+        self.y_obsts = yc2
+        self.n_obsts = len(self.x_obsts)
 
         # robots
         self.n_robots = robot_n
-        xs = [1, 12, 10.3, 4, 12, 1, 6, 1, 10, 1, 8, 3, 4, 6, 11]
-        ys = [3, 10, 1.2, 12, 6, 8, 10, 6, 9, 12, 11, 1, 5, 4, 4]
-        xt = [10, 4, 4, 10, 3, 10, 6, 7, 1, 5, 2, 10, 6, 8, 4]
-        yt = [10, 4, 10, 4, 8, 7, 5, 7, 7, 8, 3, 12, 11, 7, 11]
-        self.heading = [0.0 for i in range(self.n_robots)]
-        self.xs = [xs[i] for i in range(self.n_robots)]
-        self.ys = [ys[i] for i in range(self.n_robots)]
-        self.xt = [xt[i] for i in range(self.n_robots)]
-        self.yt = [yt[i] for i in range(self.n_robots)]
+        x_starts = [1, 12, 10.3, 4, 12, 1, 6, 1, 10, 1, 8, 3, 4, 6, 11]
+        y_starts = [3, 10, 1.2, 12, 6, 8, 10, 6, 9, 12, 11, 1, 5, 4, 4]
+        x_targets = [10, 4, 4, 10, 3, 10, 6, 7, 1, 5, 2, 10, 6, 8, 4]
+        y_targets = [10, 4, 10, 4, 8, 7, 5, 7, 7, 8, 3, 12, 11, 7, 11]
+        self.headings = [0.0 for i in range(self.n_robots)]
+        self.x_starts = [x_starts[i] for i in range(self.n_robots)]
+        self.y_starts = [y_starts[i] for i in range(self.n_robots)]
+        self.x_targets = [x_targets[i] for i in range(self.n_robots)]
+        self.y_targets = [y_targets[i] for i in range(self.n_robots)]
 
     def warehouse_1(self, robot_n=1):
         # area
@@ -104,17 +104,17 @@ class ModelInputs:
         yc2 = yc1*5
         xc3 = xc2*3
         yc3 = [y+4 for y in yc2] + [y+8 for y in yc2] + [y+12 for y in yc2]
-        self.x_obst = xc2 + xc3
-        self.y_obst = yc2 + yc3
+        self.x_obsts = xc2 + xc3
+        self.y_obsts = yc2 + yc3
 
         # robots
         self.n_robots = robot_n
 
-        self.heading = [0.0]
-        self.xs = [1]
-        self.ys = [1]
-        self.xt = [1]
-        self.yt = [10]
+        self.headings = [0.0]
+        self.x_starts = [1]
+        self.y_starts = [1]
+        self.x_targets = [1]
+        self.y_targets = [10]
 
     def collide(self, n_robots=2):
         # area
@@ -131,36 +131,36 @@ class ModelInputs:
         # yc1 = [3, 5, 3, 5, 3, 5, 3, 5, 3, 5]
         # xc2 = xc1*2
         # yc2 = yc1 + [y+6 for y in yc1]
-        self.x_obst = []  # xc2
-        self.y_obst = []  # yc2
-        self.n_obst_orig = 0
+        self.x_obsts = []  # xc2
+        self.y_obsts = []  # yc2
+        self.n_obsts = 0
 
         # robots
         self.n_robots = n_robots
         # # 1
-        # xs = [2, 5]
-        # ys = [4, 4]
-        # xt = [6, 1]
-        # yt = [4, 4]
-        # self.heading = [0.0 , 3.14]
+        # x_starts = [2, 5]
+        # y_starts = [4, 4]
+        # x_targets = [6, 1]
+        # y_targets = [4, 4]
+        # self.headings = [0.0 , 3.14]
         # 2
-        xs = [2, 2]
-        ys = [2, 5]
-        xt = [5, 5]
-        yt = [5, 2]
-        self.heading = [0.0, 0.0]
+        x_starts = [2, 2]
+        y_starts = [2, 5]
+        x_targets = [5, 5]
+        y_targets = [5, 2]
+        self.headings = [0.0, 0.0]
         # # 3
-        # xs = [0, 0]
-        # ys = [1, 0]
-        # xt = [5, 3]
-        # yt = [1, 2]
-        # self.heading = [0.0 , 0.0]
+        # x_starts = [0, 0]
+        # y_starts = [1, 0]
+        # x_targets = [5, 3]
+        # y_targets = [1, 2]
+        # self.headings = [0.0 , 0.0]
         n_robots = 2
         self.rids = list(range(1, n_robots+1))
-        self.xs = [xs[i] for i in range(n_robots)]
-        self.ys = [ys[i] for i in range(n_robots)]
-        self.xt = [xt[i] for i in range(n_robots)]
-        self.yt = [yt[i] for i in range(n_robots)]
+        self.x_starts = [x_starts[i] for i in range(n_robots)]
+        self.y_starts = [y_starts[i] for i in range(n_robots)]
+        self.x_targets = [x_targets[i] for i in range(n_robots)]
+        self.y_targets = [y_targets[i] for i in range(n_robots)]
 
     def random_map_1(self):
         #
@@ -191,16 +191,16 @@ class ModelInputs:
         obst_i = r_xy[0:obst_n]
         robots_s_i = r_xy[obst_n:obst_n+robots_n]
         robots_g_i = r_xy[obst_n+robots_n:obst_n+2*robots_n]
-        self.x_obst = [o[0] for o in obst_i]
-        self.y_obst = [o[1] for o in obst_i]
+        self.x_obsts = [o[0] for o in obst_i]
+        self.y_obsts = [o[1] for o in obst_i]
 
         # robots
 
-        self.heading = [0.0 for i in range(self.n_robots)]
-        self.xs = [s[0] for s in robots_s_i]
-        self.ys = [s[1] for s in robots_s_i]
-        self.xt = [t[0] for t in robots_g_i]
-        self.yt = [t[1] for t in robots_g_i]
+        self.headings = [0.0 for i in range(self.n_robots)]
+        self.x_starts = [s[0] for s in robots_s_i]
+        self.y_starts = [s[1] for s in robots_s_i]
+        self.x_targets = [t[0] for t in robots_g_i]
+        self.y_targets = [t[1] for t in robots_g_i]
 
     def random_map_2(self, ind=1):
         #
@@ -239,13 +239,13 @@ class ModelInputs:
         while len(x_rs) < robots_n:
             dist = 0
             while dist < 1:
-                xs = np.random.uniform(self.x_min, self.x_max)
-                ys = np.random.uniform(self.y_min, self.y_max)
-                dist = min([cal_distance(x, y, xs, ys) for (x, y) in zip(all_x, all_y)])
-            all_x.append(xs)
-            all_y.append(ys)
-            x_rs.append(xs)
-            y_rs.append(ys)
+                x_starts = np.random.uniform(self.x_min, self.x_max)
+                y_starts = np.random.uniform(self.y_min, self.y_max)
+                dist = min([cal_distance(x, y, x_starts, y_starts) for (x, y) in zip(all_x, all_y)])
+            all_x.append(x_starts)
+            all_y.append(y_starts)
+            x_rs.append(x_starts)
+            y_rs.append(y_starts)
 
         ii = 0
         x_rt = []
@@ -253,18 +253,18 @@ class ModelInputs:
         while len(x_rt) < robots_n:
             dist = 0
             while True:
-                xt = np.random.uniform(self.x_min, self.x_max)
-                yt = np.random.uniform(self.y_min, self.y_max)
-                dist = min([cal_distance(x, y, xt, yt) for (x, y) in zip(all_x, all_y)])
+                x_targets = np.random.uniform(self.x_min, self.x_max)
+                y_targets = np.random.uniform(self.y_min, self.y_max)
+                dist = min([cal_distance(x, y, x_targets, y_targets) for (x, y) in zip(all_x, all_y)])
 
                 if dist > 1:
-                    dist_st = cal_distance(x_rs[ii], y_rs[ii], xt, yt)
+                    dist_st = cal_distance(x_rs[ii], y_rs[ii], x_targets, y_targets)
                     if dist_st > 5:
                         ii += 1
-                        x_rt.append(xt)
-                        y_rt.append(yt)
-                        all_x.append(xt)
-                        all_y.append(yt)
+                        x_rt.append(x_targets)
+                        y_rt.append(y_targets)
+                        all_x.append(x_targets)
+                        all_y.append(y_targets)
                         break
         x_s = x_rs
         y_s = y_rs
@@ -272,17 +272,17 @@ class ModelInputs:
         y_t = y_rt
 
         # obstacles
-        self.x_obst = obst_x
-        self.y_obst = obst_y
-        self.n_obst_orig = len(obst_x)
+        self.x_obsts = obst_x
+        self.y_obsts = obst_y
+        self.n_obsts = len(obst_x)
 
         # robots
 
-        self.heading = [0.0 for i in range(self.n_robots)]
-        self.xs = x_s
-        self.ys = y_s
-        self.xt = x_t
-        self.yt = y_t
+        self.headings = [0.0 for i in range(self.n_robots)]
+        self.x_starts = x_s
+        self.y_starts = y_s
+        self.x_targets = x_t
+        self.y_targets = y_t
 
         # dave data as JSON
         self.save_object_attributes(ind)
@@ -291,7 +291,7 @@ class ModelInputs:
 
         # file name
         ind = str(ind)
-        no = 'o'+str(len(self.x_obst))+'_map'+ind+'.json'
+        no = 'o'+str(len(self.x_obsts))+'_map'+ind+'.json'
         map_name = 'maps/'+no
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path('apf')
@@ -330,52 +330,52 @@ class ModelInputs:
         self.y_max = data['lim']
 
         # obstacles
-        self.n_obst_orig = len(data['x_obst'])
-        self.x_obst = data['x_obst']
-        self.y_obst = data['y_obst']
+        self.n_obsts = len(data['x_obsts'])
+        self.x_obsts = data['x_obsts']
+        self.y_obsts = data['y_obsts']
 
         # robots
         self.n_robots = data['n_robots']
         self.rids = data['rids']
-        self.heading = data['heading']
-        self.xs = data['xs']
-        self.ys = data['ys']
-        self.xt = data['xt']
-        self.yt = data['yt']
+        self.headings = data['headings']
+        self.x_starts = data['x_starts']
+        self.y_starts = data['y_starts']
+        self.x_targets = data['x_targets']
+        self.y_targets = data['y_targets']
 
         # modify obstacles
         obst_prec_d = 0.4/self.path_unit
         new_obst_x = []
         new_obst_y = []
-        for i, [x, y] in enumerate(zip(self.x_obst, self.y_obst)):
-            for j in range(i+1, len(self.x_obst)):
-                dist = cal_distance(x, y, self.x_obst[j], self.y_obst[j])
+        for i, [x, y] in enumerate(zip(self.x_obsts, self.y_obsts)):
+            for j in range(i+1, len(self.x_obsts)):
+                dist = cal_distance(x, y, self.x_obsts[j], self.y_obsts[j])
                 if obst_prec_d < dist < 1.65*obst_prec_d:
-                    new_obst_x.append((self.x_obst[j]+x)/2)
-                    new_obst_y.append((self.y_obst[j]+y)/2)
+                    new_obst_x.append((self.x_obsts[j]+x)/2)
+                    new_obst_y.append((self.y_obsts[j]+y)/2)
 
-        self.x_obst.extend(new_obst_x)
-        self.y_obst.extend(new_obst_y)
+        self.x_obsts.extend(new_obst_x)
+        self.y_obsts.extend(new_obst_y)
 
     def modify_obst(self):
         # modify obstacles
         obst_prec_d = 0.4/self.path_unit
         new_obst_x = []
         new_obst_y = []
-        for i, [x, y] in enumerate(zip(self.x_obst, self.y_obst)):
-            for j in range(i+1, len(self.x_obst)):
-                dist = cal_distance(x, y, self.x_obst[j], self.y_obst[j])
+        for i, [x, y] in enumerate(zip(self.x_obsts, self.y_obsts)):
+            for j in range(i+1, len(self.x_obsts)):
+                dist = cal_distance(x, y, self.x_obsts[j], self.y_obsts[j])
                 if dist < 1.99*obst_prec_d and dist > obst_prec_d:
-                    xxm = (self.x_obst[j]+x)/2.0
-                    yym = (self.y_obst[j]+y)/2.0
+                    xxm = (self.x_obsts[j]+x)/2.0
+                    yym = (self.y_obsts[j]+y)/2.0
                     new_obst_x.append((x+xxm)/2.0)
                     new_obst_y.append((y+yym)/2.0)
-                    new_obst_x.append((self.x_obst[j]+xxm)/2.0)
-                    new_obst_y.append((self.y_obst[j]+yym)/2.0)
+                    new_obst_x.append((self.x_obsts[j]+xxm)/2.0)
+                    new_obst_y.append((self.y_obsts[j]+yym)/2.0)
                     new_obst_x.append(xxm)
                     new_obst_y.append(yym)
-        self.x_obst.extend(new_obst_x)
-        self.y_obst.extend(new_obst_y)
+        self.x_obsts.extend(new_obst_x)
+        self.y_obsts.extend(new_obst_y)
 
     def obstacles2(self, n_robot=2):
 
@@ -391,31 +391,31 @@ class ModelInputs:
         # obstacles
         xc2 = [3.1, 3.9]
         yc2 = [3.5, 3.5]
-        self.x_obst = xc2
-        self.y_obst = yc2
-        self.n_obst_orig = len(self.x_obst)
+        self.x_obsts = xc2
+        self.y_obsts = yc2
+        self.n_obsts = len(self.x_obsts)
         # self.modify_obst()
 
         # robots
         # # 1
-        # xs = [3.5] #[3.5, 3.5]
-        # ys = [1.0] #[1.0, 3.5]
-        # xt = [3.5] #[3.5, 3.5]
-        # yt = [6.0] #[6.0, 3.5]
+        # x_starts = [3.5] #[3.5, 3.5]
+        # y_starts = [1.0] #[1.0, 3.5]
+        # x_targets = [3.5] #[3.5, 3.5]
+        # y_targets = [6.0] #[6.0, 3.5]
         # self.n_robots = 1
-        # self.heading = [np.pi/2] #[np.pi/2, -np.pi/2]
-        xs = [3.5, 3.5]
-        ys = [2.3, 3.5]
-        xt = [3.5, 3.5]
-        yt = [6.0, 3.5]
+        # self.headings = [np.pi/2] #[np.pi/2, -np.pi/2]
+        x_starts = [3.5, 3.5]
+        y_starts = [2.3, 3.5]
+        x_targets = [3.5, 3.5]
+        y_targets = [6.0, 3.5]
         self.n_robots = n_robot
-        self.heading = [np.pi/2, -np.pi/2]
+        self.headings = [np.pi/2, -np.pi/2]
         n_robots = self.n_robots
         self.rids = list(range(1, n_robots+1))
-        self.xs = [xs[i] for i in range(n_robots)]
-        self.ys = [ys[i] for i in range(n_robots)]
-        self.xt = [xt[i] for i in range(n_robots)]
-        self.yt = [yt[i] for i in range(n_robots)]
+        self.x_starts = [x_starts[i] for i in range(n_robots)]
+        self.y_starts = [y_starts[i] for i in range(n_robots)]
+        self.x_targets = [x_targets[i] for i in range(n_robots)]
+        self.y_targets = [y_targets[i] for i in range(n_robots)]
 
     def obstacles1(self, n_robot=1):
 
@@ -431,22 +431,22 @@ class ModelInputs:
         # obstacles
         xc2 = [3.5]
         yc2 = [3.5]
-        self.x_obst = xc2
-        self.y_obst = yc2
-        self.n_obst_orig = len(self.x_obst)
+        self.x_obsts = xc2
+        self.y_obsts = yc2
+        self.n_obsts = len(self.x_obsts)
         # self.modify_obst()
 
         # robots
         self.n_robots = n_robot
         # 1
-        xs = [3.5]  # [3.5, 3.5]
-        ys = [2.3]  # [1.0, 3.5] //////
-        xt = [3.5]  # [3.5, 3.5]
-        yt = [6.0]  # [6.0, 3.5]
-        self.heading = [np.pi/2]  # [np.pi/2, -np.pi/2]
+        x_starts = [3.5]  # [3.5, 3.5]
+        y_starts = [2.3]  # [1.0, 3.5] //////
+        x_targets = [3.5]  # [3.5, 3.5]
+        y_targets = [6.0]  # [6.0, 3.5]
+        self.headings = [np.pi/2]  # [np.pi/2, -np.pi/2]
         n_robots = self.n_robots
         self.rids = list(range(1, n_robots+1))
-        self.xs = [xs[i] for i in range(n_robots)]
-        self.ys = [ys[i] for i in range(n_robots)]
-        self.xt = [xt[i] for i in range(n_robots)]
-        self.yt = [yt[i] for i in range(n_robots)]
+        self.x_starts = [x_starts[i] for i in range(n_robots)]
+        self.y_starts = [y_starts[i] for i in range(n_robots)]
+        self.x_targets = [x_targets[i] for i in range(n_robots)]
+        self.y_targets = [y_targets[i] for i in range(n_robots)]
