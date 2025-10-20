@@ -171,7 +171,7 @@ class PlannerRT(object):
                 continue
 
                 # calculate velocities
-                self.cal_vel(f_r, f_theta, phi)
+                self.calculate_velocity(f_r, f_theta, phi)
                 self.rec.v.append(self.v)
                 self.rec.w.append(self.w)
 
@@ -218,7 +218,7 @@ class PlannerRT(object):
         self.pose_client(req)
         self.stop()
 
-    def cal_vel(self, f_r, f_theta, theta):
+    def calculate_velocity(self, f_r, f_theta, theta):
 
         if f_r < 0:
             v = 0

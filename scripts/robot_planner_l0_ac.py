@@ -61,7 +61,7 @@ class RobotPlannerAc:
             self.planner = Planner2D(self.model, self.robot, self.params)
         else:  # "3D"
             self.planner = PlannerRT(self.model, self.robot, self.params)
-        self.planner.start()
+        self.planner.start_planner()
         success = self.planner.is_reached
         self.planner_data = self.planner.pd
 

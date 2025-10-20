@@ -5,6 +5,7 @@
 from typing import Tuple
 import numpy as np
 from geometry_msgs.msg import Pose2D
+from logger import MyLogger
 from parameters import Params
 from create_model import MRSModel, Robot
 from apf.msg import RobotData, FleetData
@@ -14,6 +15,7 @@ class APFPlannerBase:
     """ APF Planner Base class """
 
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
+        self.lg = MyLogger(f"APFPlannerBase_r{robot.rid}")
 
         # data
         self.params: Params = params
@@ -44,8 +46,8 @@ class APFPlannerBase:
         self.reached = False
         self.stopped = False
         self.prev_stopped = False
-        self.progressing = True
-        self.prev_progressing = True
+        self.moving = True
+        self.prev_moving = True
 
         # control vars
         self.ad_rg_h = None
@@ -64,13 +66,54 @@ class APFPlannerBase:
         #
         self.reached = False
         self.stopped = False
-        self.progressing = True
+        self.moving = True
 
-    def planner_move(self, pose: Pose2D, fleet_data: FleetData):
-        # should be implemented in child class
-        raise NotImplementedError("planner_move() must be implemented in child class")
+    def planner_next_move(self, pose: Pose2D, fleet_data: FleetData) -> None:
+        # inputs - reset
+        self.pose = pose
+        self.fleet_data = fleet_data
+        self.reset_vals()
 
-    def forces(self):
+        # get this robot data
+        crob: RobotData = None
+        for crob in fleet_data.fdata:
+            if crob.rid == self.robot.rid:
+                self.pose.x = crob.x
+                self.pose.y = crob.y
+                self.pose.theta = crob.h
+                self.robot_data = crob
+                break
+
+        # check dist to goal
+        if self.goal_dist < self.params.goal_dis_tresh:
+            self.lg.info1("reached goal!")
+            self.reached = True
+            return
+
+        # calculate forces =====================================================
+        if self.calculate_planner_forces():
+            # calculate velocities
+            self.calculate_velocity()
+
+        # check moving
+        self.eval_move_status()
+
+    def calculate_planner_forces(self) -> bool:
+        """ planner specific force calculations
+
+        Returns:
+            bool: True if robot can move, False if stopped
+        """
+
+        self.calculate_forces()
+        if self.stopped:
+            self.lg.warn("Robot stopped.")
+            self.v = 0
+            # self.w = 0
+            return False
+        return True
+
+    def calculate_forces(self):
         f_r = 0
         f_theta = 0
 
@@ -121,7 +164,7 @@ class APFPlannerBase:
         self.obs_count = self.model.obsts.count
         self.obs_ind_main = [i for i in range(self.model.obsts.count)]
 
-    def cal_vel(self):
+    def calculate_velocity(self):
         #
         f_r, f_theta = self.f_r, self.f_theta
 
@@ -147,8 +190,7 @@ class APFPlannerBase:
         self.v = v
         self.w = w
 
-    def check_progress(self):
+    def eval_move_status(self):
+        # check moving
         if abs(self.v) < self.params.v_zero_tresh and abs(self.w) < self.params.w_zero_tresh:
-            self.progressing = False
-        else:
-            self.progressing = True
+            self.moving = False

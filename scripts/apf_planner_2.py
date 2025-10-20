@@ -3,7 +3,10 @@
 from typing import List, Dict, Tuple
 from array import array
 import numpy as np
-from geometry_msgs.msg import Pose2D
+from shapely.coords import CoordinateSequence  # type: ignore # pylint: disable-all
+from shapely.geometry import Point, shape, MultiPoint  # type: ignore # pylint: disable-all
+# from shapely.geometry.polygon import Polygon
+from logger import MyLogger
 from parameters import Params
 from mrapf_classes import ApfRobot
 from my_utils import cal_distance
@@ -11,15 +14,14 @@ from my_utils import cal_angle_diff
 from create_model import MRSModel, Robot
 from apf.msg import RobotData, FleetData
 from apf_planner_base import APFPlannerBase
-from shapely.coords import CoordinateSequence  # type: ignore # pylint: disable-all
-from shapely.geometry import Point, shape, MultiPoint  # type: ignore # pylint: disable-all
-# from shapely.geometry.polygon import Polygon
 
 
 class APFPlanner(APFPlannerBase):
 
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
         APFPlannerBase.__init__(self, model, robot, params)
+        self.lg = MyLogger(f"APFPlanner2_r{robot.rid}")
+
         #
         self.new_robots: List[ApfRobot] = []
         self.multi_robots_vis: List[ApfRobot] = []
@@ -45,62 +47,44 @@ class APFPlanner(APFPlannerBase):
         self.stop_flag_robots = False
         self.stop_flag_multi = False
 
-    def planner_move(self, pose: Pose2D, fleet_data: FleetData) -> None:
-        # inputs - reset
-        self.pose = pose
-        self.fleet_data = fleet_data
-        self.reset_vals()
+    def calculate_planner_forces(self) -> bool:
+        """ planner specific force calculations
+
+        Returns:
+            bool: True if robot can move, False if stopped
+        """
+
         self.reset_vals_2()
-
-        # get this robot data
-        crob: RobotData = None
-        for crob in fleet_data.fdata:
-            if crob.rid == self.robot.rid:
-                self.pose.x = crob.x
-                self.pose.y = crob.y
-                self.pose.theta = crob.h
-                self.robot_data = crob
-                break
-
-        # check dist to goal
-        if self.goal_dist < self.params.goal_dis_tresh:
-            print(f"[planner_move, {self.robot.rid}], reached goal!")
-            self.reached = True
-            return
 
         # detect and group
         self.detect_group()
 
         # check stop_flag_multi
         if self.stop_flag_multi:
-            print(f"[planner_move, {self.robot.rid}], stop_flag_multi")
+            self.lg.warn("stop_flag_multi activated.")
             self.stopped = True
-            return
+            self.v = 0
+            return False
         else:
-            # calculate forces =================================================
-            self.forces()
-
-            # calculate velocities
-            self.cal_vel()
-
-            # check progressing
-            self.check_progress()
+            # calculate forces
+            self.calculate_forces()
 
             # check stop flags
             if self.stop_flag_obsts or self.stop_flag_robots:
-                print(f"[planner_move, {self.robot.rid}], stop_flag_obsts or stop_flag_robots")
+                self.lg.warn("stop_flag_obsts or stop_flag_robots activated.")
                 self.stopped = True
                 self.v = 0
-                # self.w = 0
                 if abs(self.w) < (np.deg2rad(2)):
                     self.v = self.params.v_min_2
+                return False
 
             # check stop_flag_full
             if self.stop_flag_full:
-                print(f"[planner_move, {self.robot.rid}], stop_flag_full")
+                self.lg.warn("stop_flag_full activated.")
                 self.stopped = True
                 self.v = 0
-                # self.w = 0
+                return False
+        return True
 
     def detect_group(self) -> None:
 
@@ -503,7 +487,6 @@ class APFPlanner(APFPlannerBase):
             if nr.prior:
                 self.stop_flag_robots
                 R_coeff = -1
-            #     print(self.rid, " ==== ")
             # if abs(ad_rR_h)>abs(ad_Rr_H):
             #     R_coeff = -1
             #     flag_rR = False
@@ -623,7 +606,7 @@ class APFPlanner(APFPlannerBase):
         self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
         self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
 
-    def cal_vel(self):
+    def calculate_velocity(self):
         #
         f_r, f_theta = self.f_r, self.f_theta
 

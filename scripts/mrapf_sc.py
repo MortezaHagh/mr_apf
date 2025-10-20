@@ -106,7 +106,7 @@ class Run():
                 # plan and move
                 pose = self.fdh.get_robot_pose(pl.robot.rid)
                 fleet_data = self.fdh.get_fleet_data()
-                pl.planner_move(pose, fleet_data)
+                pl.planner_next_move(pose, fleet_data)
 
                 # update fleet data
                 self.apd[pl.robot.rid].add_xy(pose.x, pose.y)
@@ -119,9 +119,9 @@ class Run():
                     pl.prev_stopped = pl.stopped
 
                 # check progress
-                if pl.progressing != pl.prev_progressing:
-                    self.fdh.set_progressing(pl.robot.rid, pl.progressing)
-                    pl.prev_progressing = pl.progressing
+                if pl.moving != pl.prev_moving:
+                    self.fdh.set_is_moving(pl.robot.rid, pl.moving)
+                    pl.prev_moving = pl.moving
 
                 # check reach
                 if pl.reached:

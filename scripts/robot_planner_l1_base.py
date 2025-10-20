@@ -68,9 +68,9 @@ class RobotPlannerBase:
         self.ruc_req.yt = robot.yt
         self.ruc_req.stopped = False
         self.ruc_req.reached = False
-        self.ruc_req.progressing = True
+        self.ruc_req.moving = True
 
-    def start(self):
+    def start_planner(self):
         # start time
         self.pd.set_start_time(rospy.get_time())
 
@@ -84,9 +84,12 @@ class RobotPlannerBase:
 
     def go_to_goal(self):
         pass
+        # while (not self.mrapf.reached) and (not rospy.is_shutdown()):
+        #     ...
+        #     self.move()
 
-    def move(self):
-        self.mrapf.planner_move(self.pose, self.fleet_data)
+    def next_move(self):
+        self.mrapf.planner_next_move(self.pose, self.fleet_data)
         self.v = self.mrapf.v
         self.w = self.mrapf.w
 
@@ -113,10 +116,10 @@ class RobotPlannerBase:
             self.mrapf.prev_stopped = self.mrapf.stopped
 
         # check progress
-        if self.mrapf.progressing != self.mrapf.prev_progressing:
-            self.ruc_req.progressing = self.mrapf.progressing
+        if self.mrapf.moving != self.mrapf.prev_moving:
+            self.ruc_req.moving = self.mrapf.moving
             self.robot_update_client(self.ruc_req)
-            self.mrapf.prev_progressing = self.mrapf.progressing
+            self.mrapf.prev_moving = self.mrapf.moving
 
         # log data
         self.log_motion(self.mrapf.f_r, self.mrapf.f_theta)

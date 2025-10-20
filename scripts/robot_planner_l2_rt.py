@@ -22,7 +22,7 @@ class PlannerRT(RobotPlannerBase):
                 continue
 
             # Move the robot
-            self.move()
+            self.next_move()
             self.rate.sleep()
 
             #

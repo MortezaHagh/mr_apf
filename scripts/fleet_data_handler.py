@@ -27,7 +27,7 @@ class FleetDataHandler:
         self.poses: Dict[int, Pose2D] = {}
         self.fleet_data: Dict[int, RobotData] = {}
         self.frames: Dict[int, str] = {}
-        self.progressing: Dict[int, bool] = {}
+        self.moving: Dict[int, bool] = {}
 
         # settings
         self.global_frame = params.global_frame
@@ -59,7 +59,7 @@ class FleetDataHandler:
         self.fleet_data[rid] = RobotData()
         self.fleet_data[rid].rid = rid
         self.frames[rid] = sns + self.local_frame
-        self.progressing[rid] = True
+        self.moving[rid] = True
 
     def update_goal(self, rid: int, xt: float, yt: float):
         self.xyt[rid] = (xt, yt)
@@ -68,13 +68,13 @@ class FleetDataHandler:
         rid = req.rid
         self.fleet_data[rid].stopped = req.stopped
         self.fleet_data[rid].reached = req.reached
-        self.progressing[rid] = (not req.stopped) and req.progressing
+        self.moving[rid] = (not req.stopped) and req.moving
         resp = SendRobotUpdateResponse()
         resp.success = True
         return resp
 
     def check_all_stuck(self) -> bool:
-        all_p = self.progressing.values()
+        all_p = self.moving.values()
         self.all_stuck = not any(all_p)
         if self.all_stuck:
             rospy.logerr(f"[FleetDataHandler]: All robots stuck: {self.all_stuck}")
@@ -165,8 +165,8 @@ class FleetDataHandler:
         self.fleet_data[rid].reached = reached
         self.fleet_data[rid].priority = 0.0
 
-    def set_progressing(self, rid: int, progressing: bool):
-        self.progressing[rid] = progressing
+    def set_is_moving(self, rid: int, moving: bool):
+        self.moving[rid] = moving
 
     # def get_all_data(self) -> Dict[int, RobotData]:
     #     return self.fleet_data

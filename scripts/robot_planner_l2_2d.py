@@ -38,7 +38,7 @@ class Planner2D (RobotPlannerBase):
                 continue
 
             # Move the robot
-            self.move()
+            self.next_move()
             self.rate2d.sleep()
 
             # sim robot movement

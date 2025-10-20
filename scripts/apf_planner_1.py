@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import numpy as np
-from geometry_msgs.msg import Pose2D
+from logger import MyLogger
 from parameters import Params
 from create_model import MRSModel, Robot
 from apf.msg import RobotData, FleetData
@@ -13,43 +13,7 @@ class APFPlanner(APFPlannerBase):
 
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
         APFPlannerBase.__init__(self, model, robot, params)
-
-    def planner_move(self, pose: Pose2D, fleet_data: FleetData) -> None:
-        # inputs - reset
-        self.pose = pose
-        self.fleet_data = fleet_data
-        self.reset_vals()
-
-        # get this robot data
-        crob: RobotData = None
-        for crob in fleet_data.fdata:
-            if crob.rid == self.robot.rid:
-                self.pose.x = crob.x
-                self.pose.y = crob.y
-                self.pose.theta = crob.h
-                self.robot_data = crob
-                break
-
-        # check dist to goal
-        if self.goal_dist < self.params.goal_dis_tresh:
-            print(f"[planner_move, {self.robot.rid}], reached goal!")
-            self.reached = True
-            return
-
-        # calculate forces =================================================
-        self.forces()
-
-        # calculate velocities
-        self.cal_vel()
-
-        # check progressing
-        self.check_progress()
-
-        # check stop_flag_full
-        if self.stopped:
-            print(f"[planner_move, {self.robot.rid}], stopped.")
-            self.v = 0
-            # self.w = 0
+        self.lg = MyLogger(f"APFPlanner1_r{robot.rid}")
 
     def f_target(self):
         # r_g
