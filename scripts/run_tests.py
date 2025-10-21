@@ -14,12 +14,13 @@ def main():
     params.nr = 2
 
     # number of robots
-    n_robots = range(2, 15)
+    n_robots = range(7, 15)
     for nr in n_robots:
+        print(" \n ---------------------------------- \n")
+        print(f"n robots: {nr}, method: {params.method}")
         params.nr = nr
         run = Run(params_i=params)
         run.run()
-        print(" \n ---------------------------------- \n")
 
 
 if __name__ == "__main__":

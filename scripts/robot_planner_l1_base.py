@@ -86,7 +86,7 @@ class RobotPlannerBase:
         pass
         # while (not self.mrapf.reached) and (not rospy.is_shutdown()):
         #     ...
-        #     self.move()
+        #     self.next_move()
 
     def next_move(self):
         self.mrapf.planner_next_move(self.pose, self.fleet_data)
@@ -100,14 +100,15 @@ class RobotPlannerBase:
         if self.do_viz:
             self.vizualize_force([self.mrapf.f_r, self.mrapf.f_theta], False)
             if self.params.method == 2:
-                self.viusalizer.vizualize_polygon(self.mrapf.cluster_poly_xy, self.ns, self.params.rid)
+                self.viusalizer.draw_fake_obsts_localmin(self.mrapf.fake_obsts_localmin)
+                self.viusalizer.visualize_polygon(self.mrapf.cluster_poly_xy, self.ns, self.params.rid)
                 self.viusalizer.draw_robot_circles(self.mrapf.multi_robots_vis, self.ns)
 
         # publish cmd
         move_cmd = Twist()
         move_cmd.linear.x = self.v
         move_cmd.angular.z = self.w
-        self.cmd_vel_pub.publish(move_cmd)
+        # self.cmd_vel_pub.publish(move_cmd)
 
         # check stop
         if self.mrapf.stopped != self.mrapf.prev_stopped:
@@ -150,9 +151,9 @@ class RobotPlannerBase:
             fr = round(f_r, 2)
             ft = round(f_theta, 2)
             # rospy.loginfo(f"[planner_base, {self.ns}]: {self.mrapf.stop_flag_multi}")
-            rospy.loginfo(f"[planner_base, {self.ns}]: f_r: {fr}, f_theta: {ft}")
-            rospy.loginfo(f"[planner_base, {self.ns}]: v: {v}, w: {w}")
-            rospy.loginfo(" --------------------------------------------------- ")
+            # rospy.loginfo(f"[planner_base, {self.ns}]: f_r: {fr}, f_theta: {ft}")
+            # rospy.loginfo(f"[planner_base, {self.ns}]: v: {v}, w: {w}")
+            # rospy.loginfo(" --------------------------------------------------- ")
 
     def fleet_data_cb(self, msg: FleetData):
         if msg.success:

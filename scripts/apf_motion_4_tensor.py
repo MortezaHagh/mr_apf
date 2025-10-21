@@ -264,7 +264,7 @@ class PlannerRT(object):
         f_r = self.target_f[0]
         f_theta = self.target_f[1]
 
-        self.f_obstacle()
+        self.f_obstacles()
         f_r += self.obs_f[0]
         f_theta += self.obs_f[1]
 
@@ -452,7 +452,7 @@ class PlannerRT(object):
                         mpc = mp.centroid.coords[0]
                         is_robot_in = mp.contains(point_robot)
                         is_target_in = mp.contains(point_target)
-                        self.vs.vizualize_polygon([[], mp_bound], self.p.ns)
+                        self.vs.visualize_polygon([[], mp_bound], self.p.ns)
 
                         # get the minimum bounding circle of the convex hull
                         mbr = mp.minimum_rotated_rectangle
@@ -768,7 +768,7 @@ class PlannerRT(object):
                                         templ3_2[1]+nr_force[1]]
         return nr_force
 
-    def f_obstacle(self):
+    def f_obstacles(self):
         obs_f = [0, 0]
         self.obs_f = [0, 0]
         self.near_obst = False

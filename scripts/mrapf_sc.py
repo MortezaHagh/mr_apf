@@ -165,7 +165,7 @@ class Run():
             fr = round(pl.f_r, 2)
             ft = round(pl.f_theta, 2)
             # rospy.loginfo(f"[planner_base, {self.ns}]: {self.ap.stop_flag_multi}")
-            rospy.loginfo(f"[planner_base, r{rid}]: f_r: {fr}, f_theta: {ft}")
+            # rospy.loginfo(f"[planner_base, r{rid}]: f_r: {fr}, f_theta: {ft}")
             # rospy.loginfo(f"[planner_base, r{rid}]: v: {v}, w: {w}")
             # rospy.loginfo(" --------------------------------------------------- ")
 

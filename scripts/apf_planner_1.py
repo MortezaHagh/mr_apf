@@ -72,7 +72,7 @@ class APFPlanner(APFPlannerBase):
             self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
             self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
 
-    def f_obstacle(self):
+    def f_obstacles(self):
         obst_flag = False
         self.obs_f = [0, 0]
         obs_f = [0, 0]

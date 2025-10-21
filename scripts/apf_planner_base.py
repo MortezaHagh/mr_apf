@@ -125,7 +125,7 @@ class APFPlannerBase:
         f_r = self.target_f[0]
         f_theta = self.target_f[1]
         # obstacles
-        self.f_obstacle()
+        self.f_obstacles()
         f_r += self.obs_f[0]
         f_theta += self.obs_f[1]
         # robots
@@ -151,7 +151,7 @@ class APFPlannerBase:
     def f_target(self):
         pass
 
-    def f_obstacle(self):
+    def f_obstacles(self):
         pass
 
     def f_robots(self):

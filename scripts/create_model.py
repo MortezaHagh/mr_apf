@@ -37,15 +37,15 @@ class ObstacleBase:
         self.y = y
         self.r = r
         if self.r is None:
-            self.r = 0.11  # default obstacle radius  # todo
+            self.r = 0.2  # default obstacle radius  # todo
 
 
 class Obstacle(ObstacleBase):
     def __init__(self, x: float, y: float, params: Params, r: float = None):
         super().__init__(x, y, r)
         self.obst_prec_d = self.r + self.r + params.prec_d  # 0.57
-        self.obst_start_d = 2 * self.obst_prec_d
         self.obst_half_d = 1.5 * self.obst_prec_d
+        self.obst_start_d = 2 * self.obst_prec_d
         self.obst_z = 4 * params.fix_f * self.obst_prec_d**4
 
 # class Obstacles:

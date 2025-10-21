@@ -92,7 +92,7 @@ class Run():
             self.cmrapf.fleet_data_handler.check_all_stuck()
             status = [c.get_state() for c in self.planning_clients.clients]
             s_flags = [s < 2 for s in status]
-            self.visualizer.update_robot_vizuals(self.cmrapf.fleet_data_handler.xy)
+            self.visualizer.update_robot_visuals(self.cmrapf.fleet_data_handler.xy)
             self.rate.sleep()
 
         rospy.loginfo(" ---------------------------------")

@@ -53,13 +53,13 @@ class FleetDataHandler:
         self.nr += 1
         self.rids.append(rid)
         self.sns[rid] = sns
+        self.moving[rid] = True
         self.xy[rid] = (0, 0)
         self.xyt[rid] = (0, 0)
         self.poses[rid] = Pose2D()
+        self.frames[rid] = sns + self.local_frame
         self.fleet_data[rid] = RobotData()
         self.fleet_data[rid].rid = rid
-        self.frames[rid] = sns + self.local_frame
-        self.moving[rid] = True
 
     def update_goal(self, rid: int, xt: float, yt: float):
         self.xyt[rid] = (xt, yt)
