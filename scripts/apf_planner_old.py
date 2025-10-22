@@ -23,7 +23,7 @@ class APFPlanner(APFPlannerBase):
         self.apf_robots: List[ApfRobot] = []
         self.fake_obsts_localmin: List[Obstacle] = []
         self.multi_robots_vis: List[ApfRobot] = []
-        self.cluster_poly_xy: List[Tuple] = []
+        self.clusters_x_y: List[Tuple] = []
 
         #
         self.near_obst = False
@@ -43,7 +43,7 @@ class APFPlanner(APFPlannerBase):
         self.apf_robots = []
         self.fake_obsts_localmin = []
         self.multi_robots_vis = []
-        self.cluster_poly_xy = []
+        self.clusters_x_y = []
         #
         self.near_obst = False
         self.near_robots = False
@@ -284,7 +284,7 @@ class APFPlanner(APFPlannerBase):
                         # mpc = mp.centroid.coords[0]
                         is_robot_in = mp.contains(point_robot)
                         is_target_in = mp.contains(point_target)
-                        self.cluster_poly_xy.append(cluster_poly_coords.xy)
+                        self.clusters_x_y.append(cluster_poly_coords.xy)
 
                         # get the minimum bounding circle of the convex hull
                         mbr = mp.minimum_rotated_rectangle
@@ -485,7 +485,7 @@ class APFPlanner(APFPlannerBase):
         # goal-robot-Robot angle
         ad_rg_rR = cal_angle_diff(self.theta_rg, robo.theta_rR)
         if abs(ad_rg_rR) > (np.pi/2):
-            # robot_between = True
+            # robot_between = False
             return F_r
 
         # [case 2] other Robot heading outward from robot

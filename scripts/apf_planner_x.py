@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
+from collections import defaultdict, deque
 from typing import List, Dict, Tuple
 import numpy as np
-from shapely.coords import CoordinateSequence
 from shapely.geometry import Point, shape, MultiPoint
 from logger import MyLogger
 from parameters import Params
@@ -17,14 +17,14 @@ class APFPlanner(APFPlannerBase):
 
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
         APFPlannerBase.__init__(self, model, robot, params)
-        self.lg = MyLogger(f"APFPlanner2_r{robot.rid}")
-        self.use_fake_cluster_obsts = False
+        self.lg = MyLogger(f"APFPlanner3_r{robot.rid}")
+        self.use_fake_cluster_obsts = True
 
         #
         self.apf_robots: List[ApfRobot] = []
         self.fake_obsts_localmin: List[Obstacle] = []
         self.multi_robots_vis: List[ApfRobot] = []
-        self.cluster_poly_xy: List[Tuple] = []
+        self.clusters_x_y: List = []
 
         #
         self.near_obst = False
@@ -35,7 +35,7 @@ class APFPlanner(APFPlannerBase):
         self.stop_flag_multi = False
 
         # config
-        self.c_radius = 2.5  # 2.5      #$ param 3
+        self.c_radius = 1.0  # 2.5      #$ param 3
         self.c_r_goal_cluster = 2.0     # 2.5 3.0      #$ param 1
         self.c_r_R_cluster = 2.0        # 2.5 3.0      #$ param 1
 
@@ -44,7 +44,7 @@ class APFPlanner(APFPlannerBase):
         self.apf_robots = []
         self.fake_obsts_localmin = []
         self.multi_robots_vis = []
-        self.cluster_poly_xy = []
+        self.clusters_x_y = []
         #
         self.near_obst = False
         self.near_robots = False
@@ -61,6 +61,9 @@ class APFPlanner(APFPlannerBase):
         """
 
         self.reset_vals_2()
+
+        #  to update robot data
+        self.f_target()
 
         # detect obstacles
         self.detect_obstacles_in_proximity()
@@ -106,7 +109,7 @@ class APFPlanner(APFPlannerBase):
         is_goal_close = False
         apf_robots: List[ApfRobot] = []
         AD_h_rR: Dict[int, float] = {}
-        cluster_r_inds_1: List[int] = []
+        clust_candid_inds: List[int] = []
         multi_robots: List[ApfRobot] = []
         multi_robots_vis: List[ApfRobot] = []
 
@@ -117,7 +120,7 @@ class APFPlanner(APFPlannerBase):
 
         # evaluate fleet data ##################################################
         # create new apf_robots and
-        apf_robots, cluster_r_inds_1, AD_h_rR = self.eval_fleet_data()
+        apf_robots, clust_candid_inds, AD_h_rR = self.eval_fleet_data()
         self.apf_robots = apf_robots
 
         # create fake_apf_robots_1 for local minima avoidance ##################
@@ -129,10 +132,10 @@ class APFPlanner(APFPlannerBase):
 
         # if there is none robots in proximity
         # if goal is close, don't create fake obstacles from clustering
-        if not (is_goal_close or len(cluster_r_inds_1) == 0):
+        if not (is_goal_close or len(clust_candid_inds) == 0):
 
             # create fake obstacles from clustering ############################
-            multi_robots = self.create_fake_obst_clusters(cluster_r_inds_1, AD_h_rR)
+            multi_robots = self.create_fake_obst_clusters(clust_candid_inds, AD_h_rR)
             if len(multi_robots) > 0:
                 multi_robots_vis.append(multi_robots[0])
                 apf_robots.append(multi_robots[0])
@@ -158,13 +161,12 @@ class APFPlanner(APFPlannerBase):
         Returns:
             tuple containing
             - apf_robots(List[ApfRobot]): list of new ApfRobot instances based on fleet data
-            - cluster_r_inds_1(List[int]): list of robots indices for clustering
+            - clust_candid_inds(List[int]): list of robots indices for clustering
             - AD_h_rR(Dict[int, float]): angle differences of heading with rR to other robots
         """
 
-        #
         apf_robots: List[ApfRobot] = []
-        cluster_r_inds_1: List[int] = []
+        clust_candid_inds: List[int] = []
         AD_h_rR: Dict[int, float] = {}
 
         # eval fleet data
@@ -186,24 +188,21 @@ class APFPlanner(APFPlannerBase):
             theta_rR = np.arctan2(dy, dx)
             ad_h_rR = cal_angle_diff(self.pose.theta, theta_rR)
             AD_h_rR[orob.rid] = ad_h_rR
-            # ad_h_rR_abs = abs(ad_h_rR)
-            # ad_H_Rr = cal_angle_diff(orob.h, (theta_rR - np.pi))
-            # ad_H_Rr_abs = abs(ad_H_Rr)
 
-            # if (not orob.reached) or (d_rR < (1 * self.params.robot_start_d)):
-            # if (d_rR < (1 * self.params.robot_start_d)) or ((not orob.reached) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr_abs < np.pi/2)):
-
-            # check if robot is not reached, add to cluster_r_inds_1
+            # # add robot for clustering
+            # check if robot is not reached, add to clust_candid_inds
             if not orob.reached:
-                cluster_r_inds_1.append(orob.rid)
+                # other Robot is not between robot and goal
+                ad_rg_rR = cal_angle_diff(self.theta_rg,  theta_rR)
+                if abs(ad_rg_rR) < (np.pi/2):
+                    clust_candid_inds.append(orob.rid)
 
             # create ApfRobot instances as individual robots
             if d_rR < (1 * self.params.robot_start_d):
                 new_robot = self.create_new_apf_robot(orob, d_rR, ad_h_rR, theta_rR)
                 apf_robots.append(new_robot)
 
-        #
-        return apf_robots, cluster_r_inds_1, AD_h_rR
+        return apf_robots, clust_candid_inds, AD_h_rR
 
     def create_fake_obsts_loc_min_avoid(self, apf_robots: List[ApfRobot]) -> None:
         """ create fake obstacles between robot and obstacle.
@@ -225,148 +224,112 @@ class APFPlanner(APFPlannerBase):
                     fake_obsts.append(Obstacle(x=x, y=y, r=r, params=self.params))
         self.fake_obsts_localmin = fake_obsts
 
-    def create_fake_obst_clusters(self, cluster_r_inds_1: List[int], AD_h_rR: Dict[int, float]) -> List[ApfRobot]:
+    def create_fake_obst_clusters(self, clust_candid_inds: List[int], AD_h_rR: Dict[int, float]) -> List[ApfRobot]:
         """ create fake obstacles from clustering
         """
 
-        #
-        robots_inds_f = {}
-        groups = []
+        # initialize
+        nr_multi_robots = []
         multi_robots: List[ApfRobot] = []
 
         # fleet data
         fd: FleetData = self.fleet_data
 
-        # generate robots_inds_f (neighbor robots in proximity circle)
-        robots_inds_2 = cluster_r_inds_1[:]
-        while (len(robots_inds_2) > 0):
-            p = robots_inds_2.pop(0)
-            robots_inds_f[p] = [p]
-            if len(robots_inds_2) == 0:
-                break
-            for ind_j in robots_inds_2:
-                # if not (fd.fdata[p].reached and fd.fdata[ind_j].reached):
-                dist = cal_distance(fd.fdata[p].x, fd.fdata[p].y, fd.fdata[ind_j].x, fd.fdata[ind_j].y)
-                if (dist < (self.params.robot_prec_d*2.2)):    # param 2
-                    robots_inds_f[p].append(ind_j)
+        # Build adjacency list for clustering
+        adjacents = defaultdict(list)
+        for i, ind in enumerate(clust_candid_inds):
+            for j, ind_j in enumerate(clust_candid_inds[i+1:]):
+                dist = cal_distance(fd.fdata[ind].x, fd.fdata[ind].y, fd.fdata[ind_j].x, fd.fdata[ind_j].y)
+                if dist < (self.params.robot_prec_d*2.2):    # param 2 todo
+                    adjacents[ind].append(ind_j)
+                    adjacents[ind_j].append(ind)
 
-        # detect groups
-        robots_inds_3 = cluster_r_inds_1[:]
-        while len(robots_inds_3) > 0:
-            groups.append([])
-            p = robots_inds_3.pop(0)
-            gset = set(robots_inds_f[p])
-            robots_inds_4 = robots_inds_3[:]
-            for ind_j in robots_inds_4:
-                nset = set(robots_inds_f[ind_j])
-                if len(gset.intersection(nset)) > 0:
-                    gset = gset.union(nset)
-                    robots_inds_3.remove(ind_j)
-            groups[-1] = list(gset)
+        # BFS to find connected components (clusters)
+        clusters = []
+        visited = {ind: False for ind in clust_candid_inds}
+        for ind in clust_candid_inds:
+            if not visited[ind]:
+                cluster = []
+                queue = deque([ind])
+                while queue:
+                    current = queue.popleft()
+                    if not visited[current]:
+                        visited[current] = True
+                        cluster.append(current)
+                        for neighbor in adjacents[current]:
+                            if not visited[neighbor]:
+                                queue.append(neighbor)
+                clusters.append(cluster)
 
-        # groups - apf_robots -----------------------------------
-        for g in groups:
-            if len(g) > 1:
-                nr = ApfRobot()
-                nr.cluster = True
-                is_robot_in = False
-                is_target_in = False
+        # Fake obstacles from clusters
+        for cluster in clusters:
+            if len(cluster) <= 1:
+                continue
+            is_robot_in = False
+            is_target_in = False
 
-                # priorities
-                P = [fd.fdata[i].priority > self.robot_data.priority for i in g]
+            # polygon
+            if len(cluster) == 2:
+                x1, y1 = fd.fdata[cluster[0]].x, fd.fdata[cluster[0]].y
+                x2, y2 = fd.fdata[cluster[1]].x, fd.fdata[cluster[1]].y
+                xc = (x1 + x2) / 2
+                yc = (y1 + y2) / 2
+                rc = cal_distance(x1, y1, x2, y2) / 2 + self.params.robot_r * self.c_radius
+            else:
+                robot_p = Point(self.pose.x, self.pose.y)
+                target_p = Point(self.goal_x, self.goal_y)
+                polys_points = [Point(fd.fdata[i].x, fd.fdata[i].y) for i in cluster]
+                if len(polys_points) > 2:
+                    multipoint = MultiPoint([shape(p) for p in polys_points])
+                    mp_ch = multipoint.convex_hull
+                    is_robot_in = mp_ch.contains(robot_p)
+                    is_target_in = mp_ch.contains(target_p)
+                    self.clusters_x_y.append(mp_ch.boundary.coords.xy)
 
-                # polygon
-                is_g2 = True
-                if len(g) > 2:
-                    point_robot = Point(self.pose.x, self.pose.y)
-                    point_target = Point(self.goal_x, self.goal_y)
-                    polys_points = [Point(fd.fdata[i].x, fd.fdata[i].y) for i in g if (not fd.fdata[i].reached)]
-                    if (len(polys_points) > 2):
-                        is_g2 = False
-                        mpt = MultiPoint([shape(p) for p in polys_points])
-                        mp = mpt.convex_hull
-                        cluster_poly_coords: CoordinateSequence = mp.boundary.coords
-                        # mpc = mp.centroid.coords[0]
-                        is_robot_in = mp.contains(point_robot)
-                        is_target_in = mp.contains(point_target)
-                        self.cluster_poly_xy.append(cluster_poly_coords.xy)
+                    # get the minimum bounding circle of the convex hull
+                    mbr = mp_ch.minimum_rotated_rectangle
+                    mbr_center = mbr.centroid.coords[0]
 
-                        # get the minimum bounding circle of the convex hull
-                        mbr = mp.minimum_rotated_rectangle
-                        circum_center = mbr.centroid.coords[0]
-                        # calculate the radius of the circumscribed circle
-                        radius = mbr.exterior.distance(mbr.centroid)
-                        xc = circum_center[0]
-                        yc = circum_center[1]
-                        rc = self.c_radius*radius  # + self.params.robot_r + self.params.prec_d    # param 3
-                        rc = max(rc, 2*self.params.robot_prec_d)
+                    # calculate the circumscribed circle
+                    xc = mbr_center[0]
+                    yc = mbr_center[1]
+                    rc = mbr.exterior.distance(mbr.centroid) + self.params.robot_r * self.c_radius
+                    # rc = max(rc, 2*self.params.robot_prec_d)
 
-                # if robot is in the polygon
-                if (not is_target_in) and is_robot_in:
-                    self.stop_flag_multi = True
-                    return multi_robots
+            # if robot is in the polygon
+            if is_robot_in and not is_target_in:
+                self.stop_flag_multi = True
+                return multi_robots
 
-                # robot is not in the polygon, detect """triangle"""
-                if is_g2:
-                    ad = [AD_h_rR[i] for i in g]
-                    a_min = g[np.argmin(ad)]
-                    a_max = g[np.argmax(ad)]
+            # check target in
+            d_cg = cal_distance(self.goal_x, self.goal_y, xc, yc)
+            if (d_cg < rc):
+                is_target_in = True
+                continue
 
-                    x1 = fd.fdata[a_min].x
-                    x2 = fd.fdata[a_max].x
-                    y1 = fd.fdata[a_min].y
-                    y2 = fd.fdata[a_max].y
-                    dx = x2-x1
-                    dy = y2-y1
-                    theta = np.arctan2(dy, dx)
-                    d12 = cal_distance(x1, y1, x2, y2)
+            # calculate distance and angle to cluster center
+            dx = xc - self.pose.x
+            dy = yc - self.pose.y
+            d_rR = np.sqrt(dx**2 + dy**2)
+            theta_rR = np.arctan2(dy, dx)
+            ad_h_rR = cal_angle_diff(self.pose.theta, theta_rR)
 
-                    xx1 = x1 + (d12/np.sqrt(3)) * np.cos(theta+np.pi/6)
-                    yy1 = y1 + (d12/np.sqrt(3)) * np.sin(theta+np.pi/6)
-                    xx2 = x1 + (d12/np.sqrt(3)) * np.cos(theta-np.pi/6)
-                    yy2 = y1 + (d12/np.sqrt(3)) * np.sin(theta-np.pi/6)
-                    dd1 = cal_distance(xx1, yy1, self.pose.x, self.pose.y)
-                    dd2 = cal_distance(xx2, yy2, self.pose.x, self.pose.y)
-                    if (dd1 < dd2):
-                        xc = xx2
-                        yc = yy2
-                    else:
-                        xc = xx1
-                        yc = yy1
-                    rc = d12/np.sqrt(2)      # /np.sqrt(3) d12 #$
-
-                #
-                d_tc = cal_distance(self.goal_x, self.goal_y, xc, yc)
-                if (d_tc < rc):
-                    is_target_in = True
-                    continue
-
-                # r_c, r_R
-                dx = xc - self.pose.x
-                dy = yc - self.pose.y
-                d_rR = np.sqrt(dx**2 + dy**2)
-                theta_rR = np.arctan2(dy, dx)
-                ad_h_rR = cal_angle_diff(self.pose.theta, theta_rR)
-
-                nr.x = xc
-                nr.y = yc
-                nr.d = d_rR
-                nr.ad_h_rR = ad_h_rR
-                nr.theta_rR = theta_rR
-                if any(P):
-                    nr.prior = True
-                nr.r_prec = rc + self.params.robot_r + self.params.prec_d
-                # nr.r_prec = self.eval_obst(xc, yc, nr.r_prec, d_rR)
-                nr.r_half = 1.5 * nr.r_prec
-                nr.r_start = 2.0 * nr.r_prec
-                nr.z = 4 * self.params.fix_f * nr.r_prec**4
-                # apf_robots.append(nr)
-                multi_robots.append(nr)
+            # create fake robot
+            fake_r = ApfRobot(xc, yc, d_rR, H=self.pose.theta-np.pi)
+            fake_r.cluster = True
+            fake_r.prior = True
+            fake_r.ad_h_rR = ad_h_rR
+            fake_r.theta_rR = theta_rR
+            fake_r.ad_rg_rR = cal_angle_diff(self.theta_rg, theta_rR)
+            fake_r.r_prec = rc + self.params.robot_r + self.params.prec_d
+            fake_r.r_half = 1.5 * fake_r.r_prec
+            fake_r.r_start = 2.0 * fake_r.r_prec
+            fake_r.z = 4 * self.params.fix_f * fake_r.r_prec**4
+            multi_robots.append(fake_r)
+            nr_multi_robots.append(len(cluster))
 
         if len(multi_robots) > 1:
-            rcs = [mr.r_prec for mr in multi_robots]
-            rcs = np.array(rcs)
-            max_ind = np.argmax(rcs)
+            max_ind = np.argmax(nr_multi_robots)
             multi_robots = [multi_robots[max_ind]]
         return multi_robots
 
@@ -380,6 +343,7 @@ class APFPlanner(APFPlannerBase):
         robo.prior = (not (orob.reached or orob.stopped)) and (orob.priority > self.robot_data.priority)
         robo.stopped = orob.stopped
         robo.reached = orob.reached
+        robo.ad_rg_rR = cal_angle_diff(self.theta_rg, theta_rR)
         r_prec = self.params.robot_prec_d
         robo.r_prec = r_prec
         robo.r_half = 1.5 * r_prec
@@ -410,12 +374,12 @@ class APFPlanner(APFPlannerBase):
     def f_robots(self):
         fx, fy = 0.0, 0.0
         new_robots = self.apf_robots
-        for nr in new_robots:
-            if not nr.cluster:
-                force = self.compute_robot_force(nr)
+        for robot in new_robots:
+            if not robot.cluster:
+                force = self.compute_robot_force(robot)
             elif self.use_fake_cluster_obsts:
                 # if (not self.near_robots) and (not self.near_obst):
-                force = self.compute_multi_force(nr)
+                force = self.compute_multi_force(robot)
 
             fx += force[0]
             fy += force[1]
@@ -425,53 +389,9 @@ class APFPlanner(APFPlannerBase):
         fy = round(fy * coeff_f, 3)
         self.robot_f = (fx, fy)
 
-    def compute_multi_force(self, nr: ApfRobot) -> Tuple[float, float]:
-        force = (0, 0)
-        # tocheck #todo
-        if (nr.r_start < nr.d):
-            return force
-
-        # force
-        coeff = 1
-        f1 = ((nr.z * 1) * ((1 / nr.d) - (1 / nr.r_start))**2) * (1 / nr.d)**2
-        f = f1 + 2
-        F_r = (f * -np.cos(nr.ad_h_rR), f * np.sin(nr.ad_h_rR))
-
-        # based_on_goal, target_other_side
-        based_on_goal = False
-        dx = self.goal_x - nr.x
-        dy = self.goal_y - nr.y
-        theta_Rg = np.arctan2(dy, dx)
-        theta_Rr = nr.theta_rR - np.pi
-        ad_Rg_Rr = cal_angle_diff(theta_Rg, theta_Rr)
-        if abs(ad_Rg_Rr) < np.deg2rad(180-20):
-            based_on_goal = True
-        target_other_side = False
-        if abs(ad_Rg_Rr) > np.pi/5:
-            target_other_side = True
-
-        theta_ = 20
-        ad_rg_rR = cal_angle_diff(self.theta_rg,  nr.theta_rR)
-        if based_on_goal:
-            coeff = np.sign(ad_rg_rR*nr.ad_h_rR)
-        else:
-            if abs(nr.ad_h_rR) < np.deg2rad(theta_):
-                coeff = np.sign(ad_rg_rR*nr.ad_h_rR)
-
-        angle_turn_r = nr.theta_rR + (np.pi/2+np.pi/8)*np.sign(nr.ad_h_rR)*coeff
-        ad_c_h = cal_angle_diff(angle_turn_r, self.pose.theta)
-        f3 = f1 + 4
-        templ3 = (f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h))
-
-        if target_other_side:
-            if (nr.r_prec < nr.d):
-                # if (nr.r_prec<nr.d) and abs(nr.ad_h_rR)<np.pi/2: # todo
-                r_force = templ3
-            elif (0.8*nr.r_prec < nr.d < nr.r_prec):
-                r_force = templ3
-                # r_force = [templ3[0]+r_force[0], templ3[1]+r_force[1]]
-
-        return r_force
+    def compute_multi_force(self, robo: ApfRobot) -> Tuple[float, float]:
+        F_f = self.compute_robot_force(robo)
+        return F_f
 
     def compute_robot_force(self, robo: ApfRobot) -> Tuple[float, float]:
         if robo.d > robo.r_start:
@@ -488,9 +408,8 @@ class APFPlanner(APFPlannerBase):
 
         # [case 1] other Robot is not between robot and goal
         # goal-robot-Robot angle
-        ad_rg_rR = cal_angle_diff(self.theta_rg, robo.theta_rR)
-        if abs(ad_rg_rR) > (np.pi/2):
-            # robot_between = True
+        if abs(robo.ad_rg_rR) > (np.pi/2):
+            # robot_between = False
             return F_r
 
         # [case 2] other Robot heading outward from robot
@@ -503,7 +422,7 @@ class APFPlanner(APFPlannerBase):
         c_t = 1
         theta_ = np.deg2rad(10)  # todo param
         if abs(robo.ad_h_rR) < theta_:
-            c_t = np.sign(ad_rg_rR*robo.ad_h_rR)
+            c_t = np.sign(robo.ad_rg_rR*robo.ad_h_rR)
 
         # tangential force
         theta_t = robo.theta_rR + (np.pi/2)*np.sign(robo.ad_h_rR)*c_t
@@ -583,11 +502,6 @@ class APFPlanner(APFPlannerBase):
 
         # apply tangential force
         F_f = (F_t[0]+F_r[0], F_t[1]+F_r[1])
-        # if d_ro > obst.obst_prec_d and d_ro < obst.obst_half_d:
-        #     F_f = (F_t[0]+F_r[0], F_t[1]+F_r[1])
-        # elif (obst.obst_half_d < d_ro):
-        #     if (abs(ad_h_ro) < np.pi/2):
-        #         F_f = (F_t[0]+F_r[0], F_t[1]+F_r[1])
 
         return F_f
 
@@ -611,7 +525,7 @@ class APFPlanner(APFPlannerBase):
         # check bounds
         v = min(v, self.params.v_max)
         v = max(v, self.params.v_min)
-        wa = min(abs(w), self.params.w_max)
-        w = wa * np.sign(w)
+        w = min(w, self.params.w_max)
+        w = max(w, self.params.w_min)
         self.v = v
         self.w = w

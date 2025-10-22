@@ -104,7 +104,7 @@ class RobotPlannerBase:
             self.vizualize_force([self.mrapf.f_r, self.mrapf.f_theta], False)
             if self.params.method == 2:
                 self.viusalizer.draw_fake_obsts_localmin(self.mrapf.fake_obsts_localmin)
-                self.viusalizer.visualize_polygon(self.mrapf.cluster_poly_xy, self.ns, self.params.rid)
+                self.viusalizer.visualize_polygon(self.mrapf.clusters_x_y, self.ns, self.params.rid)
                 self.viusalizer.draw_robot_circles(self.mrapf.multi_robots_vis, self.ns)
 
         # publish cmd

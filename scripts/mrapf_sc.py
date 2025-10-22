@@ -16,6 +16,7 @@ from apf_planner_base import APFPlannerBase
 from apf_planner_1 import APFPlanner as APFPlanner1
 from apf_planner_2 import APFPlanner as APFPlanner2
 from apf_planner_3 import APFPlanner as APFPlanner3
+from apf_planner_x import APFPlanner as APFPlannerX
 from mrapf_classes import TestInfo, AllPlannersData, PlannerData
 
 
@@ -156,7 +157,8 @@ class Run():
         elif self.params.method == 3:
             planner = APFPlanner3(self.model, robot, self.params)
         else:
-            raise ValueError("method not defined")
+            planner = APFPlannerX(self.model, robot, self.params)
+            # raise ValueError("method not defined")
         return planner
 
     def log_motion(self, pl: APFPlannerBase):

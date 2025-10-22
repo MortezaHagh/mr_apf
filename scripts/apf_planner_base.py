@@ -163,7 +163,6 @@ class APFPlannerBase:
         self.goal_y = self.robot.yt
 
     def calculate_velocity(self):
-        #
         f_r, f_theta = self.f_r, self.f_theta
 
         # v
