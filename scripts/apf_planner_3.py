@@ -505,28 +505,24 @@ class APFPlanner(APFPlannerBase):
         if abs(robo.ad_h_rR) < theta_:
             c_t = np.sign(ad_rg_rR*robo.ad_h_rR)
 
+        # tangential force
+        theta_t = robo.theta_rR + (np.pi/2)*np.sign(robo.ad_h_rR)*c_t
+        ad_t_h = cal_angle_diff(theta_t, self.pose.theta)
+        ft = f + 3
+        F_t = (ft * np.cos(ad_t_h), ft * np.sin(ad_t_h))
+        F_f = (F_r[0]+F_t[0], F_r[1]+F_t[1])
+
         # [case 3] other Robot reached or stopped
         if robo.reached or robo.stopped:
-            theta_t = robo.theta_rR + (np.pi/2)*np.sign(robo.ad_h_rR)*c_t
-            ad_t_h = cal_angle_diff(theta_t, self.pose.theta)
-            # f tangential
-            ft = f + 3
-            F_t = (ft * np.cos(ad_t_h), ft * np.sin(ad_t_h))
-            F_f = (F_r[0]+F_t[0], F_r[1]+F_t[1])
             return F_f
 
-        return F_r
+        # check robot headings relative to the line rR
+        ad_rR_h = -robo.ad_h_rR
+        if (ad_Rr_H*ad_rR_h) < 0:
+            if robo.prior:
+                self.stop_flag_robots = True
 
-        # # check robot headings relative to the line rR
-        # c_rR_hH = 1  # headings on different sides of rR
-        # hH_on_sides_RR = True
-        # ad_rR_h = -robo.ad_h_rR
-        # if (ad_Rr_H*ad_rR_h) < 0:
-        #     if robo.prior:
-        #         self.stop_flag_robots = True
-        #         c_rR_hH = -1
-
-        # return F_f
+        return F_f
 
     def f_obstacles(self):
         obs_f = [0, 0]

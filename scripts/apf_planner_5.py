@@ -18,7 +18,6 @@ class APFPlanner(APFPlannerBase):
     def __init__(self, model: MRSModel, robot: Robot, params: Params):
         APFPlannerBase.__init__(self, model, robot, params)
         self.lg = MyLogger(f"APFPlanner2_r{robot.rid}")
-        self.use_fake_cluster_obsts = False
 
         #
         self.apf_robots: List[ApfRobot] = []
@@ -118,14 +117,10 @@ class APFPlanner(APFPlannerBase):
         # evaluate fleet data ##################################################
         # create new apf_robots and
         apf_robots, cluster_r_inds_1, AD_h_rR = self.eval_fleet_data()
-        self.apf_robots = apf_robots
 
         # create fake_apf_robots_1 for local minima avoidance ##################
         # fake_apf_robots_1: List[ApfRobot]
         self.create_fake_obsts_loc_min_avoid(apf_robots)
-
-        if not self.use_fake_cluster_obsts:
-            return
 
         # if there is none robots in proximity
         # if goal is close, don't create fake obstacles from clustering
@@ -413,12 +408,12 @@ class APFPlanner(APFPlannerBase):
         for nr in new_robots:
             if not nr.cluster:
                 force = self.compute_robot_force(nr)
-            elif self.use_fake_cluster_obsts:
-                # if (not self.near_robots) and (not self.near_obst):
-                force = self.compute_multi_force(nr)
+            # else:
+            #     # if (not self.near_robots) and (not self.near_obst):
+            #     force = self.compute_multi_force(nr)
 
-            fx += force[0]
-            fy += force[1]
+                fx += force[0]
+                fy += force[1]
 
         coeff_f = 1
         fx = round(fx * coeff_f, 3)
@@ -517,16 +512,73 @@ class APFPlanner(APFPlannerBase):
 
         return F_r
 
-        # # check robot headings relative to the line rR
-        # c_rR_hH = 1  # headings on different sides of rR
-        # hH_on_sides_RR = True
-        # ad_rR_h = -robo.ad_h_rR
-        # if (ad_Rr_H*ad_rR_h) < 0:
-        #     if robo.prior:
-        #         self.stop_flag_robots = True
-        #         c_rR_hH = -1
+        # check robot headings relative to the line rR
+        c_rR_hH = 1  # headings on different sides of rR
+        hH_on_sides_RR = True
+        ad_rR_h = -robo.ad_h_rR
+        if (ad_Rr_H*ad_rR_h) < 0:
+            if robo.prior:
+                self.stop_flag_robots = True
+                c_rR_hH = -1
 
-        # return F_f
+        # # check if should stops
+        # distance check
+        if robo.d < robo.r_prec:
+            # angle check (heading relative to rR)
+            if abs(robo.ad_h_rR) < (np.pi/4):  # to check # np.pi/4 np.pi/2
+                self.stop_flag_robots = True
+            if (not robo.reached) and (not robo.stopped):  # and robo.prior:
+                if abs(ad_rR_h) < np.pi/2 and abs(ad_Rr_H) > np.pi/2:
+                    self.stop_flag_robot_full = True
+                    # return [0, 0]
+
+        # case hard!
+        theta_Rr = robo.theta_rR - np.pi
+        ad = cal_angle_diff(theta_Rg,  self.theta_rg)
+        if (robo.prior) and abs(ad) < np.deg2rad(30) and d_Rg < self.goal_dist and abs(self.ad_rg_h) < np.deg2rad(40):
+            if abs(cal_angle_diff(self.pose.theta, robo.H)) < np.deg2rad(90):
+                self.stop_flag_robot_full = True
+
+        # angle_turns
+        angle_turn_R = robo.theta_rR - (np.pi/2)*np.sign(ad_Rr_H*c_rR_hH)
+        ad_C_h = cal_angle_diff(angle_turn_R, self.pose.theta)
+        angle_turn_r = robo.theta_rR + (np.pi/2)*np.sign(robo.ad_h_rR)*c_t
+        ad_c_h = cal_angle_diff(angle_turn_r, self.pose.theta)
+
+        #
+        f2 = f + 2
+        f2_2 = f + 4
+        templ2 = [f2 * np.cos(ad_C_h), f2 * np.sin(ad_C_h)]
+        templ2_2 = [f2_2 * np.cos(ad_C_h), f2_2 * np.sin(ad_C_h)]
+
+        #
+        templ2 = []
+        templ3 = []
+        templ3_2 = []
+
+        f3 = f + 2  # tocheck
+        f3_2 = f + 4
+        templ3 = [f3 * np.cos(ad_c_h), f3 * np.sin(ad_c_h)]
+        templ3_2 = [f3_2 * np.cos(ad_c_h), f3_2 * np.sin(ad_c_h)]
+
+        # adjust heading
+        if robot_between:
+            if (robo.r_half < robo.d < robo.r_start):
+                if (not robo.reached) and (not robo.stopped):
+                    if (hH_on_sides_RR and abs(robo.ad_h_rR) < np.pi/2) and (abs(ad_Rr_H) < (np.pi/2)):
+                        r_force = (templ2[0]+r_force[0], templ2[1]+r_force[1])
+                else:
+                    if (abs(robo.ad_h_rR) < (np.pi/2)):
+                        r_force = (templ3[0]+r_force[0], templ3[1]+r_force[1])
+
+            elif (robo.r_prec < robo.d < robo.r_half):
+                if (not robo.reached) and (not robo.stopped):
+                    if (hH_on_sides_RR and abs(robo.ad_h_rR) < np.pi/2 and abs(ad_Rr_H) < np.pi/2):
+                        r_force = (templ2_2[0]+r_force[0], templ2_2[1]+r_force[1])
+                else:
+                    if True:  # (abs(robo.ad_h_rR)<(np.pi/2)):
+                        r_force = (templ3_2[0]+r_force[0], templ3_2[1]+r_force[1])
+        return r_force
 
     def f_obstacles(self):
         obs_f = [0, 0]

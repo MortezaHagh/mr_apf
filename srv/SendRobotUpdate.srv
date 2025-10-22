@@ -3,6 +3,6 @@ float32 xt
 float32 yt
 bool reached
 bool stopped
-bool moving
+bool stuck
 ---
 bool success

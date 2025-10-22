@@ -16,7 +16,7 @@ class FleetDataHandler:
     def __init__(self, params: Params):
 
         #
-        self.all_stuck: bool = False
+        self.all_stalled: bool = False
 
         # data
         self.nr: int = 0
@@ -27,7 +27,7 @@ class FleetDataHandler:
         self.poses: Dict[int, Pose2D] = {}
         self.fleet_data: Dict[int, RobotData] = {}
         self.frames: Dict[int, str] = {}
-        self.moving: Dict[int, bool] = {}
+        self.stalled: Dict[int, bool] = {}
 
         # settings
         self.global_frame = params.global_frame
@@ -53,7 +53,7 @@ class FleetDataHandler:
         self.nr += 1
         self.rids.append(rid)
         self.sns[rid] = sns
-        self.moving[rid] = True
+        self.stalled[rid] = False
         self.xy[rid] = (0, 0)
         self.xyt[rid] = (0, 0)
         self.poses[rid] = Pose2D()
@@ -68,17 +68,17 @@ class FleetDataHandler:
         rid = req.rid
         self.fleet_data[rid].stopped = req.stopped
         self.fleet_data[rid].reached = req.reached
-        self.moving[rid] = (not req.stopped) and req.moving
+        self.stalled[rid] = req.stopped or req.stuck
         resp = SendRobotUpdateResponse()
         resp.success = True
         return resp
 
-    def check_all_stuck(self) -> bool:
-        all_p = self.moving.values()
-        self.all_stuck = not any(all_p)
-        if self.all_stuck:
-            rospy.logerr(f"[FleetDataHandler]: All robots stuck: {self.all_stuck}")
-        return self.all_stuck
+    def check_all_stalled(self) -> bool:
+        stalled = self.stalled.values()
+        self.all_stalled = all(stalled)
+        if self.all_stalled:
+            rospy.logerr("[FleetDataHandler]: All robots stalled")
+        return self.all_stalled
 
     def update_fleet_data(self) -> bool:
         fd = FleetData()
@@ -165,8 +165,8 @@ class FleetDataHandler:
         self.fleet_data[rid].reached = reached
         self.fleet_data[rid].priority = 0.0
 
-    def set_is_moving(self, rid: int, moving: bool):
-        self.moving[rid] = moving
+    def set_is_stalled(self, rid: int, stalled: bool):
+        self.stalled[rid] = stalled
 
     # def get_all_data(self) -> Dict[int, RobotData]:
     #     return self.fleet_data

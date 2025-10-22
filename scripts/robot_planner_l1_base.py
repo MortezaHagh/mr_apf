@@ -10,6 +10,7 @@ from create_model import MRSModel, Robot
 from apf_planner_base import APFPlannerBase
 from apf_planner_1 import APFPlanner as APFPlanner1
 from apf_planner_2 import APFPlanner as APFPlanner2
+from apf_planner_3 import APFPlanner as APFPlanner3
 from apf.srv import SendRobotUpdate, SendRobotUpdateRequest
 from apf.msg import FleetData
 
@@ -35,6 +36,8 @@ class RobotPlannerBase:
             self.mrapf = APFPlanner1(model, robot, params)
         elif params.method == 2:
             self.mrapf = APFPlanner2(model, robot, params)
+        elif params.method == 3:
+            self.mrapf = APFPlanner3(model, robot, params)
         else:
             raise ValueError("method not defined")
 
@@ -68,7 +71,7 @@ class RobotPlannerBase:
         self.ruc_req.yt = robot.yt
         self.ruc_req.stopped = False
         self.ruc_req.reached = False
-        self.ruc_req.moving = True
+        self.ruc_req.stuck = False
 
     def start_planner(self):
         # start time
@@ -108,7 +111,7 @@ class RobotPlannerBase:
         move_cmd = Twist()
         move_cmd.linear.x = self.v
         move_cmd.angular.z = self.w
-        # self.cmd_vel_pub.publish(move_cmd)
+        self.cmd_vel_pub.publish(move_cmd)
 
         # check stop
         if self.mrapf.stopped != self.mrapf.prev_stopped:
@@ -117,10 +120,10 @@ class RobotPlannerBase:
             self.mrapf.prev_stopped = self.mrapf.stopped
 
         # check progress
-        if self.mrapf.moving != self.mrapf.prev_moving:
-            self.ruc_req.moving = self.mrapf.moving
+        if self.mrapf.stuck != self.mrapf.prev_stuck:
+            self.ruc_req.stuck = self.mrapf.stuck
             self.robot_update_client(self.ruc_req)
-            self.mrapf.prev_moving = self.mrapf.moving
+            self.mrapf.prev_stuck = self.mrapf.stuck
 
         # log data
         self.log_motion(self.mrapf.f_r, self.mrapf.f_theta)

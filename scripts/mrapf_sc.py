@@ -15,6 +15,7 @@ from fleet_data_handler import FleetDataHandler
 from apf_planner_base import APFPlannerBase
 from apf_planner_1 import APFPlanner as APFPlanner1
 from apf_planner_2 import APFPlanner as APFPlanner2
+from apf_planner_3 import APFPlanner as APFPlanner3
 from mrapf_classes import TestInfo, AllPlannersData, PlannerData
 
 
@@ -95,7 +96,7 @@ class Run():
         pl: APFPlannerBase
         while not (all(reaches.values()) or rospy.is_shutdown() or self.abort):
             # check all stuck
-            if (self.fdh.check_all_stuck()):
+            if (self.fdh.check_all_stalled()):
                 break
 
             for pl in self.planners:
@@ -118,9 +119,9 @@ class Run():
                     pl.prev_stopped = pl.stopped
 
                 # check progress
-                if pl.moving != pl.prev_moving:
-                    self.fdh.set_is_moving(pl.robot.rid, pl.moving)
-                    pl.prev_moving = pl.moving
+                if pl.stuck != pl.prev_stuck:
+                    self.fdh.set_is_stalled(pl.robot.rid, pl.stuck)
+                    pl.prev_stuck = pl.stuck
 
                 # check reach
                 if pl.reached:
@@ -152,6 +153,8 @@ class Run():
             planner = APFPlanner1(self.model, robot, self.params)
         elif self.params.method == 2:
             planner = APFPlanner2(self.model, robot, self.params)
+        elif self.params.method == 3:
+            planner = APFPlanner3(self.model, robot, self.params)
         else:
             raise ValueError("method not defined")
         return planner
@@ -185,7 +188,7 @@ class Run():
     def plotting(self):
         plotter = Plotter(self.model, self.params, self.test_info.res_file_path)
         plotter.plot_all_paths(self.planners_data)
-        plt.show()
+        # plt.show()
 
     def save_data(self):
         with open(self.test_info.res_file_path + "paths.json", "w") as outfile:

@@ -113,7 +113,7 @@ class ApfRobot:
         self.y = y
         self.d = d
         self.H = H
-        self.h_rR = 0
+        self.ad_h_rR = 0
         self.theta_rR = 0
         self.z = 1
         self.r_prec = 0

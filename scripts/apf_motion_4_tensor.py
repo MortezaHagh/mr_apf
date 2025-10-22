@@ -85,7 +85,7 @@ class PlannerRT(object):
         self.rec.f_ot = []
         self.near_obst = False
         self.near_robots = False
-        self.stop_flag_full = False
+        self.stop_flag_robot_full = False
         self.stop_flag_obsts = False
         self.stop_flag_robots = False
 
@@ -182,8 +182,8 @@ class PlannerRT(object):
                     if abs(self.w) < (np.deg2rad(2)):
                         self.v = self.p.v_min_2
 
-                if self.stop_flag_full:
-                    print(self.p.rid, "stop_flag_full")
+                if self.stop_flag_robot_full:
+                    print(self.p.rid, "stop_flag_robot_full")
                     req = SharePosesRequest()
                     reqrid = self.p.rid
                     req.stopped = True
@@ -256,7 +256,7 @@ class PlannerRT(object):
         f_theta = 0
         self.near_obst = False
         self.near_robots = False
-        self.stop_flag_full = False
+        self.stop_flag_robot_full = False
         self.stop_flag_obsts = False
         self.stop_flag_robots = False
 
@@ -715,14 +715,14 @@ class PlannerRT(object):
                     self.stop_flag_robots = True
                 if (not nr.reached) and (not nr.stopped):  # and nr.p:
                     if abs(ad_rR_h) < np.pi/2 and abs(ad_Rr_H) > np.pi/2:
-                        self.stop_flag_full = True
+                        self.stop_flag_robot_full = True
                         # return [0, 0]
 
             # case hard!
             ad = self.angle_diff(theta_Rg,  self.theta_rg)
             if (nr.p) and abs(ad) < np.deg2rad(30) and d_Rg < self.goal_dist and abs(self.ad_rg_h) < np.deg2rad(40):
                 if abs(self.angle_diff(self.r_h, nr.H)) < np.deg2rad(90):
-                    self.stop_flag_full = True
+                    self.stop_flag_robot_full = True
 
             # angle_turns
             angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H*R_coeff)
@@ -1248,14 +1248,14 @@ class PlannerRT(object):
                         self.stop_flag_robots = True
                     if (not nr.reached) and (not nr.stopped):  # and nr.p:
                         if abs(ad_rR_h) < np.pi/2 and abs(ad_Rr_H) > np.pi/2:
-                            self.stop_flag_full = True
+                            self.stop_flag_robot_full = True
                             # return [0, 0]
 
                 # case hard!
                 ad = self.angle_diff(theta_Rg,  theta_rg)
                 if (nr.p) and abs(ad) < np.deg2rad(30) and d_Rg < self.goal_dist and abs(self.ad_rg_h) < np.deg2rad(40):
                     if abs(self.angle_diff(r_h, nr.H)) < np.deg2rad(90):
-                        self.stop_flag_full = True
+                        self.stop_flag_robot_full = True
 
                 # angle_turns
                 angle_turn_R = nr.theta_rR - (np.pi/2)*np.sign(ad_Rr_H*R_coeff)

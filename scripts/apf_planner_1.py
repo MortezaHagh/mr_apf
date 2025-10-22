@@ -34,11 +34,9 @@ class APFPlanner(APFPlannerBase):
         self.target_f = [fx, fy]
 
     def f_robots(self):
-        robot_flag = False
-        fd: FleetData = self.fleet_data
-        #
         robot_f = [0, 0]
         self.robot_f = [0, 0]
+        fd: FleetData = self.fleet_data
         #
         rob: RobotData
         for rob in fd.fdata:
@@ -55,25 +53,22 @@ class APFPlanner(APFPlannerBase):
                 continue
 
             # check if robot should stop
-            if (not rob.reached) and (d_ro < self.params.robot_half_d) and (rob.priority > self.robot_data.priority):
+            if (not rob.reached) and (d_ro < self.params.robot_prec_d) and (rob.priority > self.robot_data.priority):
                 self.stopped = True
                 break
 
             # force
-            robot_flag = True
             f = ((self.params.robot_z * 1) * ((1 / d_ro) - (1 / self.params.robot_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
-            robot_f[0] += round(templ[0], 3)
-            robot_f[1] += round(templ[1], 3)
+            robot_f[0] += templ[0]
+            robot_f[1] += templ[1]
 
         # final force
         coeff_f = 1
-        if robot_flag:
-            self.robot_f[0] += round(robot_f[0] * coeff_f, 3)
-            self.robot_f[1] += round(robot_f[1] * coeff_f, 3)
+        self.robot_f[0] += robot_f[0] * coeff_f
+        self.robot_f[1] += robot_f[1] * coeff_f
 
     def f_obstacles(self):
-        obst_flag = False
         self.obs_f = [0, 0]
         obs_f = [0, 0]
         for obst in self.obstacles:
@@ -85,18 +80,16 @@ class APFPlanner(APFPlannerBase):
             if d_ro > obst.obst_start_d:
                 continue
 
-            obst_flag = True
             theta = np.arctan2(dy, dx)
             angle_diff = cal_angle_diff(theta, self.pose.theta)
 
             # force
             f = ((obst.obst_z * 1) * ((1 / d_ro) - (1 / obst.obst_start_d))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
-            obs_f[0] += round(templ[0], 3)
-            obs_f[1] += round(templ[1], 3)
+            obs_f[0] += templ[0]
+            obs_f[1] += templ[1]
 
         # final force
         coeff_f = 1
-        if obst_flag:
-            self.obs_f[0] += round(obs_f[0] * coeff_f, 3)
-            self.obs_f[1] += round(obs_f[1] * coeff_f, 3)
+        self.obs_f[0] += obs_f[0] * coeff_f
+        self.obs_f[1] += obs_f[1] * coeff_f

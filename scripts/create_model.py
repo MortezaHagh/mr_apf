@@ -16,7 +16,7 @@ class Map:
 
 
 class Robot:
-    def __init__(self, rid: int, xs: float, ys: float, xt: float, yt: float, r: float = None, heading: float = 0.0):
+    def __init__(self, rid: int, xs: float, ys: float, xt: float, yt: float, r: float = None, heading: float = 0.0, params: Params = None):
         self.rid = rid
         self.ns = "/r"+str(rid)
         self.sns = "r"+str(rid)
@@ -28,22 +28,22 @@ class Robot:
         self.priority = rid
         self.r = r
         if self.r is None:
-            self.r = 0.22  # default robot radius  # todo
+            self.r = params.robot_r  # default robot radius
 
 
 class ObstacleBase:
-    def __init__(self, x: float, y: float, r: float = None):
+    def __init__(self, x: float, y: float, r: float = None, params: Params = None):
         self.x = x
         self.y = y
         self.r = r
         if self.r is None:
-            self.r = 0.2  # default obstacle radius  # todo
+            self.r = params.obst_r  # default obstacle radius
 
 
 class Obstacle(ObstacleBase):
     def __init__(self, x: float, y: float, params: Params, r: float = None):
-        super().__init__(x, y, r)
-        self.obst_prec_d = self.r + self.r + params.prec_d  # 0.57
+        super().__init__(x, y, r, params)
+        self.obst_prec_d = params.robot_r + self.r + params.prec_d  # 0.57
         self.obst_half_d = 1.5 * self.obst_prec_d
         self.obst_start_d = 2 * self.obst_prec_d
         self.obst_z = 4 * params.fix_f * self.obst_prec_d**4
@@ -92,7 +92,7 @@ class MRSModel:
             ys = inputs.y_starts[i]
             xt = inputs.x_targets[i]
             yt = inputs.y_targets[i]
-            self.robots.append(Robot(rid, xs, ys, xt, yt, h))
+            self.robots.append(Robot(rid, xs, ys, xt, yt, h, params=params))
 
         # # robots Data
         # self.robots_data: RobotsData = RobotsData(inputs)

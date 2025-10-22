@@ -49,8 +49,8 @@ class APFPlannerBase:
         self.reached = False
         self.stopped = False
         self.prev_stopped = False
-        self.moving = True
-        self.prev_moving = True
+        self.stuck = False
+        self.prev_stuck = True
 
         # control vars
         self.ad_rg_h = None
@@ -69,7 +69,7 @@ class APFPlannerBase:
         #
         self.reached = False
         self.stopped = False
-        self.moving = True
+        self.stuck = False
 
     def planner_next_move(self, pose: Pose2D, fleet_data: FleetData) -> None:
         # inputs - reset
@@ -149,13 +149,13 @@ class APFPlannerBase:
         # self.pd.f_tt.append(self.target_f[1])
 
     def f_target(self):
-        pass
+        raise NotImplementedError
 
     def f_obstacles(self):
-        pass
+        raise NotImplementedError
 
     def f_robots(self):
-        pass
+        raise NotImplementedError
 
     def parse_map_data(self):
         # robot target
@@ -174,7 +174,7 @@ class APFPlannerBase:
         # w
         w = 5 * self.params.w_max * f_theta / self.params.fix_f
         if v == 0 and abs(w) < 0.05:
-            w = 1*np.sign(w)
+            w = 1.0*np.sign(w)
 
         # v
         if (v == 0) and abs(w) < 0.03:
@@ -183,12 +183,12 @@ class APFPlannerBase:
         # check bounds
         v = min(v, self.params.v_max)
         v = max(v, self.params.v_min)
-        wa = min(abs(w), self.params.w_max)
-        w = wa * np.sign(w)
+        w = min(w, self.params.w_max)
+        w = max(w, self.params.w_min)
         self.v = v
         self.w = w
 
     def eval_move_status(self):
-        # check moving
+        # check stuck status
         if abs(self.v) < self.params.v_zero_tresh and abs(self.w) < self.params.w_zero_tresh:
-            self.moving = False
+            self.stuck = True

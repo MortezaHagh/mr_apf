@@ -8,9 +8,9 @@ class Params:
 
         # configs
         self.point: bool = point
-        self.simD: str = "3D"  # 3D 2D
+        self.simD: str = "2D"  # 3D 2D
         self.nr: int = 5
-        self.method: int = 2
+        self.method: int = 3
         self.map_id: int = 1
         self.rid: int = -1
 
@@ -43,7 +43,7 @@ class Params:
         self.v_min = 0.0
         self.v_min_2 = 0.05  # 0.02
         self.w_max = 1.0
-        self.w_min = 0.0
+        self.w_min = -1.0
         self.w_coeff = 1
         #
         self.v_zero_tresh = 0.03
@@ -58,9 +58,9 @@ class Params:
         self.fix_f2 = 10
 
         # radiuses and precaution distances
-        # self.obst_r = 0.11
+        self.obst_r = 0.17
         self.prec_d = 0.1
-        self.robot_r = 0.22  # @ 0.22        # robots effective radius
+        self.robot_r = 0.2  # robots effective radius
         # #
         # self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
         # self.obst_start_d = 2 * self.obst_prec_d
