@@ -5,7 +5,7 @@
     <!-- <arg name="world_name" value="$(find apf)/worlds/empty_world_1.world" /> -->
     <arg name="paused" value="false" />
     <arg name="use_sim_time" value="true" />
-    <arg name="gui" value="false" />
+    <arg name="gui" value="true" />
     <arg name="headless" value="false" />
     <arg name="debug" value="false" />
   </include>
@@ -29,12 +29,12 @@
   <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0 0 0 0 0 0 1 map r3/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link4_broadcaster" args="0 0 0 0 0 0 1 map r4/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link5_broadcaster" args="0 0 0 0 0 0 1 map r5/odom 50" />
-  <!-- <node pkg="tf" type="static_transform_publisher" name="link6_broadcaster" args="0 0 0 0 0 0 1 odom r6/odom 50" />
+  <node pkg="tf" type="static_transform_publisher" name="link6_broadcaster" args="0 0 0 0 0 0 1 odom r6/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link7_broadcaster" args="0 0 0 0 0 0 1 map r7/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link8_broadcaster" args="0 0 0 0 0 0 1 map r8/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link9_broadcaster" args="0 0 0 0 0 0 1 map r9/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link10_broadcaster" args="0 0 0 0 0 0 1 map r10/odom 50" />
-  <node pkg="tf" type="static_transform_publisher" name="link11_broadcaster" args="0 0 0 0 0 0 1 map r11/odom 50" />
+  <!-- <node pkg="tf" type="static_transform_publisher" name="link11_broadcaster" args="0 0 0 0 0 0 1 map r11/odom 50"/>
   <node pkg="tf" type="static_transform_publisher" name="link12_broadcaster" args="0 0 0 0 0 0 1 map r12/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link13_broadcaster" args="0 0 0 0 0 0 1 map r13/odom 50" />
   <node pkg="tf" type="static_transform_publisher" name="link14_broadcaster" args="0 0 0 0 0 0 1 map r14/odom 50" />

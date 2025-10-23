@@ -11,6 +11,7 @@ from apf_planner_base import APFPlannerBase
 from apf_planner_1 import APFPlanner as APFPlanner1
 from apf_planner_2 import APFPlanner as APFPlanner2
 from apf_planner_3 import APFPlanner as APFPlanner3
+from apf_planner_x import APFPlanner as APFPlannerX
 from apf.srv import SendRobotUpdate, SendRobotUpdateRequest
 from apf.msg import FleetData
 
@@ -39,7 +40,8 @@ class RobotPlannerBase:
         elif params.method == 3:
             self.mrapf = APFPlanner3(model, robot, params)
         else:
-            raise ValueError("method not defined")
+            self.mrapf = APFPlannerX(model, robot, params)
+            # raise ValueError("method not defined")
 
         #
         self.pose = Pose2D()        # robot pose
@@ -102,7 +104,7 @@ class RobotPlannerBase:
         # vizualize
         if self.do_viz:
             self.vizualize_force([self.mrapf.f_r, self.mrapf.f_theta], False)
-            if self.params.method == 2:
+            if self.params.method > 1:
                 self.viusalizer.draw_fake_obsts_localmin(self.mrapf.fake_obsts_localmin)
                 self.viusalizer.visualize_polygon(self.mrapf.clusters_x_y, self.ns, self.params.rid)
                 self.viusalizer.draw_robot_circles(self.mrapf.multi_robots_vis, self.ns)

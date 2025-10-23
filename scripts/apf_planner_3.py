@@ -35,9 +35,9 @@ class APFPlanner(APFPlannerBase):
         self.stop_flag_multi = False
 
         # config
-        self.c_radius = 1.0  # 2.5      #$ param 3
-        self.c_r_goal_cluster = 2.0     # 2.5 3.0      #$ param 1
-        self.c_r_R_cluster = 2.0        # 2.5 3.0      #$ param 1
+        self.c_r_R_cluster = 3.0
+        self.c_cluster_radius = 1.0
+        self.c_r_is_goal_close_cluster = 2.0
 
     def reset_vals_2(self):
         #
@@ -111,11 +111,10 @@ class APFPlanner(APFPlannerBase):
         AD_h_rR: Dict[int, float] = {}
         clust_candid_inds: List[int] = []
         multi_robots: List[ApfRobot] = []
-        multi_robots_vis: List[ApfRobot] = []
 
         # is_goal_close
         goal_dist = cal_distance(self.pose.x, self.pose.y, self.goal_x, self.goal_y)
-        if goal_dist < (self.c_r_goal_cluster*self.params.robot_start_d):
+        if goal_dist < (self.c_r_is_goal_close_cluster*self.params.robot_start_d):
             is_goal_close = True
 
         # evaluate fleet data ##################################################
@@ -137,12 +136,9 @@ class APFPlanner(APFPlannerBase):
             # create fake obstacles from clustering ############################
             multi_robots = self.create_fake_obst_clusters(clust_candid_inds, AD_h_rR)
             if len(multi_robots) > 0:
-                multi_robots_vis.append(multi_robots[0])
-                apf_robots.append(multi_robots[0])
+                self.multi_robots_vis.append(multi_robots[0])
+                self.apf_robots.append(multi_robots[0])
 
-        #
-        self.multi_robots_vis = multi_robots_vis
-        self.apf_robots = apf_robots
         return
 
     def detect_obstacles_in_proximity(self):
@@ -238,7 +234,7 @@ class APFPlanner(APFPlannerBase):
         # Build adjacency list for clustering
         adjacents = defaultdict(list)
         for i, ind in enumerate(clust_candid_inds):
-            for j, ind_j in enumerate(clust_candid_inds[i+1:]):
+            for ind_j in clust_candid_inds[i+1:]:
                 dist = cal_distance(fd.fdata[ind].x, fd.fdata[ind].y, fd.fdata[ind_j].x, fd.fdata[ind_j].y)
                 if dist < (self.params.robot_prec_d*2.2):    # param 2 todo
                     adjacents[ind].append(ind_j)
@@ -274,7 +270,7 @@ class APFPlanner(APFPlannerBase):
                 x2, y2 = fd.fdata[cluster[1]].x, fd.fdata[cluster[1]].y
                 xc = (x1 + x2) / 2
                 yc = (y1 + y2) / 2
-                rc = cal_distance(x1, y1, x2, y2) / 2 + self.params.robot_r * self.c_radius
+                rc = cal_distance(x1, y1, x2, y2) / 2 + self.params.robot_r * self.c_cluster_radius
             else:
                 robot_p = Point(self.pose.x, self.pose.y)
                 target_p = Point(self.goal_x, self.goal_y)
@@ -284,16 +280,25 @@ class APFPlanner(APFPlannerBase):
                     mp_ch = multipoint.convex_hull
                     is_robot_in = mp_ch.contains(robot_p)
                     is_target_in = mp_ch.contains(target_p)
-                    self.clusters_x_y.append(mp_ch.boundary.coords.xy)
+                    x_y = mp_ch.boundary.coords.xy
+                    self.clusters_x_y.append(x_y)
 
                     # get the minimum bounding circle of the convex hull
-                    mbr = mp_ch.minimum_rotated_rectangle
-                    mbr_center = mbr.centroid.coords[0]
+                    poly_xys = list(zip(*x_y))
+                    xc = sum(x for x, y in poly_xys) / len(poly_xys)
+                    yc = sum(y for x, y in poly_xys) / len(poly_xys)
+                    d_c_max = max(cal_distance(xc, yc, x, y) for x, y in poly_xys)
 
-                    # calculate the circumscribed circle
-                    xc = mbr_center[0]
-                    yc = mbr_center[1]
-                    rc = mbr.exterior.distance(mbr.centroid) + self.params.robot_r * self.c_radius
+                    # # get the minimum bounding circle of the convex hull
+                    # mbr = mp_ch.minimum_rotated_rectangle
+                    # mbr_c = mbr.centroid.coords[0]
+                    # xc = mbr_c[0]
+                    # yc = mbr_c[1]
+                    # # get distance from center to furthest point to
+                    # d_c_max = max(cal_distance(mbr_c[0], mbr_c[1], x, y) for x, y in zip(*poly_xys))
+
+                    #
+                    rc = d_c_max + self.params.robot_r * self.c_cluster_radius
                     # rc = max(rc, 2*self.params.robot_prec_d)
 
             # if robot is in the polygon
@@ -304,7 +309,6 @@ class APFPlanner(APFPlannerBase):
             # check target in
             d_cg = cal_distance(self.goal_x, self.goal_y, xc, yc)
             if (d_cg < rc):
-                is_target_in = True
                 continue
 
             # calculate distance and angle to cluster center
@@ -317,7 +321,7 @@ class APFPlanner(APFPlannerBase):
             # create fake robot
             fake_r = ApfRobot(xc, yc, d_rR, H=self.pose.theta-np.pi)
             fake_r.cluster = True
-            fake_r.prior = True
+            fake_r.prior = False  # dec_var
             fake_r.ad_h_rR = ad_h_rR
             fake_r.theta_rR = theta_rR
             fake_r.ad_rg_rR = cal_angle_diff(self.theta_rg, theta_rR)
@@ -390,6 +394,9 @@ class APFPlanner(APFPlannerBase):
         self.robot_f = (fx, fy)
 
     def compute_multi_force(self, robo: ApfRobot) -> Tuple[float, float]:
+        if self.near_robots or self.near_obst:
+            return (0.0, 0.0)
+
         F_f = self.compute_robot_force(robo)
         return F_f
 
@@ -398,7 +405,7 @@ class APFPlanner(APFPlannerBase):
             return (0.0, 0.0)
 
         # near_robots
-        if robo.d < robo.r_half:
+        if robo.d < robo.r_prec:
             self.near_robots = True
 
         # radial force
@@ -475,7 +482,7 @@ class APFPlanner(APFPlannerBase):
         ad_h_ro = cal_angle_diff(self.pose.theta, theta_ro)
 
         # check if too close to obstacle
-        if d_ro < obst.obst_half_d:
+        if d_ro < obst.obst_prec_d:
             self.near_obst = True
 
         # radial force
