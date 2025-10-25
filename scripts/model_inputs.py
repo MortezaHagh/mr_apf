@@ -346,13 +346,13 @@ class ModelInputs:
         self.y_targets = data['y_targets']
 
         # modify obstacles
-        obst_prec_d = 0.4/self.path_unit
+        d_prec = 0.4/self.path_unit
         new_obst_x = []
         new_obst_y = []
         for i, [x, y] in enumerate(zip(self.x_obsts, self.y_obsts)):
             for j in range(i+1, len(self.x_obsts)):
                 dist = cal_distance(x, y, self.x_obsts[j], self.y_obsts[j])
-                if obst_prec_d < dist < 1.65*obst_prec_d:
+                if d_prec < dist < 1.65*d_prec:
                     new_obst_x.append((self.x_obsts[j]+x)/2)
                     new_obst_y.append((self.y_obsts[j]+y)/2)
 
@@ -361,13 +361,13 @@ class ModelInputs:
 
     def modify_obst(self):
         # modify obstacles
-        obst_prec_d = 0.4/self.path_unit
+        d_prec = 0.4/self.path_unit
         new_obst_x = []
         new_obst_y = []
         for i, [x, y] in enumerate(zip(self.x_obsts, self.y_obsts)):
             for j in range(i+1, len(self.x_obsts)):
                 dist = cal_distance(x, y, self.x_obsts[j], self.y_obsts[j])
-                if dist < 1.99*obst_prec_d and dist > obst_prec_d:
+                if dist < 1.99*d_prec and dist > d_prec:
                     xxm = (self.x_obsts[j]+x)/2.0
                     yym = (self.y_obsts[j]+y)/2.0
                     new_obst_x.append((x+xxm)/2.0)

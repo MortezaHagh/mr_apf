@@ -118,18 +118,18 @@ class PlannerRT(object):
         self.p.fix_f = 4
         self.p.fix_f2 = 10
         self.p.obst_r = 0.11
-        self.p.prec_d = 0.07
+        self.p.d_prec = 0.07
         self.p.robot_r = 0.22
 
-        self.p.obst_prec_d = self.p.robot_r + self.p.obst_r + self.p.prec_d  # 0.57
-        self.p.obst_start_d = 2 * self.p.obst_prec_d
-        self.p.obst_half_d = 1.5 * self.p.obst_prec_d
-        self.p.obst_z = 4 * self.p.fix_f * self.p.obst_prec_d**4
+        self.p.d_prec = self.p.robot_r + self.p.obst_r + self.p.d_prec  # 0.57
+        self.p.d_start = 2 * self.p.d_prec
+        self.p.d_half = 1.5 * self.p.d_prec
+        self.p.obst_z = 4 * self.p.fix_f * self.p.d_prec**4
 
-        self.p.robot_prec_d = 2 * self.p.robot_r + self.p.prec_d  # 0.64
-        self.p.robot_start_d = 2 * self.p.robot_prec_d
-        self.p.robot_half_d = 1.5 * self.p.robot_prec_d
-        self.p.robot_z = 4 * self.p.fix_f * self.p.robot_prec_d**4
+        self.p.robot_d_prec = 2 * self.p.robot_r + self.p.d_prec  # 0.64
+        self.p.robot_d_start = 2 * self.p.robot_d_prec
+        self.p.robot_d_half = 1.5 * self.p.robot_d_prec
+        self.p.robot_z = 4 * self.p.fix_f * self.p.robot_d_prec**4
 
         # init_params.w_coeff       # angular velocity coeff
         self.p.w_coeff = 1
@@ -320,7 +320,7 @@ class PlannerRT(object):
         robots_priority = resp_poses.priority
 
         goal_dist = self.distance(self.r_x, self.r_y, self.goal_x, self.goal_y)
-        if (goal_dist < (c_r*self.p.robot_start_d)):
+        if (goal_dist < (c_r*self.p.robot_d_start)):
             is_goal_close = True
 
         # get indices of robots in proximity circle
@@ -336,17 +336,17 @@ class PlannerRT(object):
             ad_H_Rr_abs = abs(ad_H_Rr)
             AD_h_rR.append(ad_h_rR)
 
-            if (d_rR > (c_r * self.p.robot_start_d)):
+            if (d_rR > (c_r * self.p.robot_d_start)):
                 continue
 
-            # if (not robots_reached[i]) or (d_rR < (1 * self.p.robot_start_d)):
-            # if (d_rR < (1 * self.p.robot_start_d)) or ((not robots_reached[i]) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr_abs < np.pi/2)):
+            # if (not robots_reached[i]) or (d_rR < (1 * self.p.robot_d_start)):
+            # if (d_rR < (1 * self.p.robot_d_start)) or ((not robots_reached[i]) or (ad_h_rR_abs < np.pi/2 or ad_H_Rr_abs < np.pi/2)):
 
-            if (not robots_reached[i]) or (d_rR < (1 * self.p.robot_start_d)):
+            if (not robots_reached[i]) or (d_rR < (1 * self.p.robot_d_start)):
                 robots_inds.append(i)
 
             # individual robots
-            if (d_rR < (1 * self.p.robot_start_d)):
+            if (d_rR < (1 * self.p.robot_d_start)):
                 nr = NewRobots()
                 nr.d = d_rR
                 nr.x = robots_x[i]
@@ -358,7 +358,7 @@ class PlannerRT(object):
                     not (robots_reached[i] or robots_stopped[i])) and robots_priority[i] > 0
                 nr.stopped = robots_stopped[i]
                 nr.reached = robots_reached[i]
-                rc = self.p.robot_prec_d
+                rc = self.p.robot_d_prec
                 nr.r_prec = rc
                 nr.r_half = 1.5 * rc
                 nr.r_start = 2.0 * rc
@@ -366,7 +366,7 @@ class PlannerRT(object):
                 new_robots.append(nr)
                 if robots_reached[i]:
                     XY = self.eval_obst(
-                        robots_x[i], robots_y[i], self.p.robot_prec_d, d_rR)
+                        robots_x[i], robots_y[i], self.p.robot_d_prec, d_rR)
                     for xy in XY:
                         dx_ = (xy[0] - self.r_x)
                         dy_ = (xy[1] - self.r_y)
@@ -409,7 +409,7 @@ class PlannerRT(object):
                     # if not (robots_reached[p] and robots_reached[ind_j]):
                     dist = self.distance(
                         robots_x[p], robots_y[p], robots_x[ind_j], robots_y[ind_j])
-                    if (dist < (self.p.robot_prec_d*2.2)):    # param 2
+                    if (dist < (self.p.robot_d_prec*2.2)):    # param 2
                         robots_inds_f[p].append(ind_j)
 
             # detect groups
@@ -461,8 +461,8 @@ class PlannerRT(object):
                         radius = mbr.exterior.distance(mbr.centroid)
                         xc = circum_center[0]
                         yc = circum_center[1]
-                        rc = c_radius*radius  # + self.p.robot_r + self.p.prec_d    # param 3
-                        rc = max(rc, 2*self.p.robot_prec_d)
+                        rc = c_radius*radius  # + self.p.robot_r + self.p.d_prec    # param 3
+                        rc = max(rc, 2*self.p.robot_d_prec)
 
                 # if robot is in the polygon
                 if (not is_target_in) and is_robot_in:
@@ -518,7 +518,7 @@ class PlannerRT(object):
                 nr.theta_rR = theta_rR
                 if any(P):
                     nr.p = True
-                nr.r_prec = rc + self.p.robot_r + self.p.prec_d
+                nr.r_prec = rc + self.p.robot_r + self.p.d_prec
                 # nr.r_prec = self.eval_obst(xc, yc, nr.r_prec, d_rR)
                 nr.r_half = 1.5 * nr.r_prec
                 nr.r_start = 2.0 * nr.r_prec
@@ -547,7 +547,7 @@ class PlannerRT(object):
             xo = self.obs_x[oi]
             yo = self.y_obsts[oi]
             do = self.distance(xo, yo, self.r_x, self.r_y)
-            if do < self.p.obst_start_d:
+            if do < self.p.d_start:
                 f_obsts_inds.append(oi)
         self.f_obsts_inds = f_obsts_inds
 
@@ -560,8 +560,8 @@ class PlannerRT(object):
             d_Ro = self.distance(xo, yo, xc, yc)
             d_ro = self.distance(xo, yo, self.r_x, self.r_y)
             if True:  # d_rR>rc: #d_ro<d_rR and
-                if (rc > (d_Ro-self.p.obst_prec_d)) and rc < (d_Ro+self.p.obst_prec_d):
-                    # ros.append(d_Ro+self.p.obst_prec_d*1)
+                if (rc > (d_Ro-self.p.d_prec)) and rc < (d_Ro+self.p.d_prec):
+                    # ros.append(d_Ro+self.p.d_prec*1)
                     x = (xo+xc)/2
                     y = (yo+yc)/2
                     xy.append([x, y])
@@ -781,10 +781,10 @@ class PlannerRT(object):
             theta_ro = np.arctan2(dy, dx)
             ad_h_ro = self.angle_diff(self.r_h, theta_ro)
 
-            if (d_ro < self.p.obst_half_d):
+            if (d_ro < self.p.d_half):
                 self.near_obst = True
 
-            # if (d_ro < self.p.obst_prec_d) and (abs(ad_h_ro)<(np.pi/2)):
+            # if (d_ro < self.p.d_prec) and (abs(ad_h_ro)<(np.pi/2)):
             #     self.stop_flag_obsts = True
 
             dx = self.goal_x - self.obs_x[i]
@@ -807,7 +807,7 @@ class PlannerRT(object):
             ad_c_t = self.angle_diff(angle_turn_t, self.r_h)
 
             f = ((self.p.obst_z * 1) * ((1 / d_ro) -
-                 (1 / self.p.obst_start_d))**2) * (1 / d_ro)**2
+                 (1 / self.p.d_start))**2) * (1 / d_ro)**2
             o_force = [f * -np.cos(ad_h_ro), f * np.sin(ad_h_ro)]
 
             # fo = f + 2
@@ -817,9 +817,9 @@ class PlannerRT(object):
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
 
             if target_other_side:
-                if (self.p.obst_prec_d < d_ro and d_ro < self.p.obst_half_d):
+                if (self.p.d_prec < d_ro and d_ro < self.p.d_half):
                     o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
-                elif (self.p.obst_half_d < d_ro):
+                elif (self.p.d_half < d_ro):
                     if (abs(ad_h_ro) < np.pi/2):
                         o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
 
@@ -923,9 +923,9 @@ class PlannerRT(object):
         # Define the center coordinates and radius of the circle
         # center_x, center_y = obs_x[0], y_obsts[0]
         center_x, center_y = np.mean(obs_x), np.mean(y_obsts)
-        radius = self.p.obst_prec_d/1.5
-        radius2 = self.p.obst_prec_d*1.99
-        r_min, r_max = self.p.obst_prec_d/1.5, self.p.obst_prec_d*2.6
+        radius = self.p.d_prec/1.5
+        radius2 = self.p.d_prec*1.99
+        r_min, r_max = self.p.d_prec/1.5, self.p.d_prec*2.6
 
         # # Define the range of x and y values
         # x_min, x_max = obs_x[0]-1, obs_x[0]+1
@@ -1078,11 +1078,11 @@ class PlannerRT(object):
         for xo, yo in zip(obs_x[:N], y_obsts[:N]):
             ax.plot(xo, yo, 'ok')  # , marker_color='k', marker_size=5)
             thetas = np.linspace(0, np.pi*2, 100)
-            xp = [xo + self.p.obst_prec_d*np.cos(t) for t in thetas]
-            yp = [yo + self.p.obst_prec_d*np.sin(t) for t in thetas]
+            xp = [xo + self.p.d_prec*np.cos(t) for t in thetas]
+            yp = [yo + self.p.d_prec*np.sin(t) for t in thetas]
             ax.plot(xp, yp, '-k', linewidth=2, label='prec')
-            xs = [xo + self.p.obst_start_d*1.01*np.cos(t) for t in thetas]
-            ys = [yo + self.p.obst_start_d*1.01*np.sin(t) for t in thetas]
+            xs = [xo + self.p.d_start*1.01*np.cos(t) for t in thetas]
+            ys = [yo + self.p.d_start*1.01*np.sin(t) for t in thetas]
             ax.plot(xs, ys, '--k', linewidth=2, label='start')
 
         # Specify font family and size
@@ -1130,7 +1130,7 @@ class PlannerRT(object):
             #     r_h = theta_ro + 0.001
             #     ad_h_ro = np.deg2rad(5) * np.sign(ad_h_ro)
 
-            if (d_ro < self.p.obst_half_d):
+            if (d_ro < self.p.d_half):
                 self.near_obst = True
 
             dx = self.goal_x - self.obs_x[i]
@@ -1151,7 +1151,7 @@ class PlannerRT(object):
             ad_c_t = self.angle_diff(angle_turn_t, r_h)
 
             f = ((self.p.obst_z * 1) * ((1 / d_ro) -
-                 (1 / self.p.obst_start_d))**2) * (1 / d_ro)**2
+                 (1 / self.p.d_start))**2) * (1 / d_ro)**2
             f = f + 1
             o_force = [f * -np.cos(ad_h_ro), f * np.sin(ad_h_ro)]
 
@@ -1159,9 +1159,9 @@ class PlannerRT(object):
             templt = [ft * np.cos(ad_c_t), ft * np.sin(ad_c_t)]
 
             if target_other_side:
-                if (self.p.obst_prec_d < d_ro and d_ro < self.p.obst_half_d):
+                if (self.p.d_prec < d_ro and d_ro < self.p.d_half):
                     o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
-                elif (self.p.obst_half_d < d_ro):
+                elif (self.p.d_half < d_ro):
                     if (abs(ad_h_ro) < np.pi/2):
                         o_force = [templt[0]+o_force[0], templt[1]+o_force[1]]
 

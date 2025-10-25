@@ -115,6 +115,7 @@ class ApfRobot:
         self.H = H
         self.ad_h_rR = None
         self.theta_rR = None
+        self.ad_Rr_H = None
         self.z = 1
         self.r_prec = None
         self.r_half = None

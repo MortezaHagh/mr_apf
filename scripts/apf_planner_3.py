@@ -29,7 +29,6 @@ class APFPlanner(APFPlannerBase):
         #
         self.near_obst = False
         self.near_robots = False
-        self.stop_flag_robot_full = False
         self.stop_flag_obsts = False
         self.stop_flag_robots = False
         self.stop_flag_multi = False
@@ -48,7 +47,6 @@ class APFPlanner(APFPlannerBase):
         #
         self.near_obst = False
         self.near_robots = False
-        self.stop_flag_robot_full = False
         self.stop_flag_obsts = False
         self.stop_flag_robots = False
         self.stop_flag_multi = False
@@ -83,21 +81,19 @@ class APFPlanner(APFPlannerBase):
             self.calculate_forces()
 
             # check stop flags
-            if self.stop_flag_obsts or self.stop_flag_robots:
-                self.lg.warn("stop_flag_obsts or stop_flag_robots activated.")
+            if self.stop_flag_obsts:
+                self.lg.warn("stop_flag_obsts activated.")
                 self.stopped = True
+            if self.stop_flag_robots:
+                self.lg.warn("stop_flag_robots activated.")
+                self.stopped = True
+            #
+            if self.stopped:
                 self.v = 0
                 if abs(self.w) < (np.deg2rad(2)):  # todo
                     self.v = self.params.v_min_2
                 return False
 
-            # check stop_flag_robot_full
-            if self.stop_flag_robot_full:
-                self.lg.warn("stop_flag_robot_full activated.")
-                self.stopped = True
-                self.v = 0
-                # self.w = 0 # todo
-                return False
         return True
 
     def create_all_fake_obstacles(self) -> None:
@@ -114,7 +110,7 @@ class APFPlanner(APFPlannerBase):
 
         # is_goal_close
         goal_dist = cal_distance(self.pose.x, self.pose.y, self.goal_x, self.goal_y)
-        if goal_dist < (self.c_r_is_goal_close_cluster*self.params.robot_start_d):
+        if goal_dist < (self.c_r_is_goal_close_cluster*self.params.robot_d_start):
             is_goal_close = True
 
         # evaluate fleet data ##################################################
@@ -146,7 +142,7 @@ class APFPlanner(APFPlannerBase):
         f_obsts_inds = []
         for i, obst in enumerate(self.obstacles):
             do = cal_distance(obst.x, obst.y, self.pose.x, self.pose.y)
-            if do < obst.obst_start_d:
+            if do < obst.d_start:
                 f_obsts_inds.append(i)
         self.f_obsts_inds = f_obsts_inds
 
@@ -177,7 +173,7 @@ class APFPlanner(APFPlannerBase):
             d_rR = np.sqrt(dx**2 + dy**2)
 
             # check distance for clustering
-            if d_rR > (self.c_r_R_cluster * self.params.robot_start_d):
+            if d_rR > (self.c_r_R_cluster * self.params.robot_d_start):
                 continue
 
             # calculate angle difference
@@ -194,7 +190,7 @@ class APFPlanner(APFPlannerBase):
                     clust_candid_inds.append(orob.rid)
 
             # create ApfRobot instances as individual robots
-            if d_rR < (1 * self.params.robot_start_d):
+            if d_rR < (1 * self.params.robot_d_start):
                 new_robot = self.create_new_apf_robot(orob, d_rR, ad_h_rR, theta_rR)
                 apf_robots.append(new_robot)
 
@@ -213,7 +209,7 @@ class APFPlanner(APFPlannerBase):
                 xo = obst.x
                 yo = obst.y
                 d_Ro = cal_distance(xo, yo, orob.x, orob.y)
-                if d_Ro < (orob.r_prec + obst.obst_prec_d) and d_Ro > (orob.r_prec + obst.obst_prec_d)*0.75:
+                if d_Ro < (orob.r_prec + obst.d_prec) and d_Ro > (orob.r_prec + obst.d_prec)*0.75:
                     x = (xo+orob.x)/2
                     y = (yo+orob.y)/2
                     r = d_Ro/3
@@ -236,7 +232,7 @@ class APFPlanner(APFPlannerBase):
         for i, ind in enumerate(clust_candid_inds):
             for ind_j in clust_candid_inds[i+1:]:
                 dist = cal_distance(fd.fdata[ind].x, fd.fdata[ind].y, fd.fdata[ind_j].x, fd.fdata[ind_j].y)
-                if dist < (self.params.robot_prec_d*2.2):    # param 2 todo
+                if dist < (self.params.robot_d_prec*2.2):    # param 2 todo
                     adjacents[ind].append(ind_j)
                     adjacents[ind_j].append(ind)
 
@@ -299,7 +295,7 @@ class APFPlanner(APFPlannerBase):
 
                     #
                     rc = d_c_max + self.params.robot_r * self.c_cluster_radius
-                    # rc = max(rc, 2*self.params.robot_prec_d)
+                    # rc = max(rc, 2*self.params.robot_d_prec)
 
             # if robot is in the polygon
             if is_robot_in and not is_target_in:
@@ -325,7 +321,7 @@ class APFPlanner(APFPlannerBase):
             fake_r.ad_h_rR = ad_h_rR
             fake_r.theta_rR = theta_rR
             fake_r.ad_rg_rR = cal_angle_diff(self.theta_rg, theta_rR)
-            fake_r.r_prec = rc + self.params.robot_r + self.params.prec_d
+            fake_r.r_prec = rc + self.params.robot_r + self.params.d_prec
             fake_r.r_half = 1.5 * fake_r.r_prec
             fake_r.r_start = 2.0 * fake_r.r_prec
             fake_r.z = 4 * self.params.fix_f * fake_r.r_prec**4
@@ -348,7 +344,7 @@ class APFPlanner(APFPlannerBase):
         robo.stopped = orob.stopped
         robo.reached = orob.reached
         robo.ad_rg_rR = cal_angle_diff(self.theta_rg, theta_rR)
-        r_prec = self.params.robot_prec_d
+        r_prec = self.params.robot_d_prec
         robo.r_prec = r_prec
         robo.r_half = 1.5 * r_prec
         robo.r_start = 2.0 * r_prec
@@ -405,7 +401,7 @@ class APFPlanner(APFPlannerBase):
             return (0.0, 0.0)
 
         # near_robots
-        if robo.d < robo.r_prec:
+        if robo.d < robo.r_half:
             self.near_robots = True
 
         # radial force
@@ -482,11 +478,11 @@ class APFPlanner(APFPlannerBase):
         ad_h_ro = cal_angle_diff(self.pose.theta, theta_ro)
 
         # check if too close to obstacle
-        if d_ro < obst.obst_prec_d:
+        if d_ro < obst.d_half:
             self.near_obst = True
 
         # radial force
-        f = ((obst.obst_z * 1) * ((1 / d_ro) - (1 / obst.obst_start_d))**2) * (1 / d_ro)**2
+        f = ((obst.obst_z * 1) * ((1 / d_ro) - (1 / obst.d_start))**2) * (1 / d_ro)**2
         F_r = (f * -np.cos(ad_h_ro), f * np.sin(ad_h_ro))
 
         # [case 1] if obstacle is not between robot and goal

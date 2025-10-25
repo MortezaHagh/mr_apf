@@ -8,7 +8,7 @@ class Params:
 
         # configs
         self.point: bool = point
-        self.simD: str = "3D"  # 3D 2D
+        self.simD: str = "2D"  # 3D 2D
         self.nr: int = 9
         self.method: int = 4
         self.map_id: int = 1
@@ -59,18 +59,18 @@ class Params:
 
         # radiuses and precaution distances
         self.obst_r = 0.17
-        self.prec_d = 0.1
+        self.d_prec = 0.1
         self.robot_r = 0.2  # robots effective radius
         # #
-        # self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
-        # self.obst_start_d = 2 * self.obst_prec_d
-        # self.obst_half_d = 1.5 * self.obst_prec_d
-        # self.obst_z = 4 * self.fix_f * self.obst_prec_d**4
+        # self.d_prec = self.robot_r + self.obst_r + self.d_prec  # 0.57
+        # self.d_start = 2 * self.d_prec
+        # self.d_half = 1.5 * self.d_prec
+        # self.obst_z = 4 * self.fix_f * self.d_prec**4
         #
-        self.robot_prec_d = 2 * self.robot_r + self.prec_d  # 0.64
-        self.robot_start_d = 2 * self.robot_prec_d
-        self.robot_half_d = 1.5 * self.robot_prec_d
-        self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
+        self.robot_d_prec = 2 * self.robot_r + self.d_prec  # 0.64
+        self.robot_d_start = 2 * self.robot_d_prec
+        self.robot_d_half = 1.5 * self.robot_d_prec
+        self.robot_z = 4 * self.fix_f * self.robot_d_prec**4
 
         # 2d
         self.obs_effect_r = 1.0          # obstacles effective radius

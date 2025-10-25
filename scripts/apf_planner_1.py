@@ -49,16 +49,16 @@ class APFPlanner(APFPlannerBase):
             angle_diff = cal_angle_diff(theta, self.pose.theta)
 
             # check distance
-            if d_ro > 1 * self.params.robot_start_d:
+            if d_ro > 1 * self.params.robot_d_start:
                 continue
 
             # check if robot should stop
-            if (not rob.reached) and (d_ro < self.params.robot_prec_d) and (rob.priority > self.robot_data.priority):
+            if (not rob.reached) and (d_ro < self.params.robot_d_prec) and (rob.priority > self.robot_data.priority):
                 self.stopped = True
                 break
 
             # force
-            f = ((self.params.robot_z * 1) * ((1 / d_ro) - (1 / self.params.robot_start_d))**2) * (1 / d_ro)**2
+            f = ((self.params.robot_z * 1) * ((1 / d_ro) - (1 / self.params.robot_d_start))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
             robot_f[0] += templ[0]
             robot_f[1] += templ[1]
@@ -77,14 +77,14 @@ class APFPlanner(APFPlannerBase):
             d_ro = np.sqrt(dx**2 + dy**2)
 
             # check distance
-            if d_ro > obst.obst_start_d:
+            if d_ro > obst.d_start:
                 continue
 
             theta = np.arctan2(dy, dx)
             angle_diff = cal_angle_diff(theta, self.pose.theta)
 
             # force
-            f = ((obst.obst_z * 1) * ((1 / d_ro) - (1 / obst.obst_start_d))**2) * (1 / d_ro)**2
+            f = ((obst.obst_z * 1) * ((1 / d_ro) - (1 / obst.d_start))**2) * (1 / d_ro)**2
             templ = [f * np.cos(angle_diff), f * np.sin(angle_diff)]
             obs_f[0] += templ[0]
             obs_f[1] += templ[1]

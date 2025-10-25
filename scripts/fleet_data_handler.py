@@ -76,8 +76,8 @@ class FleetDataHandler:
     def check_all_stalled(self) -> bool:
         stalled = self.stalled.values()
         self.all_stalled = all(stalled)
-        if self.all_stalled:
-            rospy.logerr("[FleetDataHandler]: All robots stalled")
+        # if self.all_stalled:
+        #     rospy.logerr("[FleetDataHandler]: All robots stalled")
         return self.all_stalled
 
     def update_fleet_data(self) -> bool:

@@ -40,8 +40,8 @@ class Plotter:
         obst: Obstacle = None
         for obst in model.obstacles:
             ax.plot(obst.x, obst.y, 'o',  markersize=5, markeredgecolor='k', markerfacecolor='k')
-            xor = [obst.x + obst.obst_prec_d*np.cos(t) for t in thetas]
-            yor = [obst.y + obst.obst_prec_d*np.sin(t) for t in thetas]
+            xor = [obst.x + obst.d_prec*np.cos(t) for t in thetas]
+            yor = [obst.y + obst.d_prec*np.sin(t) for t in thetas]
             xdng = [obst.x + obst.r*np.cos(t) for t in thetas]
             ydng = [obst.y + obst.r*np.sin(t) for t in thetas]
             ax.plot(xor, yor, '--k')

@@ -10,7 +10,7 @@ def main():
     params = Params(point=True)
     params.map_id = 1
     params.simD = '2D'
-    params.method = 44
+    params.method = 55
     params.nr = 2
 
     # number of robots

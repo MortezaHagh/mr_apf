@@ -37,18 +37,18 @@ class Plot3D:
         self.fix_f = 4
         self.fix_f2 = 10
         self.obst_r = 0.11 / self.path_unit
-        self.prec_d = 0.07 / self.path_unit
+        self.d_prec = 0.07 / self.path_unit
         self.robot_r = 0.22 / self.path_unit
 
-        self.obst_prec_d = self.robot_r + self.obst_r + self.prec_d  # 0.57
-        self.obst_start_d = 15 * self.obst_prec_d
-        self.obst_half_d = 1.5 * self.obst_prec_d
-        self.obst_z = 4 * self.fix_f * self.obst_prec_d**4
+        self.d_prec = self.robot_r + self.obst_r + self.d_prec  # 0.57
+        self.d_start = 15 * self.d_prec
+        self.d_half = 1.5 * self.d_prec
+        self.obst_z = 4 * self.fix_f * self.d_prec**4
 
-        self.robot_prec_d = 2 * self.robot_r + self.prec_d  # 0.64
-        self.robot_start_d = 2 * self.robot_prec_d
-        self.robot_half_d = 1.5 * self.robot_prec_d
-        self.robot_z = 4 * self.fix_f * self.robot_prec_d**4
+        self.robot_d_prec = 2 * self.robot_r + self.d_prec  # 0.64
+        self.robot_d_start = 2 * self.robot_d_prec
+        self.robot_d_half = 1.5 * self.robot_d_prec
+        self.robot_z = 4 * self.fix_f * self.robot_d_prec**4
 
     def plot_f_obstacle(self):
         print("plot3D: plotting obstacle ... ")
@@ -70,7 +70,7 @@ class Plot3D:
                     dx = (self.model.obsts.x[k] - xx)
                     d_ro = np.sqrt(dx**2 + dy**2)
 
-                    f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.obst_start_d))**2) * (1 / d_ro)**2
+                    f = ((self.obst_z * 1) * ((1 / d_ro) - (1 / self.d_start))**2) * (1 / d_ro)**2
                     if f > 4:
                         f = 4 + f * 10/1000
                     # f = min(f, 5)

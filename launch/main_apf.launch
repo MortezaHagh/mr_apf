@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="apf" name="mrapf_main" type="mrapf_main.py" output="screen" />
-</launch>

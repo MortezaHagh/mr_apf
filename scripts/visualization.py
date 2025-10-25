@@ -107,7 +107,7 @@ class RvizViusalizer:
     def publish_obsts_prec_circles(self):
         obst_prec_points = []
         for obst in self.model.obstacles:
-            prec_circles = self.create_circle_points(obst.x, obst.y, obst.obst_prec_d)
+            prec_circles = self.create_circle_points(obst.x, obst.y, obst.d_prec)
             obst_prec_points.extend(prec_circles)
         obst_prec_pc = PointCloud()
         obst_prec_pc.header.frame_id = "map"
@@ -121,7 +121,7 @@ class RvizViusalizer:
     def publish_obsts_start_circles(self):
         obst_start_points = []
         for obst in self.model.obstacles:
-            prec_circles = self.create_circle_points(obst.x, obst.y, obst.obst_start_d)
+            prec_circles = self.create_circle_points(obst.x, obst.y, obst.d_start)
             obst_start_points.extend(prec_circles)
         obst_start_pc = PointCloud()
         obst_start_pc.header.frame_id = "map"
@@ -133,7 +133,7 @@ class RvizViusalizer:
     def publish_robots_prec_circles(self, xy_dict: dict):
         robot_prec_circles = []
         for xy in xy_dict.values():
-            robot_circle = self.create_circle_points(xy[0], xy[1], self.params.robot_prec_d)
+            robot_circle = self.create_circle_points(xy[0], xy[1], self.params.robot_d_prec)
             robot_prec_circles.extend(robot_circle)
         robots_prec_pc = PointCloud()
         robots_prec_pc.header.frame_id = "map"
@@ -143,7 +143,7 @@ class RvizViusalizer:
     def publish_robots_start_circles(self, xy_dict: dict):
         robot_start_circles = []
         for xy in xy_dict.values():
-            robot_circle = self.create_circle_points(xy[0], xy[1], self.params.robot_start_d)
+            robot_circle = self.create_circle_points(xy[0], xy[1], self.params.robot_d_start)
             robot_start_circles.extend(robot_circle)
         robots_start_pc = PointCloud()
         robots_start_pc.header.frame_id = "map"
@@ -212,7 +212,7 @@ class RvizViusalizer:
         fake_obstacles = PointCloud()
         fake_obstacles.header.frame_id = "map"
         for obs in obstacles:
-            circle = self.create_circle_points(obs.x, obs.y, obs.obst_prec_d)
+            circle = self.create_circle_points(obs.x, obs.y, obs.d_prec)
             fake_obstacles.points.extend(circle)
         self.fake_obsts_pc_pub.publish(fake_obstacles)
 

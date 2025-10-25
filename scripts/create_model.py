@@ -43,10 +43,10 @@ class ObstacleBase:
 class Obstacle(ObstacleBase):
     def __init__(self, x: float, y: float, params: Params, r: float = None):
         super().__init__(x, y, r, params)
-        self.obst_prec_d = params.robot_r + self.r + params.prec_d  # 0.57
-        self.obst_half_d = 1.5 * self.obst_prec_d
-        self.obst_start_d = 2 * self.obst_prec_d
-        self.obst_z = 4 * params.fix_f * self.obst_prec_d**4
+        self.d_prec = params.robot_r + self.r + params.d_prec  # 0.57
+        self.d_half = 1.5 * self.d_prec
+        self.d_start = 2 * self.d_prec
+        self.obst_z = 4 * params.fix_f * self.d_prec**4
 
 # class Obstacles:
 #     def __init__(self, inputs: ModelInputs):
