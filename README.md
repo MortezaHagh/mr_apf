@@ -93,12 +93,14 @@ Both modes offer:
 
 ### Quick Start
 
+Wait a few seconds after runnign the nodes.
+
 ```bash
 # For multi robot path planning in Gazebo simulation with TurtleBot3
-roslaunch mr_apf launch_map_robots.launch
+roslaunch apf run_mrapf.launch
 
 # for multi robot path planning - Simple Point-Robot Simulation
-rosrun apf mrapf_sc.py
+roslaunch apf point_sim.launch
 ```
 
 ### Configuration

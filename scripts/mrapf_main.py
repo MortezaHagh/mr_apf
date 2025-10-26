@@ -120,7 +120,7 @@ class Run():
     def plotting(self):
         plotter = Plotter(self.model, self.params, self.test_info.res_file_path)
         plotter.plot_all_paths(self.planners_data)
-        # plt.show()
+        plt.show()
 
     def save_data(self):
         with open(self.test_info.res_file_path + "paths.json", "w") as outfile:
