@@ -18,11 +18,8 @@ class Plot3D:
 
         # create model
         self.p = Params()
-        self.p.map_id = 3
+        self.p.map_id = 1
         self.model: MRSModel = MRSModel(params=self.p)
-
-        print("plot3D: initializing ... ")
-        self.plot_forces()
 
     def _compute_obstacles_field(self, X, Y, Z):
 
@@ -64,6 +61,16 @@ class Plot3D:
         f1 = -h * (1 / (sigma * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((d_rg - 0) / sigma) ** 2)
         Z += f1
         return Z
+
+    def calculate_forces(self, step):
+        # build grid (same extents as original)
+        x = np.arange(self.model.emap.x_min - 1, self.model.emap.x_max + 1, step)
+        y = np.arange(self.model.emap.y_min - 1, self.model.emap.y_max + 1, step)
+        X, Y = np.meshgrid(x, y, indexing='ij')  # keep indexing consistent with original
+        Z = np.zeros_like(X, dtype=float)
+        Z = self._compute_obstacles_field(X, Y, Z)
+        Z = self._compute_goal_field(X, Y, Z)
+        return X, Y, Z
 
     def plot_plotly(self, X, Y, Z):
         surface = go.Surface(
@@ -124,24 +131,36 @@ class Plot3D:
 
     def plot_forces(self, step: float = 0.1):
         print("plot3D: plotting forces ... ")
-
-        # build grid (same extents as original)
-        x = np.arange(self.model.emap.x_min - 1, self.model.emap.x_max + 1, step)
-        y = np.arange(self.model.emap.y_min - 1, self.model.emap.y_max + 1, step)
-        X, Y = np.meshgrid(x, y, indexing='ij')  # keep indexing consistent with original
-        Z = np.zeros_like(X, dtype=float)
-        Z = self._compute_obstacles_field(X, Y, Z)
-        Z = self._compute_goal_field(X, Y, Z)
-
+        X, Y, Z = self.calculate_forces(step)
         #
         self.plot_matplotlib(X, Y, Z)
         # self.plot_plotly(X, Y, Z)
-        # try:
-        #     self.plot_plotly(X, Y, Z)
-        # except Exception as e:
-        #     print("plot3D: failed to create interactive plot, falling back to Matplotlib.")
-        #     self.plot_matplotlib(X, Y, Z)
+
+    def plot_tensor(self, step: float = 0.1):
+        print("plot3D: plotting tensor field ... ")
+        X, Y, Z = self.calculate_forces(step)
+        Z = np.clip(Z, -2, 2)
+
+        # find the gradients directions and use quiver to plot arrows
+        # calculate gradients
+        gx, gy = np.gradient(Z, step, step)
+        # find the gradient magnitude
+        magnitude = np.sqrt(gx**2 + gy**2)
+        # normalize the gradients to get unit vectors
+        gx_norm = gx / (magnitude + 1e-8)  # avoid division by zero
+        gy_norm = gy / (magnitude + 1e-8)
+        # plot quiver
+        plt.figure(figsize=(10, 7))
+        plt.quiver(X, Y, -gx_norm, -gy_norm, magnitude, cmap='viridis', scale=20)
+        plt.title('Force Field Vectors')
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.axis('equal')
+        plt.grid(False)
+        plt.show()
 
 
 if __name__ == '__main__':
-    Plot3D()
+    plotter = Plot3D()
+    # plotter.plot_forces(step=0.1)
+    plotter.plot_tensor(step=0.1)
