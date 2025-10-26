@@ -79,7 +79,10 @@ class MRSModel:
         for i in range(self.n_obstacles):
             x = inputs.x_obsts[i]
             y = inputs.y_obsts[i]
-            self.obstacles.append(Obstacle(x, y, params=params))
+            r = None
+            if inputs.r_obsts is not None:
+                r = inputs.r_obsts[i]
+            self.obstacles.append(Obstacle(x, y, r=r, params=params))
         # self.obsts: Obstacles = Obstacles(inputs)
 
         # Robot

@@ -30,14 +30,21 @@ class ModelInputs:
         self.n_obsts: int = None
         self.x_obsts: List[float] = None
         self.y_obsts: List[float] = None
+        self.r_obsts: List[float] = None
         self.headings: List[float] = None
         #
         if self.map_id == 1:
             self.map_0(self.n_robots)
+        elif self.map_id == 2:
+            self.obstacles2()
+        elif self.map_id == 3:
+            self.random_map_2()
             # self.collide()
             # self.obstacles2()
-            # self.random_map_2(n_robots)
+            # self.random_map_2()
             # self.from_json_file(n_robots, path_unit)
+        else:
+            raise ValueError(f"Map ID {self.map_id} is not defined!")
         #
         self.rids = list(range(0, self.n_robots))
         self.apply_path_unit(self.path_unit)
@@ -126,7 +133,6 @@ class ModelInputs:
         self.y_min = 0
         self.x_max = lim
         self.y_max = lim
-        self.map_id = 1
 
         # obstacles
         # xc1 = [3, 3, 5, 5, 7, 7, 9, 9, 11, 11]
@@ -204,11 +210,10 @@ class ModelInputs:
         self.x_targets = [t[0] for t in robots_g_i]
         self.y_targets = [t[1] for t in robots_g_i]
 
-    def random_map_2(self, ind=1):
+    def random_map_2(self):
         #
-        self.map_id = ind
-        obst_n = 22
-        robots_n = 8
+        obst_n = 5
+        robots_n = 1
         self.n_robots = robots_n
 
         # area
@@ -276,6 +281,7 @@ class ModelInputs:
         # obstacles
         self.x_obsts = obst_x
         self.y_obsts = obst_y
+        self.r_obsts = [1.0 for _ in range(len(obst_x))]
         self.n_obsts = len(obst_x)
 
         # robots
@@ -286,8 +292,8 @@ class ModelInputs:
         self.x_targets = x_t
         self.y_targets = y_t
 
-        # dave data as JSON
-        self.save_object_attributes(ind)
+        # # dave data as JSON
+        # self.save_object_attributes(ind)
 
     def save_object_attributes(self, ind=1):
 
@@ -379,38 +385,31 @@ class ModelInputs:
         self.x_obsts.extend(new_obst_x)
         self.y_obsts.extend(new_obst_y)
 
-    def obstacles2(self, n_robot=2):
+    def obstacles2(self):
 
         # area
-        lim = 7
+        lim = 12
         self.lim = lim
         self.x_min = 0
         self.y_min = 0
         self.x_max = lim
         self.y_max = lim
-        self.map_id = 1
 
         # obstacles
-        xc2 = [3.1, 3.9]
-        yc2 = [3.5, 3.5]
+        xc2 = [2.5, 7.5]
+        yc2 = [2.5, 7.5]
+        rc2 = [2.0, 2.5]
         self.x_obsts = xc2
         self.y_obsts = yc2
+        self.r_obsts = rc2
         self.n_obsts = len(self.x_obsts)
-        # self.modify_obst()
 
         # robots
-        # # 1
-        # x_starts = [3.5] #[3.5, 3.5]
-        # y_starts = [1.0] #[1.0, 3.5]
-        # x_targets = [3.5] #[3.5, 3.5]
-        # y_targets = [6.0] #[6.0, 3.5]
-        # self.n_robots = 1
-        # self.headings = [np.pi/2] #[np.pi/2, -np.pi/2]
         x_starts = [3.5, 3.5]
         y_starts = [2.3, 3.5]
         x_targets = [3.5, 3.5]
         y_targets = [6.0, 3.5]
-        self.n_robots = n_robot
+        self.n_robots = len(x_starts)
         self.headings = [np.pi/2, -np.pi/2]
         n_robots = self.n_robots
         self.rids = list(range(1, n_robots+1))
@@ -428,7 +427,6 @@ class ModelInputs:
         self.y_min = 0
         self.x_max = lim
         self.y_max = lim
-        self.map_id = 1
 
         # obstacles
         xc2 = [3.5]

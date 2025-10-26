@@ -35,9 +35,9 @@ class APFPlanner(APFPlannerBase):
 
         # config
         self.c_r_R_cluster = 3.0
-        self.c_cluster_radius = 3.0
+        self.c_cluster_radius = 1.0  # 3.0
         self.c_r_is_goal_close_cluster = 2.0
-        self.c_cluster_adjacent = 2.5
+        self.c_cluster_adjacent = 2.2  # 2.5
 
     def reset_vals_2(self):
         #
@@ -126,12 +126,10 @@ class APFPlanner(APFPlannerBase):
         if not self.use_fake_cluster_obsts:
             return
 
-        if self.robot.rid != 0:
-            return
-
         # if there is none robots in proximity
         # if goal is close, don't create fake obstacles from clustering
         if not (is_goal_close or len(clust_candid_inds) == 0):
+
             # create fake obstacles from clustering ############################
             multi_robots = self.create_fake_obst_clusters(clust_candid_inds, AD_h_rR)
             if len(multi_robots) > 0:
@@ -400,8 +398,8 @@ class APFPlanner(APFPlannerBase):
         self.robot_f = (fx, fy)
 
     def compute_multi_force(self, robo: ApfRobot) -> Tuple[float, float]:
-        # if self.near_robots or self.near_obst:
-        #     return (0.0, 0.0)
+        if self.near_robots or self.near_obst:
+            return (0.0, 0.0)
 
         # F_f = self.compute_robot_force(robo)
 
@@ -414,10 +412,10 @@ class APFPlanner(APFPlannerBase):
             # robot_between = False
             return (0.0, 0.0)
 
-        # radial force
+        # # radial force
         f = ((robo.z * 1) * ((1 / robo.d) - (1 / robo.r_start))**2) * (1 / robo.d)**2
-        fr = f + 0
-        F_r = (fr * -np.cos(robo.ad_h_rR), fr * np.sin(robo.ad_h_rR))
+        # fr = f + 0
+        # F_r = (fr * -np.cos(robo.ad_h_rR), fr * np.sin(robo.ad_h_rR))
 
         # # direction of the tangential force
         # c_t = 1
@@ -429,7 +427,7 @@ class APFPlanner(APFPlannerBase):
 
         # c_t, for tangential force direction
         c_t = 1
-        theta_ = np.deg2rad(45)  # todo param
+        theta_ = np.deg2rad(10)  # todo param 45
         if abs(robo.ad_h_rR) < theta_:
             c_t = np.sign(robo.ad_rg_rR*robo.ad_h_rR)
 
@@ -439,10 +437,10 @@ class APFPlanner(APFPlannerBase):
         ft = f + 3
         F_t = (ft * np.cos(ad_t_h), ft * np.sin(ad_t_h))
 
-        # F_f
-        F_f = (F_r[0]+F_t[0], F_r[1]+F_t[1])
+        # # F_f
+        # F_f = (F_r[0]+F_t[0], F_r[1]+F_t[1])
 
-        return F_f
+        return F_t
 
     def compute_robot_force(self, robo: ApfRobot) -> Tuple[float, float]:
         if robo.d > robo.r_start:
