@@ -2,47 +2,54 @@
 """ subscribes to /r#/odom and publishes tf /odom - /r#/odom"""
 
 import rospy
-from nav_msgs.msg import Odometry
 from geometry_msgs.msg import TransformStamped
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
+from create_model import MRSModel, Robot
+from parameters import Params
 
 
-class BroadCast:
-    def __init__(self, ind: int):
-        self.topic = "/r"+str(ind)+"/odom"
-        self.rate = rospy.Rate(10)
-        self.tf_static_broadcaster = StaticTransformBroadcaster()
-
+class StaticBroadCaster:
+    def __init__(self):
+        self.ns = 'StaticBroadCaster'
+        self.params = Params()
+        self.model = MRSModel(params=self.params)
         #
-        msg: Odometry = rospy.wait_for_message(self.topic, Odometry, 2)
-        self.pose = msg.pose.pose.position
-        self.orien = msg.pose.pose.orientation
-        rospy.Subscriber(self.topic, Odometry, self.odom_callback, queue_size=10)
+        self.transforms = []
+        self.broadcasters = []
 
-    def odom_callback(self, msg: Odometry):
-        self.pose = msg.pose.pose.position
-        self.orien = msg.pose.pose.orientation
-        self.make_transforms()
+    def all_static_transforms(self):
+        self.static_transforms(ns="", x=0, y=0, heading=0)
+        #
+        robo: Robot = None
+        for robo in self.model.robots:
+            x = robo.xs
+            y = robo.ys
+            heading = robo.heading
+            ns = robo.ns
+            self.static_transforms(ns, x, y, heading)
 
-    def make_transforms(self):
+    def static_transforms(self, ns: str, x, y, heading):
         t = TransformStamped()
         t.header.stamp = rospy.Time.now()
-        t.header.frame_id = 'odom'
-        t.child_frame_id = self.topic
-        t.transform.translation.x = float(self.pose.x)
-        t.transform.translation.y = float(self.pose.y)
-        t.transform.translation.z = float(self.pose.z)
-        t.transform.rotation.x = self.orien.x
-        t.transform.rotation.y = self.orien.y
-        t.transform.rotation.z = self.orien.z
-        t.transform.rotation.w = self.orien.w
+        t.header.frame_id = '/map'
+        t.child_frame_id = ns + "/odom"
+        t.transform.translation.x = x
+        t.transform.translation.y = y
+        t.transform.translation.z = 0.0
+        t.transform.rotation.x = 0.0
+        t.transform.rotation.y = 0.0
+        t.transform.rotation.z = 0.0
+        t.transform.rotation.w = 1.0
+        self.transforms.append(t)
         # send transform
-        self.tf_static_broadcaster.sendTransform(t)
+        stb = StaticTransformBroadcaster()
+        stb.sendTransform(t)
+        self.broadcasters.append(stb)
+        rospy.loginfo(f"[{self.ns}]: Broadcasting static transform for {t.child_frame_id} at ({x}, {y})")
 
 
-# if __name__ == "__main__":
-#     rospy.init_node("broadcasters")
-#     rids = [1, 2, 3, 4]
-#     for i in rids:
-#         BroadCast(i)
-#     rospy.spin()
+if __name__ == "__main__":
+    rospy.init_node("broadcasters")
+    broadcaster = StaticBroadCaster()
+    broadcaster.all_static_transforms()
+    rospy.spin()

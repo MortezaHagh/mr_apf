@@ -18,7 +18,6 @@ class Plotter:
         self.fig = fig
         self.ax = ax
         fig.set_size_inches(8, 8)
-        # ax.set_title('MRPP')
         ax.axis('equal')
         # ax.axis("off")
         # ax.grid('on')

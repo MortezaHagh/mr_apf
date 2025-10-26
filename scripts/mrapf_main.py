@@ -12,8 +12,8 @@ from spawn_map import spawning
 from create_model import MRSModel
 from generate_results import Results
 from visualization import RvizViusalizer
-from robot_planner_l0_ac import RobotPlannerAc
 from planning_clinets import PlanningClients
+from robot_planner_l0_ac import RobotPlannerAc
 from central_mrapf_service import CentralMRAPF
 from mrapf_classes import TestInfo, AllPlannersData
 from initiate_planners import initiate_robots_planners
@@ -45,8 +45,8 @@ class Run():
 
         #
         self.model: MRSModel = None
-        self.visualizer: RvizViusalizer = None
         self.cmrapf: CentralMRAPF = None
+        self.visualizer: RvizViusalizer = None
         self.planning_clients: PlanningClients = None
 
     def run(self):
@@ -59,7 +59,8 @@ class Run():
             spawning(model=self.model)
 
         # visualize
-        self.visualizer = RvizViusalizer(model=self.model)
+        if self.params.do_viz:
+            self.visualizer = RvizViusalizer(model=self.model)
 
         # running central MRAPF Service Server *************************************************************************
         self.cmrapf = CentralMRAPF(self.model, self.central_mrapf_srv_name)
@@ -87,12 +88,13 @@ class Run():
         self.cmrapf.fleet_data_handler.update_fleet_data()
         status = [c.get_state() for c in self.planning_clients.clients]
         s_flags = [s < 2 for s in status]
-        while (not rospy.is_shutdown()) and (any(s_flags)):
+        while (any(s_flags)) and (not rospy.is_shutdown()):
             self.cmrapf.fleet_data_handler.update_fleet_data()
             self.cmrapf.fleet_data_handler.check_all_stalled()
             status = [c.get_state() for c in self.planning_clients.clients]
             s_flags = [s < 2 for s in status]
-            self.visualizer.update_robot_visuals(self.cmrapf.fleet_data_handler.xy)
+            if self.params.do_viz:
+                self.visualizer.update_robot_visuals(self.cmrapf.fleet_data_handler.xy)
             self.rate.sleep()
 
         rospy.loginfo(" ---------------------------------")
@@ -112,13 +114,13 @@ class Run():
 
         # generate results
         Results(planners_data=self.planners_data, result_path=self.test_info.res_file_path, params=self.params)
-        self.save_data()
+        # self.save_data()
         self.plotting()
 
     def plotting(self):
         plotter = Plotter(self.model, self.params, self.test_info.res_file_path)
         plotter.plot_all_paths(self.planners_data)
-        plt.show()
+        # plt.show()
 
     def save_data(self):
         with open(self.test_info.res_file_path + "paths.json", "w") as outfile:

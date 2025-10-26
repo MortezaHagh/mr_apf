@@ -23,7 +23,7 @@ class RobotPlannerBase:
         #
         self.v = 0
         self.w = 0
-        self.do_viz: bool = True
+        self.do_viz: bool = params.do_viz
         self.is_reached = False
         self.abort: bool = False
 
@@ -55,7 +55,8 @@ class RobotPlannerBase:
         rospy.on_shutdown(self.shutdown_hook)
 
         # RvizViusalizer for forces (arrow)
-        self.viusalizer = RvizViusalizer(model)
+        if self.do_viz:
+            self.visualizer = RvizViusalizer(model)
 
         # listener
         self.data_received: bool = False
@@ -103,11 +104,11 @@ class RobotPlannerBase:
 
         # vizualize
         if self.do_viz:
-            self.vizualize_force([self.mrapf.f_r, self.mrapf.f_theta], False)
+            self.visualize_force([self.mrapf.f_r, self.mrapf.f_theta], False)
             if self.params.method > 1:
-                self.viusalizer.draw_fake_obsts_localmin(self.mrapf.fake_obsts_localmin)
-                self.viusalizer.visualize_polygon(self.mrapf.clusters_x_y, self.ns, self.params.rid)
-                self.viusalizer.draw_robot_circles(self.mrapf.multi_robots_vis, self.ns)
+                self.visualizer.draw_fake_obsts_localmin(self.mrapf.fake_obsts_localmin)
+                self.visualizer.visualize_polygon(self.mrapf.clusters_x_y, self.ns, self.params.rid)
+                self.visualizer.draw_robot_circles(self.mrapf.multi_robots_vis, self.ns)
 
         # publish cmd
         move_cmd = Twist()
@@ -174,13 +175,13 @@ class RobotPlannerBase:
 
     def shutdown_hook(self):
         rospy.loginfo(f"[planner_base, {self.ns}]: shutting ...")
-        self.stop()
+        self.stop_planner()
 
-    def vizualize_force(self, nr_force, ip=True):
+    def visualize_force(self, nr_force, ip=True):
         theta = np.arctan2(nr_force[1], nr_force[0])
         theta = np.arctan2(np.sin(theta), np.cos(theta))
         theta = self.pose.theta + theta
         if ip:
-            self.viusalizer.visualize_arrow(self.pose.x, self.pose.y, theta)
+            self.visualizer.visualize_arrow(self.pose.x, self.pose.y, theta)
         else:
-            self.viusalizer.visualize_arrow(self.pose.x, self.pose.y, theta, self.ns)
+            self.visualizer.visualize_arrow(self.pose.x, self.pose.y, theta, self.ns)

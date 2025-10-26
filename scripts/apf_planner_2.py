@@ -518,7 +518,7 @@ class APFPlanner(APFPlannerBase):
             return F_f
 
         # check robot headings relative to the line rR
-        ad_rR_h = -robo.ad_h_rR
+        ad_rR_h = np.pi-robo.ad_h_rR
         if (ad_Rr_H*ad_rR_h) < 0:
             if robo.prior:
                 self.stop_flag_robots = True

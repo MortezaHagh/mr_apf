@@ -9,10 +9,11 @@ class Params:
         # configs
         self.point: bool = point
         self.simD: str = "2D"  # 3D 2D
-        self.nr: int = 9
+        self.nr: int = 8
         self.method: int = 4
         self.map_id: int = 1
         self.rid: int = -1
+        self.do_viz: bool = True
 
         # results_folder
         self.results_folder: str = ''
@@ -30,7 +31,7 @@ class Params:
         self.sru_srv_name = "/send_robot_update"
         self.global_frame = "map"
         self.odom_frame = "/odom"
-        self.local_frame = "/base_footprint"  # odom
+        self.local_frame = "/base_footprint"
         self.fleet_data_topic = "fleet_data"
 
         # general
@@ -50,7 +51,7 @@ class Params:
         self.w_zero_tresh = 0.03
 
         # thresholds
-        self.goal_dis_tresh = 0.06
+        self.goal_dis_tresh = 0.08
 
         # forces
         self.zeta = 1

@@ -83,3 +83,4 @@ class RobotPlannerAc:
 
     def shutdown(self):
         rospy.loginfo(f"[RobotPlannerAC, {self.ns}]: shutting down ... ")
+        self.planner.stop_planner()
