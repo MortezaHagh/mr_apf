@@ -36,7 +36,7 @@
   <node pkg="apf" name="mrapf_main" type="mrapf_main.py" output="screen" />
 
   <!-- Load RVIZ -->
-  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d /home/morteza/mo_ws/src/mr_apf/rviz/apf_arviz.rviz" />
+  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find apf)/rviz/apf_arviz.rviz" />
 
 
 </launch>

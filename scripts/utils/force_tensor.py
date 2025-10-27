@@ -1,12 +1,9 @@
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-# sys.path.append("/home/morteza/mo_ws/src/mr_apf/scripts")
-# from create_model import MRSModel
-
-
 # Define the function f(x, y)
+
+
 def f(x, y):
     return np.sin(x) + np.cos(y)
 

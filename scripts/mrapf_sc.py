@@ -1,11 +1,11 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 """ MRAPF Simulation in 2D """
 
 import json
 from math import cos, sin
 from typing import List, Dict
-from matplotlib.pylab import plt
+import matplotlib.pyplot as plt
 import rospy
 from plotter import Plotter
 from parameters import Params

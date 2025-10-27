@@ -1,10 +1,10 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 """ MRAPF Simulation for real-time applications """
 
 import json
 from typing import List
-from matplotlib.pylab import plt
+import matplotlib.pyplot as plt
 import rospy
 from plotter import Plotter
 from parameters import Params

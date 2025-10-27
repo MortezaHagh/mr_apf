@@ -38,7 +38,7 @@ Key improvements include:
 
 ## System Architecture
 
-<img src="design/design.png" alt="Design Overview" width="600"/>
+<img src="design/design_1.png" alt="Design Overview" width="600"/>
 
 The system includes:
 
