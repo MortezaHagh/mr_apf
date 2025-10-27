@@ -36,8 +36,10 @@ class APFPlanner(APFPlannerBase):
         # config
         self.c_r_R_cluster = 3.0
         self.c_cluster_radius = 1.0  # 3.0
-        self.c_r_is_goal_close_cluster = 2.0
         self.c_cluster_adjacent = 2.2  # 2.5
+        self.c_r_is_goal_close_cluster = 2.0
+        self.ad_h_rR_thresh = np.deg2rad(10)
+        self.ad_h_ro_thresh = np.deg2rad(20)
 
     def reset_vals_2(self):
         #
@@ -75,7 +77,7 @@ class APFPlanner(APFPlannerBase):
             self.lg.warn("stop_flag_multi activated.")
             self.stopped = True
             self.v = 0
-            # self.w = 0 # todo
+            # self.w = 0
             return False
         else:
             # calculate forces
@@ -91,7 +93,7 @@ class APFPlanner(APFPlannerBase):
             #
             if self.stopped:
                 self.v = 0
-                if abs(self.w) < (np.deg2rad(2)):  # todo
+                if abs(self.w) < self.params.w_stall:
                     self.v = self.params.v_min_2
                 return False
 
@@ -236,7 +238,7 @@ class APFPlanner(APFPlannerBase):
         for i, ind in enumerate(clust_candid_inds):
             for ind_j in clust_candid_inds[i+1:]:
                 dist = cal_distance(fd.fdata[ind].x, fd.fdata[ind].y, fd.fdata[ind_j].x, fd.fdata[ind_j].y)
-                if dist < (self.params.robot_d_prec*self.c_cluster_adjacent):    # param 2 todo
+                if dist < (self.params.robot_d_prec*self.c_cluster_adjacent):
                     adjacents[ind].append(ind_j)
                     adjacents[ind_j].append(ind)
 
@@ -377,7 +379,6 @@ class APFPlanner(APFPlannerBase):
         fx = round(f * np.cos(ad_rg_h), 3)
         fy = round(f * np.sin(ad_rg_h), 3)
         self.target_f = (fx, fy)
-        # self.target_f = (0.001, 0.001) # todel todo
 
     def f_robots(self):
         fx, fy = 0.0, 0.0
@@ -419,16 +420,14 @@ class APFPlanner(APFPlannerBase):
 
         # # direction of the tangential force
         # c_t = 1
-        # theta_ = np.deg2rad(20)  # todo param
-        # if abs(robo.ad_h_rR) < theta_:
+        # if abs(robo.ad_h_rR) < self.ad_h_rR_thresh:
         #     c_t = np.sign(robo.ad_rg_rR*robo.ad_h_rR)
         # theta_t = robo.theta_rR + (np.pi/2)*np.sign(robo.ad_h_rR)*c_t
         # ad_t_h = cal_angle_diff(theta_t, self.pose.theta)
 
         # c_t, for tangential force direction
         c_t = 1
-        theta_ = np.deg2rad(10)  # todo param 45
-        if abs(robo.ad_h_rR) < theta_:
+        if abs(robo.ad_h_rR) < self.ad_h_rR_thresh:
             c_t = np.sign(robo.ad_rg_rR*robo.ad_h_rR)
 
         # tangential force
@@ -468,8 +467,7 @@ class APFPlanner(APFPlannerBase):
 
         # c_t, for tangential force direction
         c_t = 1
-        theta_ = np.deg2rad(10)  # todo param
-        if abs(robo.ad_h_rR) < theta_:
+        if abs(robo.ad_h_rR) < self.ad_h_rR_thresh:
             c_t = np.sign(robo.ad_rg_rR*robo.ad_h_rR)
 
         # tangential force
@@ -538,8 +536,7 @@ class APFPlanner(APFPlannerBase):
 
         # direction of the tangential force
         c_t = 1
-        theta_ = np.deg2rad(20)  # todo param
-        if abs(ad_h_ro) < theta_:
+        if abs(ad_h_ro) < self.ad_h_ro_thresh:
             c_t = np.sign(ad_rg_ro*ad_h_ro)
         theta_t = theta_ro + (np.pi/2)*np.sign(ad_h_ro)*c_t
         ad_t_h = cal_angle_diff(theta_t, self.pose.theta)

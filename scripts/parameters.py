@@ -45,7 +45,9 @@ class Params:
         self.v_min_2 = 0.05  # 0.02
         self.w_max = 1.0
         self.w_min = -1.0
-        self.w_coeff = 1
+        self.w_coeff = 1.0
+        self.w_stall = 2.0 * 3.14/180  # rad/s
+
         #
         self.v_zero_tresh = 0.03
         self.w_zero_tresh = 0.03

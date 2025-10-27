@@ -35,9 +35,11 @@ class APFPlanner(APFPlannerBase):
         self.stop_flag_multi = False
 
         # config
-        self.c_radius = 2.5  # 2.5      #$ param 3
-        self.c_r_goal_cluster = 2.0     # 2.5 3.0      #$ param 1
-        self.c_r_R_cluster = 2.0        # 2.5 3.0      #$ param 1
+        self.c_radius = 2.5
+        self.c_r_R_cluster = 2.0
+        self.c_r_goal_cluster = 2.0
+        self.ad_h_rR_thresh = np.deg2rad(10)
+        self.ad_h_ro_thresh = np.deg2rad(20)
 
     def reset_vals_2(self):
         #
@@ -73,7 +75,6 @@ class APFPlanner(APFPlannerBase):
             self.lg.warn("stop_flag_multi activated.")
             self.stopped = True
             self.v = 0
-            # self.w = 0 # todo
             return False
         else:
             # calculate forces
@@ -84,7 +85,7 @@ class APFPlanner(APFPlannerBase):
                 self.lg.warn("stop_flag_obsts or stop_flag_robots activated.")
                 self.stopped = True
                 self.v = 0
-                if abs(self.w) < (np.deg2rad(2)):  # todo
+                if abs(self.w) < self.params.w_stall:
                     self.v = self.params.v_min_2
                 return False
 
@@ -93,7 +94,7 @@ class APFPlanner(APFPlannerBase):
                 self.lg.warn("stop_flag_robot_full activated.")
                 self.stopped = True
                 self.v = 0
-                # self.w = 0 # todo
+                # self.w = 0
                 return False
         return True
 
@@ -405,7 +406,6 @@ class APFPlanner(APFPlannerBase):
         fx = round(f * np.cos(ad_rg_h), 3)
         fy = round(f * np.sin(ad_rg_h), 3)
         self.target_f = (fx, fy)
-        # self.target_f = (0.001, 0.001) # todel todo
 
     def f_robots(self):
         fx, fy = 0.0, 0.0
@@ -427,7 +427,6 @@ class APFPlanner(APFPlannerBase):
 
     def compute_multi_force(self, robo: ApfRobot) -> Tuple[float, float]:
         force = (0, 0)
-        # tocheck #todo
         if (robo.r_start < robo.d):
             return force
 
@@ -466,11 +465,9 @@ class APFPlanner(APFPlannerBase):
 
         if target_other_side:
             if (robo.r_prec < robo.d):
-                # if (robo.r_prec<robo.d) and abs(robo.ad_h_rR)<np.pi/2: # todo
                 F_f = templ3
             elif (0.8*robo.r_prec < robo.d < robo.r_prec):
                 F_f = templ3
-                # F_f = [templ3[0]+F_r[0], templ3[1]+F_r[1]]
 
         return F_f
 
@@ -502,8 +499,7 @@ class APFPlanner(APFPlannerBase):
 
         # c_t, for tangential force direction
         c_t = 1
-        theta_ = np.deg2rad(10)  # todo param
-        if abs(robo.ad_h_rR) < theta_:
+        if abs(robo.ad_h_rR) < self.ad_h_rR_thresh:
             c_t = np.sign(ad_rg_rR*robo.ad_h_rR)
 
         # tangential force
@@ -572,8 +568,7 @@ class APFPlanner(APFPlannerBase):
 
         # direction of the tangential force
         c_t = 1
-        theta_ = np.deg2rad(20)  # todo param
-        if abs(ad_h_ro) < theta_:
+        if abs(ad_h_ro) < self.ad_h_ro_thresh:
             c_t = np.sign(ad_rg_ro*ad_h_ro)
         theta_t = theta_ro + (np.pi/2)*np.sign(ad_h_ro)*c_t
         ad_t_h = cal_angle_diff(theta_t, self.pose.theta)
